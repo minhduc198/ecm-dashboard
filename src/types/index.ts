@@ -20,6 +20,7 @@ export interface FilterQuery {
 }
 
 export interface ColumnItem {
+  id: string
   label: string
   value: string
   isVisible: boolean

@@ -5,7 +5,8 @@ import CustomTable from '@/components/CustomTable'
 const Cancelled = () => {
   const { columnSetting, activeTab } = useContext(FilterContext)
 
-  return <CustomTable size='medium' dataColumn={columnSetting[activeTab]} />
+  // return <CustomTable size='medium' dataColumn={columnSetting[activeTab]} />
+  return null
 }
 
 export default Cancelled

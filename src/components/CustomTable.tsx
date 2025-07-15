@@ -1,9 +1,12 @@
-import { rows } from '@/data/dashboard/mockTableData'
-import { FilterContext } from '@/features/orders/context/FilterContext'
-import { ColumnItem } from '@/types'
+import { TableColumns } from '@/types/table'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
+import ThumbUpIcon from '@mui/icons-material/ThumbUp'
+import { Button } from '@mui/material'
 import Box from '@mui/material/Box'
 import Checkbox from '@mui/material/Checkbox'
 import Paper from '@mui/material/Paper'
+import { alpha } from '@mui/material/styles'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
@@ -12,53 +15,27 @@ import TableHead from '@mui/material/TableHead'
 import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
 import TableSortLabel from '@mui/material/TableSortLabel'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
 import * as React from 'react'
 
-interface Data {
-  id: number
-  customers: string
-  reference: string
-  address: string
-  date: string
-  nb_items: number
-  total_ex_taxes: number
-  delivery_fees: number
-  taxes: number
-  total: number
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T): number {
-  if (a[orderBy] < b[orderBy]) return -1
-  if (a[orderBy] > b[orderBy]) return 1
-  return 0
-}
-
 type Order = 'asc' | 'desc'
 
-function getComparator<Key extends keyof Data>(order: Order, orderBy: Key): (a: Data, b: Data) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy)
-}
-
-interface EnhancedTableProps {
+interface TableHeaderProps<T> {
+  columns: TableColumns<T>[]
   numSelected: number
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Data) => void
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
   order: Order
   orderBy: string
   rowCount: number
-  dataColumn: ColumnItem[]
 }
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
-  const createSortHandler = (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+function TableHeader<T>(props: TableHeaderProps<T>) {
+  const { columns, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
+  const createSortHandler = (property: keyof T) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property)
   }
-
-  const headCells: ColumnItem[] = props.dataColumn
 
   return (
     <TableHead>
@@ -71,50 +48,114 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             onChange={onSelectAllClick}
           />
         </TableCell>
-        {headCells.map((headCell) =>
-          headCell.isVisible ? (
-            <TableCell
-              key={headCell.value}
-              align={headCell.numeric ? 'right' : 'left'}
-              padding={headCell.disablePadding ? 'none' : 'normal'}
-              sortDirection={orderBy === headCell.value ? order : false}
+        {columns.map((headCell) => (
+          <TableCell
+            key={headCell.id.toString()}
+            align={headCell.numeric ? 'right' : 'left'}
+            padding={headCell.disablePadding ? 'none' : 'normal'}
+            sortDirection={orderBy === headCell.id ? order : false}
+          >
+            <TableSortLabel
+              active={orderBy === headCell.id}
+              direction={orderBy === headCell.id ? order : 'asc'}
+              onClick={createSortHandler(headCell.id)}
             >
-              <TableSortLabel
-                active={orderBy === headCell.value}
-                direction={orderBy === headCell.value ? order : 'asc'}
-                onClick={createSortHandler(headCell.value as keyof Data)}
-              >
-                {headCell.label}
-                {orderBy === headCell.value ? (
-                  <Box component='span' sx={visuallyHidden}>
-                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                  </Box>
-                ) : null}
-              </TableSortLabel>
-            </TableCell>
-          ) : (
-            ''
-          )
-        )}
+              {headCell.label}
+              {orderBy === headCell.id ? (
+                <Box component='span' sx={visuallyHidden}>
+                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                </Box>
+              ) : null}
+            </TableSortLabel>
+          </TableCell>
+        ))}
       </TableRow>
     </TableHead>
   )
 }
-
-interface Props {
-  size: string
-  dataColumn: ColumnItem[]
+interface TableToolbarProps {
+  numSelected: number
+  handleAccept?: () => void
+  handleReject?: () => void
+  handleDelete?: () => void
 }
-export default function CustomTable({ size = 'medium', dataColumn }: Props) {
-  const { columnSetting, activeTab } = React.useContext(FilterContext)
+function TableToolbar(props: TableToolbarProps) {
+  const { numSelected, handleAccept, handleDelete, handleReject } = props
+  return (
+    <Toolbar
+      sx={[
+        {
+          height: 0,
+          minHeight: '0px !important',
+          overflow: 'hidden',
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
+          transition: 'all 0.2s'
+        },
+        numSelected > 0 && {
+          bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+          minHeight: '64px !important',
+          height: 16
+        }
+      ]}
+    >
+      <Typography sx={{ flex: '1 1 100%' }} color='inherit' variant='subtitle1' component='div'>
+        {numSelected} selected
+      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2
+        }}
+      >
+        {handleAccept && (
+          <Button color='primary' startIcon={<ThumbUpIcon />} onClick={handleAccept}>
+            Delete
+          </Button>
+        )}
+        {handleReject && (
+          <Button color='primary' startIcon={<ThumbDownAltIcon />} onClick={handleReject}>
+            Delete
+          </Button>
+        )}
+        {handleDelete && (
+          <Button color='error' startIcon={<DeleteIcon />} onClick={handleDelete}>
+            Delete
+          </Button>
+        )}
+      </Box>
+    </Toolbar>
+  )
+}
 
+interface CustomTableProps<T> {
+  dataSource: (Omit<T, 'id'> & { id: any })[]
+  columns: TableColumns<T>[]
+  page: number
+  rowsPerPage: number
+  handleSetPage: (page: number) => void
+  handleSetRowsPerPage: (pageSize: number) => void
+  handleAccept?: () => void
+  handleReject?: () => void
+  handleDelete?: () => void
+}
+export default function CustomTable<T>({
+  columns,
+  dataSource,
+  page,
+  rowsPerPage = 10,
+  handleSetPage,
+  handleSetRowsPerPage,
+  handleAccept,
+  handleReject,
+  handleDelete
+}: CustomTableProps<T>) {
   const [order, setOrder] = React.useState<Order>('asc')
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('reference')
+  const [orderBy, setOrderBy] = React.useState<keyof T>('' as keyof T)
   const [selected, setSelected] = React.useState<readonly number[]>([])
-  const [page, setPage] = React.useState(0)
-  const [rowsPerPage, setRowsPerPage] = React.useState(15)
 
-  const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof Data) => {
+  const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof T) => {
     const isAsc = orderBy === property && order === 'asc'
     setOrder(isAsc ? 'desc' : 'asc')
     setOrderBy(property)
@@ -122,7 +163,7 @@ export default function CustomTable({ size = 'medium', dataColumn }: Props) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id)
+      const newSelected = dataSource.map((n) => n.id)
       setSelected(newSelected)
       return
     }
@@ -146,41 +187,39 @@ export default function CustomTable({ size = 'medium', dataColumn }: Props) {
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
+    handleSetPage(newPage)
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0)
+    handleSetRowsPerPage(parseInt(event.target.value, 10))
+    handleSetPage(0)
   }
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  // const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
-
-  const visibleRows = React.useMemo(
-    () => [...rows].sort(getComparator(order, orderBy)).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage]
-  )
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - dataSource.length) : 0
 
   return (
-    <Box sx={{ width: '100%', mt: '16px' }}>
+    <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
+        <TableToolbar
+          numSelected={selected.length}
+          handleAccept={handleAccept}
+          handleDelete={handleDelete}
+          handleReject={handleReject}
+        />
         <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size={size === 'medium' ? 'medium' : 'small'}>
-            <EnhancedTableHead
-              dataColumn={dataColumn}
+          <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
+            <TableHeader<T>
+              columns={columns}
               numSelected={selected.length}
               order={order}
-              orderBy={orderBy}
+              orderBy={orderBy.toString()}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={dataSource.length}
             />
             <TableBody>
-              {visibleRows.map((row, index) => {
+              {dataSource.map((row, index) => {
                 const isItemSelected = selected.includes(row.id)
-                const labelId = `enhanced-table-checkbox-${index}`
-
                 return (
                   <TableRow
                     hover
@@ -195,24 +234,34 @@ export default function CustomTable({ size = 'medium', dataColumn }: Props) {
                     <TableCell padding='checkbox'>
                       <Checkbox color='primary' checked={isItemSelected} />
                     </TableCell>
-                    <TableCell component='th' id={labelId} scope='row' padding='none'>
-                      {row.customers}
-                    </TableCell>
-                    {/* {columnSetting[activeTab]} */}
-                    <TableCell align='right'>{row.reference}</TableCell>
-                    <TableCell align='right'>{row.taxes}</TableCell>
-                    <TableCell align='right'>{row.total}</TableCell>
-                    {/*  */}
+                    {columns.map((col: TableColumns<T>) => (
+                      <TableCell
+                        key={col.id.toString()}
+                        align={col.numeric ? 'right' : 'left'}
+                        padding={col.disablePadding ? 'none' : 'normal'}
+                      >
+                        {row[col.id as keyof typeof row]}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 )
               })}
+              {emptyRows > 0 && (
+                <TableRow
+                  style={{
+                    height: 53 * emptyRows
+                  }}
+                >
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[15, 20, 25]}
+          rowsPerPageOptions={[5, 10, 25]}
           component='div'
-          count={rows.length}
+          count={dataSource.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

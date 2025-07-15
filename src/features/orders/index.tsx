@@ -17,6 +17,7 @@ import { OrderFilterItem } from './type'
 
 const initialColumns: ColumnItem[] = [
   {
+    id: '0',
     label: 'Customers',
     value: 'customers',
     isVisible: true,
@@ -24,6 +25,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: true
   },
   {
+    id: '1',
     label: 'Date',
     value: 'date',
     isVisible: false,
@@ -31,6 +33,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: false
   },
   {
+    id: '2',
     label: 'Reference',
     value: 'reference',
     isVisible: true,
@@ -39,6 +42,7 @@ const initialColumns: ColumnItem[] = [
   },
 
   {
+    id: '3',
     label: 'Address',
     value: 'address',
     isVisible: false,
@@ -46,6 +50,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: false
   },
   {
+    id: '4',
     label: 'Nb items',
     value: 'nb _items',
     isVisible: false,
@@ -53,6 +58,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: false
   },
   {
+    id: '5',
     label: 'Total ex taxes',
     value: 'total_ex_taxes',
     isVisible: false,
@@ -60,6 +66,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: false
   },
   {
+    id: '6  ',
     label: 'Delivery fees',
     value: 'delivery_fees',
     isVisible: false,
@@ -67,6 +74,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: false
   },
   {
+    id: '7',
     label: 'Taxes',
     value: 'taxes',
     isVisible: true,
@@ -74,6 +82,7 @@ const initialColumns: ColumnItem[] = [
     disablePadding: false
   },
   {
+    id: '8',
     label: 'Total',
     value: 'total',
     isVisible: true,
@@ -126,6 +135,7 @@ const Orders = () => {
     delivered: initialColumns,
     cancelled: initialColumns
   })
+
   const [activeTab, setActiveTab] = useState<string>(filter.status ?? 'ordered')
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {

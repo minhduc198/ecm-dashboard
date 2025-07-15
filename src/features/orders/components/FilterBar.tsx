@@ -9,7 +9,7 @@ import { RETURNED } from '@/constants'
 import { FilterContext } from '@/features/orders/context/FilterContext'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { ColumnItem, QuerySaveType, SelectOptionItem } from '@/types'
-import { cleanObject, isoStringToDate } from '@/utils'
+import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
 import { getListParamsFormLS, getOrderSaveQueryFormLS, saveListParamsToLS, setOrderSaveQueryToLS } from '@/utils/orders'
 import { yupResolver } from '@hookform/resolvers/yup'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
@@ -21,6 +21,7 @@ import { useContext, useEffect, useState } from 'react'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
 import { OrderFilterItem, OrderParams, OrderUrlQuery } from '../type'
+import { DropResult } from 'react-beautiful-dnd'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -191,6 +192,16 @@ const FilterBar = () => {
     })
   }
 
+  const onDragEnd = ({ destination, source }: DropResult) => {
+    if (!destination) return
+
+    const newItems = reorderDnd<ColumnItem>(columnSetting[activeTab], source.index, destination.index)
+
+    const newColSetting = { ...columnSetting, [activeTab]: newItems }
+
+    setColumnSetting(newColSetting)
+  }
+
   return (
     <FilterBarWrapper>
       <FormProvider {...methods}>
@@ -273,8 +284,12 @@ const FilterBar = () => {
           handleAddSaveQuery={handleAddSaveQuery}
           handleRemoveSaveQuery={handleRemoveCurrentSaveQuery}
         />
-        <SettingColumns columns={columnSetting[activeTab]} handleChangeColumn={handleChangeColumn} />
-        <Button startIcon={<FileDownloadIcon />} sx={{ color: '#4F3CC9', bgcolor: 'transparent' }} variant='text'>
+        <SettingColumns
+          columns={columnSetting[activeTab]}
+          handleChangeColumn={handleChangeColumn}
+          onDragEnd={onDragEnd}
+        />
+        <Button startIcon={<FileDownloadIcon />} variant='text'>
           EXPORT
         </Button>
       </Box>

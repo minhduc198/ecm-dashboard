@@ -149,12 +149,7 @@ export default function AddFilter<T>({
 
   return (
     <div>
-      <Button
-        startIcon={<FilterListIcon />}
-        sx={{ color: '#4F3CC9', bgcolor: 'transparent' }}
-        variant='text'
-        onClick={handleClick}
-      >
+      <Button startIcon={<FilterListIcon />} variant='text' onClick={handleClick}>
         ADD FILTERS
       </Button>
       <Popover
