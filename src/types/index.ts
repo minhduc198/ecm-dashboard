@@ -1,3 +1,5 @@
+import { Order } from '@/features/orders/types'
+
 export interface UserData {
   id: number
   avatar: string
@@ -20,8 +22,8 @@ export interface FilterQuery {
 }
 
 export interface ColumnItem {
+  id: keyof Order
   label: string
-  value: string
   isVisible: boolean
   numeric: boolean
   disablePadding: boolean

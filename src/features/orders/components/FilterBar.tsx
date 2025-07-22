@@ -9,8 +9,14 @@ import { RETURNED } from '@/constants'
 import { FilterContext } from '@/features/orders/context/FilterContext'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { ColumnItem, QuerySaveType, SelectOptionItem } from '@/types'
-import { cleanObject, isoStringToDate } from '@/utils'
-import { getListParamsFormLS, getOrderSaveQueryFormLS, saveListParamsToLS, setOrderSaveQueryToLS } from '@/utils/orders'
+import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
+import {
+  getListParamsFormLS,
+  getOrderSaveQueryFormLS,
+  saveListParamsToLS,
+  setOrderSaveQueryToLS,
+  setSettingColumnsToLS
+} from '@/utils/orders'
 import { yupResolver } from '@hookform/resolvers/yup'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import SearchIcon from '@mui/icons-material/Search'
@@ -18,9 +24,10 @@ import { Box, Button, InputAdornment, styled } from '@mui/material'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import { useContext, useEffect, useState } from 'react'
+import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
-import { OrderFilterItem, OrderParams, OrderUrlQuery } from '../type'
+import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../type'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -122,6 +129,8 @@ const FilterBar = () => {
       [activeTab]: columns
     }
     setColumnSetting(value)
+
+    setSettingColumnsToLS(value as OrderSettingColumn)
   }
 
   const setParamUrlAndLS = (filterItem: OrderFilterItem[]) => {
@@ -189,6 +198,14 @@ const FilterBar = () => {
       displayedFilters: param.displayedFilters,
       filter: param.filter
     })
+  }
+
+  const onDragEnd = ({ destination, source }: DropResult) => {
+    if (!destination) return
+    const newItems = reorderDnd<ColumnItem>(columnSetting[activeTab], source.index, destination.index)
+    const newColSetting = { ...columnSetting, [activeTab]: newItems }
+    setColumnSetting(newColSetting)
+    setSettingColumnsToLS(newColSetting as OrderSettingColumn)
   }
 
   return (
@@ -273,8 +290,12 @@ const FilterBar = () => {
           handleAddSaveQuery={handleAddSaveQuery}
           handleRemoveSaveQuery={handleRemoveCurrentSaveQuery}
         />
-        <SettingColumns columns={columnSetting[activeTab]} handleChangeColumn={handleChangeColumn} />
-        <Button startIcon={<FileDownloadIcon />} sx={{ color: '#4F3CC9', bgcolor: 'transparent' }} variant='text'>
+        <SettingColumns
+          columns={columnSetting[activeTab]}
+          handleChangeColumn={handleChangeColumn}
+          onDragEnd={onDragEnd}
+        />
+        <Button startIcon={<FileDownloadIcon />} variant='text'>
           EXPORT
         </Button>
       </Box>

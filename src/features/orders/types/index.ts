@@ -19,6 +19,8 @@ export type Order = {
   total: number
   status: OrderStatus
   returned: boolean
+  address?: string
+  nb_items?: string
 }
 
 export interface GetOrdersListRequest {

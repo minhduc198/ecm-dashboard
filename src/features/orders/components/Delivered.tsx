@@ -5,7 +5,8 @@ import { FilterContext } from '../context/FilterContext'
 const Delivered = () => {
   const { columnSetting, activeTab } = useContext(FilterContext)
 
-  return <CustomTable size='medium' dataColumn={columnSetting[activeTab]} />
+  // return <CustomTable size='medium' dataColumn={columnSetting[activeTab]} />
+  return null
 }
 
 export default Delivered

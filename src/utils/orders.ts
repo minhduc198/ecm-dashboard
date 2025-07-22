@@ -1,8 +1,10 @@
-import { OrderUrlQuery } from '@/features/orders/type'
-import { QuerySaveType } from '@/types'
+import { OrderSettingColumn, OrderUrlQuery } from '@/features/orders/type'
+import { OrderStatus } from '@/features/orders/types'
+import { ColumnItem, QuerySaveType } from '@/types'
 
 const saveQueryLsName = 'orders_save_query'
 const orderListParamsLSName = 'order.listParams'
+const settingColumnsLsName = 'orders.settingColumns'
 
 export function setOrderSaveQueryToLS(value: QuerySaveType[]) {
   if (!value.length) {
@@ -34,4 +36,19 @@ export function getListParamsFormLS(): OrderUrlQuery {
     displayedFilters: obj.displayedFilters,
     filter: obj.filter
   }
+}
+
+export function setSettingColumnsToLS(value: OrderSettingColumn) {
+  localStorage.setItem(settingColumnsLsName, JSON.stringify(value))
+}
+
+export function getSettingColumnsFromLS(): OrderSettingColumn {
+  const dataLs = localStorage.getItem(settingColumnsLsName)
+  if (!dataLs)
+    return {
+      ordered: [],
+      delivered: [],
+      cancelled: []
+    }
+  return JSON.parse(dataLs)
 }

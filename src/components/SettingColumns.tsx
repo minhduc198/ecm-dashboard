@@ -1,16 +1,55 @@
-import { FilterContext } from '@/features/orders/context/FilterContext'
 import { ColumnItem } from '@/types'
 import ViewWeekIcon from '@mui/icons-material/ViewWeek'
 import { Box, Button, Popover, Switch, Typography } from '@mui/material'
-import React, { useContext } from 'react'
 import cloneDeep from 'lodash/cloneDeep'
+import React, { FC } from 'react'
+import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
+
+type PropsDraggableSettingCol = {
+  item: ColumnItem
+  index: number
+  handleChange: (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+const DraggableSettingCol: FC<PropsDraggableSettingCol> = ({ item, index, handleChange }) => {
+  return (
+    <Draggable draggableId={item.id} index={index}>
+      {(provided, snapshot) => (
+        <Box
+          key={index}
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          sx={[
+            { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+            { position: 'relative', zIndex: 1, bgcolor: 'white' },
+            snapshot.isDragging && {
+              zIndex: 2,
+              boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.2)'
+            }
+          ]}
+        >
+          <Box sx={{ display: 'flex', paddingInline: '8px', margin: 0 }}>
+            <Switch checked={item.isVisible} size='small' onChange={handleChange(index)} />
+            <Typography>{item.label}</Typography>
+          </Box>
+          <Box sx={{ width: '20px', height: '20px' }}>
+            <DragIndicatorIcon fontSize='small' color='disabled' sx={{ cursor: 'all-scroll' }}></DragIndicatorIcon>
+          </Box>
+        </Box>
+      )}
+    </Draggable>
+  )
+}
 
 interface Props {
   columns: ColumnItem[]
+  onDragEnd: OnDragEndResponder
   handleChangeColumn: (columns: ColumnItem[]) => void
 }
 
-export default function SettingColumns({ columns, handleChangeColumn }: Props) {
+const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -26,18 +65,12 @@ export default function SettingColumns({ columns, handleChangeColumn }: Props) {
   const handleChange = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColumns = cloneDeep(columns)
     newColumns[index].isVisible = e.target.checked
-
     handleChangeColumn(newColumns)
   }
 
   return (
     <div>
-      <Button
-        startIcon={<ViewWeekIcon />}
-        sx={{ color: '#4F3CC9', bgcolor: 'transparent' }}
-        variant='text'
-        onClick={handleClick}
-      >
+      <Button startIcon={<ViewWeekIcon />} variant='text' onClick={handleClick}>
         COLUMNS
       </Button>
       <Popover
@@ -56,29 +89,24 @@ export default function SettingColumns({ columns, handleChangeColumn }: Props) {
           }
         }}
       >
-        <Box sx={{ paddingBlock: '8px', minWidth: '165px' }}>
-          {columns.map((item, index) => {
-            return (
-              <Box key={index} sx={{ display: 'flex', paddingInline: '8px', margin: 0 }}>
-                <Switch
-                  checked={item.isVisible}
-                  sx={{
-                    '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#4F3CC9',
-                      '& + .MuiSwitch-track': {
-                        backgroundColor: '#4F3CC9'
-                      }
-                    }
-                  }}
-                  size='small'
-                  onChange={handleChange(index)}
-                />
-                <Typography>{item.label}</Typography>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId='droppable-columns-setting'>
+            {(provided) => (
+              <Box
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', minHeight: '240px' }}
+              >
+                {columns.map((item, index) => (
+                  <DraggableSettingCol key={item.id} item={item} index={index} handleChange={handleChange} />
+                ))}
               </Box>
-            )
-          })}
-        </Box>
+            )}
+          </Droppable>
+        </DragDropContext>
       </Popover>
     </div>
   )
 }
+
+export default SettingColumns
