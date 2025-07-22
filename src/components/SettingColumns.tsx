@@ -64,11 +64,10 @@ const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) =
 
   const handleChange = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColumns = cloneDeep(columns)
-
     newColumns[index].isVisible = e.target.checked
-
     handleChangeColumn(newColumns)
   }
+
   return (
     <div>
       <Button startIcon={<ViewWeekIcon />} variant='text' onClick={handleClick}>

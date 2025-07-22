@@ -13,7 +13,6 @@ import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
 import {
   getListParamsFormLS,
   getOrderSaveQueryFormLS,
-  getSettingColumnsFromLS,
   saveListParamsToLS,
   setOrderSaveQueryToLS,
   setSettingColumnsToLS
@@ -25,10 +24,10 @@ import { Box, Button, InputAdornment, styled } from '@mui/material'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import { useContext, useEffect, useState } from 'react'
+import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
 import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../type'
-import { DropResult } from 'react-beautiful-dnd'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -203,13 +202,9 @@ const FilterBar = () => {
 
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (!destination) return
-
     const newItems = reorderDnd<ColumnItem>(columnSetting[activeTab], source.index, destination.index)
-
     const newColSetting = { ...columnSetting, [activeTab]: newItems }
-
     setColumnSetting(newColSetting)
-
     setSettingColumnsToLS(newColSetting as OrderSettingColumn)
   }
 

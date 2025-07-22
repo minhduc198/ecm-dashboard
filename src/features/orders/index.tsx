@@ -5,7 +5,6 @@ import TabPanel from '@mui/lab/TabPanel'
 import Box from '@mui/material/Box'
 import Tab from '@mui/material/Tab'
 
-import { useSearchParam } from '@/hooks/useSearchParam'
 import { ColumnItem } from '@/types'
 import { getListParamsFormLS, getSettingColumnsFromLS } from '@/utils/orders'
 import { useEffect, useState } from 'react'
@@ -111,7 +110,6 @@ const initialColumns: ColumnItem[] = [
 ]
 
 const Orders = () => {
-  const { setMany } = useSearchParam()
   const { filter, displayedFilters } = getListParamsFormLS()
   const columnsLS = getSettingColumnsFromLS()
 
@@ -141,7 +139,6 @@ const Orders = () => {
       cancelled: columnsLS.cancelled.length ? columnsLS.cancelled : initialColumns
     }
     setColumnSetting(newColumnSetting)
-    // }, [JSON.stringify(columnsLS)])
   }, [])
 
   return (

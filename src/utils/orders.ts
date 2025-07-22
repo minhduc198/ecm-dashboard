@@ -52,9 +52,3 @@ export function getSettingColumnsFromLS(): OrderSettingColumn {
     }
   return JSON.parse(dataLs)
 }
-
-// export function getDefaultSettingColumns(status: OrderStatus): ColumnItem[] {
-//   const columnsLS = getSettingColumnsFromLS()
-//   const ids = columnsLS[status].map((i) => i.id)
-//   return initialColumns.map((item) => ({ ...item, isVisible: ids.includes(item.id) }))
-// }

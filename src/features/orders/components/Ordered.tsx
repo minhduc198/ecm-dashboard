@@ -1,12 +1,11 @@
 import CustomTable from '@/components/CustomTable'
 import { TableColumns } from '@/types/table'
-import { getSettingColumnsFromLS } from '@/utils/orders'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { cloneDeep } from 'lodash'
+import { useContext, useEffect, useState } from 'react'
 import { FilterContext } from '../context/FilterContext'
-import { cloneDeep, partial } from 'lodash'
-import { Order } from '@/services/data-generator'
+import { Order } from '../types'
 
-const data = [
+const data: Order[] = [
   {
     id: 0,
     reference: 'HBDLVF',
@@ -234,14 +233,14 @@ const data = [
 export default function Ordered() {
   const { columnSetting, activeTab } = useContext(FilterContext)
 
-  const [columns, setColumns] = useState<TableColumns<(typeof data)[0]>[]>([])
+  const [columns, setColumns] = useState<TableColumns<Order>[]>([])
 
   useEffect(() => {
     const cloneColumnSetting = cloneDeep(columnSetting[activeTab])
     const newColumnSetting = cloneColumnSetting
       .filter((col) => col.isVisible)
       .map((col) => ({
-        id: col.id as keyof (typeof data)[0],
+        id: col.id,
         label: col.label
       }))
 
@@ -249,7 +248,7 @@ export default function Ordered() {
   }, [JSON.stringify(columnSetting[activeTab])])
 
   return (
-    <CustomTable<(typeof data)[0]>
+    <CustomTable<Order>
       columns={columns}
       dataSource={data}
       handleSetPage={() => {}}
