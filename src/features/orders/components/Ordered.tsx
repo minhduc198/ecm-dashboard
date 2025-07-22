@@ -1,7 +1,10 @@
 import CustomTable from '@/components/CustomTable'
 import { TableColumns } from '@/types/table'
-import { useContext } from 'react'
+import { getSettingColumnsFromLS } from '@/utils/orders'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { FilterContext } from '../context/FilterContext'
+import { cloneDeep, partial } from 'lodash'
+import { Order } from '@/services/data-generator'
 
 const data = [
   {
@@ -229,44 +232,21 @@ const data = [
 ]
 
 export default function Ordered() {
-  const columns: TableColumns<(typeof data)[0]>[] = [
-    {
-      id: 'reference',
-      label: 'References'
-    },
-    {
-      id: 'date',
-      label: 'Date'
-      // cellRender: (value, data) => {
-      //   return <Box>{value} - {data.total_ex_taxes}</Box>
-      // }
-    },
-    {
-      id: 'customer_id',
-      label: 'Customer'
-    },
-    {
-      id: 'total_ex_taxes',
-      label: 'Total ex Taxes'
-    },
-    {
-      id: 'delivery_fees',
-      label: 'Delivery Fees'
-    },
-    {
-      id: 'tax_rate',
-      label: 'Tax Rate'
-    },
-    {
-      id: 'taxes',
-      label: 'Taxes'
-    },
-    {
-      id: 'total',
-      label: 'Total'
-      // cellRender: (value, data) => formatCurrency(value)
-    }
-  ]
+  const { columnSetting, activeTab } = useContext(FilterContext)
+
+  const [columns, setColumns] = useState<TableColumns<(typeof data)[0]>[]>([])
+
+  useEffect(() => {
+    const cloneColumnSetting = cloneDeep(columnSetting[activeTab])
+    const newColumnSetting = cloneColumnSetting
+      .filter((col) => col.isVisible)
+      .map((col) => ({
+        id: col.id as keyof (typeof data)[0],
+        label: col.label
+      }))
+
+    setColumns(newColumnSetting)
+  }, [JSON.stringify(columnSetting[activeTab])])
 
   return (
     <CustomTable<(typeof data)[0]>
@@ -282,3 +262,7 @@ export default function Ordered() {
     />
   )
 }
+
+// id: 'total',
+// label: 'Total'
+// cellRender: (value, data) => formatCurrency(value)

@@ -4,6 +4,7 @@ import { Box, Button, Popover, Switch, Typography } from '@mui/material'
 import cloneDeep from 'lodash/cloneDeep'
 import React, { FC } from 'react'
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 
 type PropsDraggableSettingCol = {
   item: ColumnItem
@@ -16,20 +17,26 @@ const DraggableSettingCol: FC<PropsDraggableSettingCol> = ({ item, index, handle
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => (
         <Box
+          key={index}
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           sx={[
-            { display: 'flex', paddingInline: '8px', margin: 0, position: 'relative', zIndex: 1, bgcolor: 'white' },
+            { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+            { position: 'relative', zIndex: 1, bgcolor: 'white' },
             snapshot.isDragging && {
               zIndex: 2,
               boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.2)'
             }
           ]}
-          key={index}
         >
-          <Switch checked={item.isVisible} size='small' onChange={handleChange(index)} />
-          <Typography>{item.label}</Typography>
+          <Box sx={{ display: 'flex', paddingInline: '8px', margin: 0 }}>
+            <Switch checked={item.isVisible} size='small' onChange={handleChange(index)} />
+            <Typography>{item.label}</Typography>
+          </Box>
+          <Box sx={{ width: '20px', height: '20px' }}>
+            <DragIndicatorIcon fontSize='small' color='disabled' sx={{ cursor: 'all-scroll' }}></DragIndicatorIcon>
+          </Box>
         </Box>
       )}
     </Draggable>
@@ -57,6 +64,7 @@ const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) =
 
   const handleChange = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColumns = cloneDeep(columns)
+
     newColumns[index].isVisible = e.target.checked
 
     handleChangeColumn(newColumns)
@@ -88,7 +96,7 @@ const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) =
               <Box
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                sx={{ paddingBlock: '8px', minWidth: '165px', minHeight: '240px' }}
+                sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', minHeight: '240px' }}
               >
                 {columns.map((item, index) => (
                   <DraggableSettingCol key={item.id} item={item} index={index} handleChange={handleChange} />

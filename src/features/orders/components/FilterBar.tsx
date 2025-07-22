@@ -10,7 +10,14 @@ import { FilterContext } from '@/features/orders/context/FilterContext'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { ColumnItem, QuerySaveType, SelectOptionItem } from '@/types'
 import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
-import { getListParamsFormLS, getOrderSaveQueryFormLS, saveListParamsToLS, setOrderSaveQueryToLS } from '@/utils/orders'
+import {
+  getListParamsFormLS,
+  getOrderSaveQueryFormLS,
+  getSettingColumnsFromLS,
+  saveListParamsToLS,
+  setOrderSaveQueryToLS,
+  setSettingColumnsToLS
+} from '@/utils/orders'
 import { yupResolver } from '@hookform/resolvers/yup'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import SearchIcon from '@mui/icons-material/Search'
@@ -20,7 +27,7 @@ import isEqual from 'lodash/isEqual'
 import { useContext, useEffect, useState } from 'react'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
-import { OrderFilterItem, OrderParams, OrderUrlQuery } from '../type'
+import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../type'
 import { DropResult } from 'react-beautiful-dnd'
 
 const optionReturned: SelectOptionItem[] = [
@@ -123,6 +130,8 @@ const FilterBar = () => {
       [activeTab]: columns
     }
     setColumnSetting(value)
+
+    setSettingColumnsToLS(value as OrderSettingColumn)
   }
 
   const setParamUrlAndLS = (filterItem: OrderFilterItem[]) => {
@@ -200,6 +209,8 @@ const FilterBar = () => {
     const newColSetting = { ...columnSetting, [activeTab]: newItems }
 
     setColumnSetting(newColSetting)
+
+    setSettingColumnsToLS(newColSetting as OrderSettingColumn)
   }
 
   return (

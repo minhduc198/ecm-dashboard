@@ -7,89 +7,13 @@ import Tab from '@mui/material/Tab'
 
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { ColumnItem } from '@/types'
-import { getListParamsFormLS } from '@/utils/orders'
-import { useState } from 'react'
+import { getListParamsFormLS, getSettingColumnsFromLS } from '@/utils/orders'
+import { useEffect, useState } from 'react'
 import Cancelled from './components/Cancelled'
 import Delivered from './components/Delivered'
 import Ordered from './components/Ordered'
 import { FilterContext } from './context/FilterContext'
 import { OrderFilterItem } from './type'
-
-const initialColumns: ColumnItem[] = [
-  {
-    id: '0',
-    label: 'Customers',
-    value: 'customers',
-    isVisible: true,
-    numeric: false,
-    disablePadding: true
-  },
-  {
-    id: '1',
-    label: 'Date',
-    value: 'date',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    id: '2',
-    label: 'Reference',
-    value: 'reference',
-    isVisible: true,
-    numeric: true,
-    disablePadding: false
-  },
-
-  {
-    id: '3',
-    label: 'Address',
-    value: 'address',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    id: '4',
-    label: 'Nb items',
-    value: 'nb _items',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    id: '5',
-    label: 'Total ex taxes',
-    value: 'total_ex_taxes',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    id: '6  ',
-    label: 'Delivery fees',
-    value: 'delivery_fees',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    id: '7',
-    label: 'Taxes',
-    value: 'taxes',
-    isVisible: true,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    id: '8',
-    label: 'Total',
-    value: 'total',
-    isVisible: true,
-    numeric: true,
-    disablePadding: false
-  }
-]
 
 const initFilterItems: OrderFilterItem[] = [
   {
@@ -119,9 +43,77 @@ const initFilterItems: OrderFilterItem[] = [
   }
 ]
 
+const initialColumns: ColumnItem[] = [
+  {
+    label: 'Customers',
+    id: 'customer_id',
+    isVisible: true,
+    numeric: false,
+    disablePadding: true
+  },
+  {
+    label: 'Date',
+    id: 'date',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Reference',
+    id: 'reference',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+
+  {
+    label: 'Address',
+    id: 'address',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Nb items',
+    id: 'nb_items',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Total ex taxes',
+    id: 'total_ex_taxes',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Delivery fees',
+    id: 'delivery_fees',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Taxes',
+    id: 'taxes',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Total',
+    id: 'total',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  }
+]
+
 const Orders = () => {
   const { setMany } = useSearchParam()
   const { filter, displayedFilters } = getListParamsFormLS()
+  const columnsLS = getSettingColumnsFromLS()
 
   const [filterItems, setFilterItems] = useState<OrderFilterItem[]>(
     initFilterItems.map((item) => ({
@@ -131,9 +123,9 @@ const Orders = () => {
   )
 
   const [columnSetting, setColumnSetting] = useState<{ [key: string]: ColumnItem[] }>({
-    ordered: initialColumns,
-    delivered: initialColumns,
-    cancelled: initialColumns
+    ordered: [],
+    delivered: [],
+    cancelled: []
   })
 
   const [activeTab, setActiveTab] = useState<string>(filter.status ?? 'ordered')
@@ -141,6 +133,16 @@ const Orders = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue)
   }
+
+  useEffect(() => {
+    const newColumnSetting = {
+      ordered: columnsLS.ordered.length ? columnsLS.ordered : initialColumns,
+      delivered: columnsLS.delivered.length ? columnsLS.delivered : initialColumns,
+      cancelled: columnsLS.cancelled.length ? columnsLS.cancelled : initialColumns
+    }
+    setColumnSetting(newColumnSetting)
+    // }, [JSON.stringify(columnsLS)])
+  }, [])
 
   return (
     <FilterContext.Provider

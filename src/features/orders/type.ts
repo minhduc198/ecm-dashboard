@@ -1,4 +1,5 @@
-import { FilterItem, UrlQuery } from '@/types'
+import { ColumnItem, FilterItem, UrlQuery } from '@/types'
+import { Order } from './types'
 
 export interface OrderParams {
   status: string
@@ -12,3 +13,15 @@ export interface OrderParams {
 export type OrderFilterItem = FilterItem<OrderParams>
 
 export type OrderUrlQuery = UrlQuery<OrderParams>
+
+// export type OrderSettingColumn = {
+//   ordered: { index: number; id: keyof Order }[]
+//   delivered: { index: number; id: keyof Order }[]
+//   cancelled: { index: number; id: keyof Order }[]
+// }
+
+export type OrderSettingColumn = {
+  ordered: ColumnItem[]
+  delivered: ColumnItem[]
+  cancelled: ColumnItem[]
+}
