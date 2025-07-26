@@ -47,7 +47,8 @@ const FilterBarWrapper = styled('div')({
 })
 
 const FilterBar = () => {
-  const { filterItems, columnSetting, activeTab, setFilterItems, setColumnSetting } = useContext(FilterContext)
+  const { filterItems, columnSetting, activeTab, orderListRq, setFilterItems, setColumnSetting, setOrderListRq } =
+    useContext(FilterContext)
   const { setMany } = useSearchParam()
   const [isFirstRender, setIsFirstRender] = useState(true)
   const currentListParamsLS = getListParamsFormLS()
@@ -69,6 +70,13 @@ const FilterBar = () => {
   const passedBefore = useWatch({ name: 'date_lte', control: methods.control })
   const passedSince = useWatch({ name: 'date_gte', control: methods.control })
   const q = useWatch({ name: 'q', control: methods.control })
+
+  const spreadSetMany = {
+    order: JSON.stringify(currentListParamsLS.order),
+    page: JSON.stringify(currentListParamsLS.page),
+    perPage: JSON.stringify(currentListParamsLS.perPage),
+    sort: JSON.stringify(currentListParamsLS.sort)
+  }
 
   useEffect(() => {
     methods.reset({
@@ -99,15 +107,20 @@ const FilterBar = () => {
     })
 
     saveListParamsToLS({
+      ...currentListParamsLS,
       displayedFilters: currentListParamsLS.displayedFilters,
+      filter: newFilter
+    })
+    setOrderListRq({
+      ...orderListRq,
       filter: newFilter
     })
 
     const currentFilterForm = cloneDeep(newFilter)
     const currentFilterLS = cloneDeep(currentListParamsLS.filter)
-
     if (!isEqual(currentFilterLS, currentFilterForm)) {
       setMany({
+        ...spreadSetMany,
         displayedFilters: JSON.stringify(currentListParamsLS.displayedFilters),
         filter: JSON.stringify(newFilter)
       })
@@ -144,11 +157,13 @@ const FilterBar = () => {
     )
 
     saveListParamsToLS({
+      ...currentListParamsLS,
       displayedFilters: newDisplayedFilters,
       filter: currentListParamsLS.filter
     })
 
     setMany({
+      ...spreadSetMany,
       displayedFilters: JSON.stringify(newDisplayedFilters),
       filter: JSON.stringify({ ...currentListParamsLS.filter })
     })
@@ -163,11 +178,13 @@ const FilterBar = () => {
       }, {})
 
     saveListParamsToLS({
+      ...currentListParamsLS,
       displayedFilters: newDisplayedFilters,
       filter: currentListParamsLS.filter
     })
 
     setMany({
+      ...spreadSetMany,
       displayedFilters: JSON.stringify(newDisplayedFilters),
       filter: JSON.stringify({ ...currentListParamsLS.filter })
     })
@@ -195,6 +212,7 @@ const FilterBar = () => {
     setFilterItems(newFilterItems)
 
     saveListParamsToLS({
+      ...currentListParamsLS,
       displayedFilters: param.displayedFilters,
       filter: param.filter
     })

@@ -1,8 +1,8 @@
 import { baseDataProvider } from '@/services/dataProvider'
 
-export const fetchPosts = async () => {
+export const getOrderList = async (page = 1, perPage = 10) => {
   const response = await baseDataProvider.getList('orders', {
-    pagination: { page: 1, perPage: 10 },
+    pagination: { page, perPage },
     sort: { field: 'id', order: 'ASC' },
     filter: {}
   })

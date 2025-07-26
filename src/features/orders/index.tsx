@@ -5,7 +5,7 @@ import TabPanel from '@mui/lab/TabPanel'
 import Box from '@mui/material/Box'
 import Tab from '@mui/material/Tab'
 
-import { ColumnItem } from '@/types'
+import { ColumnItem, IPagination } from '@/types'
 import { getListParamsFormLS, getSettingColumnsFromLS } from '@/utils/orders'
 import { useEffect, useState } from 'react'
 import Cancelled from './components/Cancelled'
@@ -13,6 +13,11 @@ import Delivered from './components/Delivered'
 import Ordered from './components/Ordered'
 import { FilterContext } from './context/FilterContext'
 import { OrderFilterItem } from './type'
+import { useQuery } from '@tanstack/react-query'
+import { fetchOrdersList } from './services'
+import { GetOrdersListRequest, OrderStatus } from './types'
+import { DEFAULT_CIPHERS } from 'tls'
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 
 const initFilterItems: OrderFilterItem[] = [
   {
@@ -110,7 +115,7 @@ const initialColumns: ColumnItem[] = [
 ]
 
 const Orders = () => {
-  const { filter, displayedFilters } = getListParamsFormLS()
+  const { filter, displayedFilters, sort, page, order, perPage } = getListParamsFormLS()
   const columnsLS = getSettingColumnsFromLS()
 
   const [filterItems, setFilterItems] = useState<OrderFilterItem[]>(
@@ -125,11 +130,33 @@ const Orders = () => {
     delivered: [],
     cancelled: []
   })
+  const [activeTab, setActiveTab] = useState<OrderStatus>(filter.status ?? 'ordered')
+  const [orderListRq, setOrderListRq] = useState<GetOrdersListRequest>({
+    filter,
+    sort: {
+      field: sort,
+      order
+    },
+    pagination: {
+      page: page + 1,
+      perPage
+    }
+  })
 
-  const [activeTab, setActiveTab] = useState<string>(filter.status ?? 'ordered')
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: OrderStatus) => {
     setActiveTab(newValue)
+  }
+
+  const { data: orderData } = useQuery({
+    queryKey: ['orders', orderListRq],
+    queryFn: () => fetchOrdersList(orderListRq),
+    keepPreviousData: true
+  })
+
+  const orderList = orderData?.data || []
+  const pagination: IPagination = {
+    page: orderData?.page ? orderData.page - 1 : DEFAULT_PAGE,
+    perPage: orderData?.perPage || DEFAULT_PER_PAGE
   }
 
   useEffect(() => {
@@ -144,10 +171,12 @@ const Orders = () => {
   return (
     <FilterContext.Provider
       value={{
+        orderListRq,
         activeTab,
-        setActiveTab,
-        filterItems,
         columnSetting,
+        filterItems,
+        setActiveTab,
+        setOrderListRq,
         setColumnSetting,
         setFilterItems
       }}
@@ -163,7 +192,7 @@ const Orders = () => {
             </TabList>
           </Box>
           <TabPanel sx={{ padding: '0px' }} value='ordered'>
-            <Ordered />
+            <Ordered data={orderList} totalItems={orderData?.total || 0} pagination={pagination} />
           </TabPanel>
           <TabPanel sx={{ padding: '0px' }} value='delivered'>
             <Delivered />

@@ -1,4 +1,3 @@
-import { userData } from '@/data/dashboard/mockUserData'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import CodeIcon from '@mui/icons-material/Code'
 import CommentIcon from '@mui/icons-material/Comment'
@@ -7,12 +6,11 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Box, Button, Grid, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import { useQuery } from '@tanstack/react-query'
 import DashboardCard from './components/DashboardCard'
 import LineChartDashboard from './components/LineChartDashboard'
 import RevenueHistory from './components/RevenueHistory'
-import { useNavigate } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
-import { fetchPosts } from './services'
+import { userData } from '@/data/dashboard/mockUserData'
 
 const BannerDashBoard = styled('div')({
   marginBlock: 16,
@@ -25,13 +23,6 @@ const BannerDashBoard = styled('div')({
 })
 
 const Dashboard = () => {
-  const { data } = useQuery({
-    queryKey: ['orders'],
-    queryFn: fetchPosts
-  })
-
-  console.log('data', data)
-
   return (
     <Box>
       <BannerDashBoard sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -105,6 +96,7 @@ const Dashboard = () => {
             <LineChartDashboard />
           </Grid>
           <Grid size={{ xs: 12 }}>
+            <RevenueHistory />
             <RevenueHistory />
           </Grid>
         </Grid>

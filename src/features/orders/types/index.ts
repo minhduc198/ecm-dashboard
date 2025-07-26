@@ -24,7 +24,7 @@ export type Order = {
 }
 
 export interface GetOrdersListRequest {
-  pagination?: {
+  pagination: {
     page: number
     perPage: number
   }

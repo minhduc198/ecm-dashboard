@@ -15,21 +15,19 @@ import {
 } from '../types'
 
 export class OrdersService {
-  static async getOrdersList(params: GetOrdersListRequest = {}): Promise<GetOrdersListResponse> {
+  static async getOrdersList(params: GetOrdersListRequest): Promise<GetOrdersListResponse> {
+    const pagination = params.pagination
     try {
-      const { pagination = { page: 1, perPage: 10 }, sort = { field: 'id', order: 'DESC' }, filter = {} } = params
-
       const response = await baseDataProvider.getList('orders', {
         pagination,
-        sort,
-        filter
+        sort: params.sort ?? { field: 'id', order: 'DESC' },
+        filter: params.filter ?? {}
       })
 
       return {
         data: response.data as Order[],
         total: response.total || 0,
-        page: pagination.page,
-        perPage: pagination.perPage
+        ...pagination
       }
     } catch (error) {
       throw new Error(`Lỗi khi lấy danh sách orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -181,7 +179,7 @@ export class OrdersService {
   }
 }
 
-export const fetchOrdersList = (params?: GetOrdersListRequest) => OrdersService.getOrdersList(params)
+export const fetchOrdersList = (params: GetOrdersListRequest) => OrdersService.getOrdersList(params)
 
 export const fetchOrderDetail = (params: GetOrderDetailRequest) => OrdersService.getOrderDetail(params)
 

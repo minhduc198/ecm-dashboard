@@ -2,7 +2,7 @@ import * as yup from 'yup'
 
 export const schema = yup.object().shape(
   {
-    customer_id: yup.string().required('Vui lòng chọn người dùng'),
+    customer_id: yup.number().required('Vui lòng chọn người dùng'),
     total_gte: yup
       .number()
       .transform((value, originalValue) => (originalValue === '' ? null : value))

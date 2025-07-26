@@ -1,6 +1,7 @@
+import { DEFAULT_PAGE } from '@/constants'
 import { OrderSettingColumn, OrderUrlQuery } from '@/features/orders/type'
 import { OrderStatus } from '@/features/orders/types'
-import { ColumnItem, QuerySaveType } from '@/types'
+import { ColumnItem, QuerySaveType, SORT } from '@/types'
 
 const saveQueryLsName = 'orders_save_query'
 const orderListParamsLSName = 'order.listParams'
@@ -26,16 +27,18 @@ export function saveListParamsToLS(value: OrderUrlQuery) {
 
 export function getListParamsFormLS(): OrderUrlQuery {
   const dataLs = localStorage.getItem(orderListParamsLSName)
+
   if (!dataLs)
     return {
       displayedFilters: {},
-      filter: {}
+      filter: {},
+      order: SORT.ASC,
+      page: DEFAULT_PAGE,
+      perPage: 10,
+      sort: 'customer_id'
     }
   const obj = JSON.parse(dataLs)
-  return {
-    displayedFilters: obj.displayedFilters,
-    filter: obj.filter
-  }
+  return obj
 }
 
 export function setSettingColumnsToLS(value: OrderSettingColumn) {

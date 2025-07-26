@@ -40,7 +40,21 @@ export interface QuerySaveType {
   id: number
 }
 
+export enum SORT {
+  DESC = 'DESC',
+  ASC = 'ASC'
+}
+
 export interface UrlQuery<T> {
   displayedFilters: { [key in keyof T]?: boolean }
   filter: { [key in keyof T]?: T[key] }
+  order: SORT
+  page: number
+  perPage: number
+  sort: keyof T
+}
+
+export interface IPagination {
+  page: number
+  perPage: number
 }

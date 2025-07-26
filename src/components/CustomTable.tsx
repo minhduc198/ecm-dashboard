@@ -1,3 +1,4 @@
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
@@ -134,6 +135,7 @@ interface CustomTableProps<T> {
   columns: TableColumns<T>[]
   page: number
   rowsPerPage: number
+  totalItems: number
   handleSetPage: (page: number) => void
   handleSetRowsPerPage: (pageSize: number) => void
   handleAccept?: () => void
@@ -143,8 +145,9 @@ interface CustomTableProps<T> {
 export default function CustomTable<T>({
   columns,
   dataSource,
-  page,
-  rowsPerPage = 10,
+  page = DEFAULT_PAGE,
+  rowsPerPage = DEFAULT_PER_PAGE,
+  totalItems,
   handleSetPage,
   handleSetRowsPerPage,
   handleAccept,
@@ -186,16 +189,13 @@ export default function CustomTable<T>({
     setSelected(newSelected)
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     handleSetPage(newPage)
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     handleSetRowsPerPage(parseInt(event.target.value, 10))
-    handleSetPage(0)
   }
-
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - dataSource.length) : 0
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -240,16 +240,18 @@ export default function CustomTable<T>({
                         align={col.numeric ? 'right' : 'left'}
                         padding={col.disablePadding ? 'none' : 'normal'}
                       >
-                        {row[col.id as keyof typeof row]}
+                        {/* {row[col.id as keyof typeof row]}
+                         */}
+                        {col.cellRender(row[col.id as keyof typeof row], col)}
                       </TableCell>
                     ))}
                   </TableRow>
                 )
               })}
-              {emptyRows > 0 && (
+              {dataSource.length === 0 && (
                 <TableRow
                   style={{
-                    height: 53 * emptyRows
+                    height: 53 * rowsPerPage
                   }}
                 >
                   <TableCell colSpan={6} />
@@ -258,15 +260,17 @@ export default function CustomTable<T>({
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component='div'
-          count={dataSource.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {!!totalItems && (
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            component='div'
+            count={totalItems}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        )}
       </Paper>
     </Box>
   )
