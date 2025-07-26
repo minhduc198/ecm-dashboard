@@ -10,8 +10,7 @@ import {
   DeleteOrderResponse,
   ExportOrdersRequest,
   ExportOrdersResponse,
-  Order,
-  OrderError
+  Order
 } from '../types'
 
 export class OrdersService {
@@ -109,7 +108,7 @@ export class OrdersService {
         ID: order.id,
         'Mã đơn hàng': order.reference,
         'Ngày đặt': new Date(order.date).toLocaleDateString('vi-VN'),
-        'Khách hàng ID': order.customer_id,
+        'Khách hàng': order.customer,
         'Số sản phẩm': order.basket.length,
         'Tổng tiền (chưa thuế)': order.total_ex_taxes,
         'Phí giao hàng': order.delivery_fees,

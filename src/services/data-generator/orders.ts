@@ -43,6 +43,7 @@ export const generateOrders = (db: Db): Order[] => {
       reference: faker.string.alphanumeric(6).toUpperCase(),
       date: date.toISOString(),
       customer_id: customer.id,
+      customer,
       basket,
       total_ex_taxes,
       delivery_fees,

@@ -1,3 +1,5 @@
+import { Customer } from '@/services/data-generator'
+
 // Order Types
 export type OrderStatus = 'ordered' | 'delivered' | 'cancelled'
 
@@ -10,6 +12,7 @@ export type Order = {
   id: number
   reference: string
   date: string
+  customer: Customer
   customer_id: number
   basket: BasketItem[]
   total_ex_taxes: number
