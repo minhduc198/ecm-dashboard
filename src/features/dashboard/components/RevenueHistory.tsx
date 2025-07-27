@@ -10,10 +10,6 @@ const PendingWrapper = styled('div')({
   paddingBlock: '16px'
 })
 
-// interface Props {
-//   data: []
-// }
-
 function RevenueHistory() {
   const navigate = useNavigate()
 

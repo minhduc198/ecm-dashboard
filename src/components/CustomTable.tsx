@@ -1,4 +1,5 @@
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
+import { Order } from '@/features/orders/types'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
@@ -21,14 +22,14 @@ import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
 import * as React from 'react'
 
-type Order = 'asc' | 'desc'
+type SortData = 'asc' | 'desc'
 
 interface TableHeaderProps<T> {
   columns: TableColumns<T>[]
   numSelected: number
   onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
-  order: Order
+  order: SortData
   orderBy: string
   rowCount: number
 }
@@ -131,8 +132,9 @@ function TableToolbar(props: TableToolbarProps) {
 }
 
 interface CustomTableProps<T> {
-  dataSource: (Omit<T, 'id'> & { id: any })[]
+  dataSource: T[]
   columns: TableColumns<T>[]
+  rowId: keyof T
   page: number
   rowsPerPage: number
   totalItems: number
@@ -142,9 +144,13 @@ interface CustomTableProps<T> {
   handleReject?: () => void
   handleDelete?: () => void
 }
+
+type RowValueType<T> = T[keyof T]
+
 export default function CustomTable<T>({
   columns,
   dataSource,
+  rowId,
   page = DEFAULT_PAGE,
   rowsPerPage = DEFAULT_PER_PAGE,
   totalItems,
@@ -154,9 +160,9 @@ export default function CustomTable<T>({
   handleReject,
   handleDelete
 }: CustomTableProps<T>) {
-  const [order, setOrder] = React.useState<Order>('asc')
+  const [order, setOrder] = React.useState<SortData>('asc')
   const [orderBy, setOrderBy] = React.useState<keyof T>('' as keyof T)
-  const [selected, setSelected] = React.useState<readonly number[]>([])
+  const [selected, setSelected] = React.useState<RowValueType<T>[]>([])
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof T) => {
     const isAsc = orderBy === property && order === 'asc'
@@ -166,16 +172,16 @@ export default function CustomTable<T>({
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = dataSource.map((n) => n.id)
+      const newSelected = dataSource.map((n) => n[rowId])
       setSelected(newSelected)
       return
     }
     setSelected([])
   }
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+  const handleClick = (id: RowValueType<T>) => {
     const selectedIndex = selected.indexOf(id)
-    let newSelected: readonly number[] = []
+    let newSelected: RowValueType<T>[] = []
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id)
@@ -218,16 +224,16 @@ export default function CustomTable<T>({
               rowCount={dataSource.length}
             />
             <TableBody>
-              {dataSource.map((row, index) => {
-                const isItemSelected = selected.includes(row.id)
+              {dataSource.map((row) => {
+                const isItemSelected = selected.includes(row[rowId])
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={() => handleClick(row[rowId])}
                     role='checkbox'
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
+                    key={`${row[rowId]}`}
                     selected={isItemSelected}
                     sx={{ cursor: 'pointer' }}
                   >
@@ -240,9 +246,7 @@ export default function CustomTable<T>({
                         align={col.numeric ? 'right' : 'left'}
                         padding={col.disablePadding ? 'none' : 'normal'}
                       >
-                        {/* {row[col.id as keyof typeof row]}
-                         */}
-                        {col.cellRender(row[col.id as keyof typeof row], col)}
+                        {col?.cell ? col.cell(row[col.id], row) : (row[col.id] as React.ReactNode)}
                       </TableCell>
                     ))}
                   </TableRow>

@@ -16,7 +16,6 @@ import { OrderFilterItem } from './type'
 import { useQuery } from '@tanstack/react-query'
 import { fetchOrdersList } from './services'
 import { GetOrdersListRequest, OrderStatus } from './types'
-import { DEFAULT_CIPHERS } from 'tls'
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 
 const initFilterItems: OrderFilterItem[] = [

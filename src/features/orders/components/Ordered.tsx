@@ -3,16 +3,15 @@ import { DEFAULT_PAGE } from '@/constants'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { IPagination } from '@/types'
 import { TableColumns } from '@/types/table'
+import { formatCurrency } from '@/utils/currency'
+import { formatDate } from '@/utils/date'
 import { getListParamsFormLS, saveListParamsToLS } from '@/utils/orders'
-import { cloneDeep } from 'lodash'
-import { ReactNode, useContext, useEffect, useState } from 'react'
-import { FilterContext } from '../context/FilterContext'
-import { Order } from '../types'
-import { Box } from '@mui/material'
 import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
-import { formatCurrency } from '@/utils/currency'
-import { format, parseISO } from 'date-fns'
+import { cloneDeep } from 'lodash'
+import { useContext, useMemo } from 'react'
+import { FilterContext } from '../context/FilterContext'
+import { Order } from '../types'
 
 interface Props {
   data: Order[]
@@ -24,45 +23,41 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
   const { columnSetting, activeTab, orderListRq, setOrderListRq } = useContext(FilterContext)
   const { setMany } = useSearchParam()
   const currentListParamsLS = getListParamsFormLS()
-  const [columns, setColumns] = useState<TableColumns<Order>[]>([])
 
-  /**
-   * cell: (value: ? , row: ?) => {}
-   * Check nếu có cell thì hiển thị theo cell, không thì theo id (logic ban đầu)
-   * Áp dụng: format date, nb_items = basket.length, format currency, returned
-   */
-
-  useEffect(() => {
+  const columns: TableColumns<Order>[] = useMemo(() => {
     const cloneColumnSetting = cloneDeep(columnSetting[activeTab])
-
-    const newColumnSetting = cloneColumnSetting
+    return cloneColumnSetting
       .filter((col) => col.isVisible)
-      .map((col) => ({
-        id: col.id,
-        label: col.label,
-        cellRender: (value: ReactNode, row: TableColumns<Order>) => {
-          switch (row.id) {
-            case 'returned':
-              return value ? <CheckIcon /> : <ClearIcon />
-
-            case 'taxes':
-            case 'total':
-            case 'delivery_fees':
-            case 'total_ex_taxes':
-              return <Box sx={{ minWidth: '73px' }}>{formatCurrency(Number(value))}</Box>
-
-            case 'date':
-              const date = parseISO(String(value))
-              return <Box>{format(date, 'HH:mm:ss d/M/yyyy')}</Box>
-
-            default:
-              return <Box>{value}</Box>
-          }
+      .map((col) => {
+        const tableColumn = {
+          id: col.id,
+          label: col.label
         }
-      }))
 
-    setColumns(newColumnSetting)
-  }, [JSON.stringify(columnSetting[activeTab])])
+        switch (col.id) {
+          case 'returned':
+            return {
+              ...tableColumn,
+              cell: (value) => (value ? <CheckIcon /> : <ClearIcon />)
+            }
+          case 'taxes':
+          case 'total':
+          case 'delivery_fees':
+          case 'total_ex_taxes':
+            return {
+              ...tableColumn,
+              cell: (value) => formatCurrency(Number(value))
+            }
+          case 'date':
+            return {
+              ...tableColumn,
+              cell: (value) => formatDate(String(value), 'HH:mm:ss d/M/yyyy')
+            }
+          default:
+            return tableColumn
+        }
+      })
+  }, [columnSetting[activeTab]])
 
   const handleSetRowsPerPage = (rowPerPage: number) => {
     saveListParamsToLS({
@@ -76,6 +71,10 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
         perPage: rowPerPage,
         page: DEFAULT_PAGE + 1
       }
+    })
+
+    setMany({
+      perPage: JSON.stringify(rowPerPage)
     })
   }
 
@@ -92,10 +91,15 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
         page: page + 1
       }
     })
+
+    setMany({
+      page: JSON.stringify(page)
+    })
   }
 
   return (
     <CustomTable<Order>
+      rowId='id'
       columns={columns}
       dataSource={data || []}
       handleSetPage={handleSetPage}

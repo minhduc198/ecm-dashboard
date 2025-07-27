@@ -97,7 +97,6 @@ const Dashboard = () => {
           </Grid>
           <Grid size={{ xs: 12 }}>
             <RevenueHistory />
-            <RevenueHistory />
           </Grid>
         </Grid>
         <Grid size={{ xs: 3 }}>

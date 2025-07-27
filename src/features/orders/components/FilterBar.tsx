@@ -71,11 +71,11 @@ const FilterBar = () => {
   const passedSince = useWatch({ name: 'date_gte', control: methods.control })
   const q = useWatch({ name: 'q', control: methods.control })
 
-  const spreadSetMany = {
-    order: JSON.stringify(currentListParamsLS.order),
-    page: JSON.stringify(currentListParamsLS.page),
-    perPage: JSON.stringify(currentListParamsLS.perPage),
-    sort: JSON.stringify(currentListParamsLS.sort)
+  const tableParamsFromLS = {
+    order: currentListParamsLS.order,
+    page: currentListParamsLS.page.toString(),
+    perPage: currentListParamsLS.perPage.toString(),
+    sort: currentListParamsLS.sort
   }
 
   useEffect(() => {
@@ -120,7 +120,7 @@ const FilterBar = () => {
     const currentFilterLS = cloneDeep(currentListParamsLS.filter)
     if (!isEqual(currentFilterLS, currentFilterForm)) {
       setMany({
-        ...spreadSetMany,
+        ...tableParamsFromLS,
         displayedFilters: JSON.stringify(currentListParamsLS.displayedFilters),
         filter: JSON.stringify(newFilter)
       })
@@ -146,7 +146,7 @@ const FilterBar = () => {
     setSettingColumnsToLS(value as OrderSettingColumn)
   }
 
-  const setParamUrlAndLS = (filterItem: OrderFilterItem[]) => {
+  const handleSetFilterItemsToUrlAndLS = (filterItem: OrderFilterItem[]) => {
     const newDisplayedFilters = cleanObject(
       filterItem.reduce((acc, curr) => {
         if (!curr.isChecked) {
@@ -163,7 +163,7 @@ const FilterBar = () => {
     })
 
     setMany({
-      ...spreadSetMany,
+      ...tableParamsFromLS,
       displayedFilters: JSON.stringify(newDisplayedFilters),
       filter: JSON.stringify({ ...currentListParamsLS.filter })
     })
@@ -184,7 +184,7 @@ const FilterBar = () => {
     })
 
     setMany({
-      ...spreadSetMany,
+      ...tableParamsFromLS,
       displayedFilters: JSON.stringify(newDisplayedFilters),
       filter: JSON.stringify({ ...currentListParamsLS.filter })
     })
@@ -195,13 +195,13 @@ const FilterBar = () => {
     filterItems[indexOfFilterItems].isChecked = false
     setFilterItems([...filterItems])
 
-    setParamUrlAndLS(filterItems)
+    handleSetFilterItemsToUrlAndLS(filterItems)
   }
 
   const handleRemoveAllFilterItem = (newFilterItems: OrderFilterItem[]) => {
     setFilterItems(newFilterItems)
 
-    setParamUrlAndLS(newFilterItems)
+    handleSetFilterItemsToUrlAndLS(newFilterItems)
   }
 
   const handleUseQueryFromLS = (param: OrderUrlQuery) => {
