@@ -9,9 +9,13 @@ import { getListParamsFormLS, saveListParamsToLS } from '@/utils/orders'
 import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
 import { cloneDeep } from 'lodash'
-import { useContext, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { FilterContext } from '../context/FilterContext'
 import { Order } from '../types'
+import { Avatar, Box, Button, IconButton, Link, Snackbar, SnackbarCloseReason } from '@mui/material'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { deleteOrders } from '../services'
+import CloseIcon from '@mui/icons-material/Close'
 
 interface Props {
   data: Order[]
@@ -19,10 +23,26 @@ interface Props {
   pagination: IPagination
 }
 
+let timerId: NodeJS.Timeout
 export default function Ordered({ data, totalItems, pagination }: Props) {
   const { columnSetting, activeTab, orderListRq, setOrderListRq } = useContext(FilterContext)
   const { setMany } = useSearchParam()
   const currentListParamsLS = getListParamsFormLS()
+  const queryClient = useQueryClient()
+
+  const [dataSource, setDataSource] = useState<Order[]>([])
+  const [openSnackbar, setOpenSnackbar] = useState(false)
+
+  useEffect(() => {
+    setDataSource(data)
+  }, [data])
+
+  const { mutate: deleteItemMutation } = useMutation({
+    mutationFn: (ids: number[]) => deleteOrders(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    }
+  })
 
   const columns: TableColumns<Order>[] = useMemo(() => {
     const cloneColumnSetting = cloneDeep(columnSetting[activeTab])
@@ -31,7 +51,8 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
       .map((col) => {
         const tableColumn = {
           id: col.id,
-          label: col.label
+          label: col.label,
+          numeric: col.numeric
         }
 
         switch (col.id) {
@@ -52,6 +73,27 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
             return {
               ...tableColumn,
               cell: (value) => formatDate(String(value), 'HH:mm:ss d/M/yyyy')
+            }
+          case 'customer':
+            return {
+              ...tableColumn,
+              cell: (_, row) => (
+                <Link sx={{ display: 'flex', alignItems: 'center', gap: 1 }} href='/dashboard'>
+                  <Avatar sx={{ width: 25, height: 25 }} src={row.customer.avatar} alt={row.customer.first_name} />
+                  <Box>{`${row.customer.first_name} ${row.customer.last_name}`}</Box>
+                </Link>
+              )
+            }
+          case 'address':
+            return {
+              ...tableColumn,
+              cell: (_, row) => row.customer.address
+            }
+
+          case 'nb_items':
+            return {
+              ...tableColumn,
+              cell: (_, row) => row.basket.length
             }
           default:
             return tableColumn
@@ -97,19 +139,46 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
     })
   }
 
+  const handleDelete = (deletedIds: number[]) => {
+    const softDeleteOrder = dataSource.filter((data) => !deletedIds.includes(data.id))
+    setDataSource(softDeleteOrder)
+    setOpenSnackbar(true)
+
+    timerId = setTimeout(() => {
+      setOpenSnackbar(false)
+      deleteItemMutation(deletedIds)
+    }, 3000)
+  }
+
+  const handleUndo = () => {
+    setOpenSnackbar(false)
+    setDataSource(data)
+    clearTimeout(timerId)
+  }
+
   return (
-    <CustomTable<Order>
-      rowId='id'
-      columns={columns}
-      dataSource={data || []}
-      handleSetPage={handleSetPage}
-      handleSetRowsPerPage={handleSetRowsPerPage}
-      handleAccept={() => {}}
-      handleDelete={() => {}}
-      handleReject={() => {}}
-      totalItems={totalItems}
-      page={pagination.page}
-      rowsPerPage={pagination.perPage}
-    />
+    <>
+      <CustomTable<Order, number>
+        rowId='id'
+        columns={columns}
+        dataSource={dataSource || []}
+        totalItems={totalItems}
+        page={pagination.page}
+        rowsPerPage={pagination.perPage}
+        handleSetPage={handleSetPage}
+        handleSetRowsPerPage={handleSetRowsPerPage}
+        handleDelete={handleDelete}
+      />
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1000}
+        message='Order deleted'
+        action={
+          <Button size='small' onClick={handleUndo}>
+            UNDO
+          </Button>
+        }
+      />
+    </>
   )
 }

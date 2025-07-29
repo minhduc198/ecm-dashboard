@@ -24,18 +24,18 @@ import * as React from 'react'
 
 type SortData = 'asc' | 'desc'
 
-interface TableHeaderProps<T> {
-  columns: TableColumns<T>[]
+interface TableHeaderProps<DataType> {
+  columns: TableColumns<DataType>[]
   numSelected: number
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DataType) => void
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
   order: SortData
   orderBy: string
   rowCount: number
 }
-function TableHeader<T>(props: TableHeaderProps<T>) {
+function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
   const { columns, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
-  const createSortHandler = (property: keyof T) => (event: React.MouseEvent<unknown>) => {
+  const createSortHandler = (property: keyof DataType) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property)
   }
 
@@ -83,6 +83,7 @@ interface TableToolbarProps {
 }
 function TableToolbar(props: TableToolbarProps) {
   const { numSelected, handleAccept, handleDelete, handleReject } = props
+
   return (
     <Toolbar
       sx={[
@@ -131,10 +132,10 @@ function TableToolbar(props: TableToolbarProps) {
   )
 }
 
-interface CustomTableProps<T> {
-  dataSource: T[]
-  columns: TableColumns<T>[]
-  rowId: keyof T
+interface CustomTableProps<DataType, IdType> {
+  dataSource: DataType[]
+  columns: TableColumns<DataType>[]
+  rowId: keyof DataType
   page: number
   rowsPerPage: number
   totalItems: number
@@ -142,12 +143,10 @@ interface CustomTableProps<T> {
   handleSetRowsPerPage: (pageSize: number) => void
   handleAccept?: () => void
   handleReject?: () => void
-  handleDelete?: () => void
+  handleDelete?: (ids: IdType[]) => void
 }
 
-type RowValueType<T> = T[keyof T]
-
-export default function CustomTable<T>({
+export default function CustomTable<DataType, IdType>({
   columns,
   dataSource,
   rowId,
@@ -159,12 +158,12 @@ export default function CustomTable<T>({
   handleAccept,
   handleReject,
   handleDelete
-}: CustomTableProps<T>) {
+}: CustomTableProps<DataType, IdType>) {
   const [order, setOrder] = React.useState<SortData>('asc')
-  const [orderBy, setOrderBy] = React.useState<keyof T>('' as keyof T)
-  const [selected, setSelected] = React.useState<RowValueType<T>[]>([])
+  const [orderBy, setOrderBy] = React.useState<keyof DataType>('' as keyof DataType)
+  const [selected, setSelected] = React.useState<IdType[]>([])
 
-  const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof T) => {
+  const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof DataType) => {
     const isAsc = orderBy === property && order === 'asc'
     setOrder(isAsc ? 'desc' : 'asc')
     setOrderBy(property)
@@ -172,16 +171,16 @@ export default function CustomTable<T>({
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = dataSource.map((n) => n[rowId])
+      const newSelected = dataSource.map((n) => n[rowId] as IdType)
       setSelected(newSelected)
       return
     }
     setSelected([])
   }
 
-  const handleClick = (id: RowValueType<T>) => {
+  const handleClick = (id: IdType) => {
     const selectedIndex = selected.indexOf(id)
-    let newSelected: RowValueType<T>[] = []
+    let newSelected: IdType[] = []
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id)
@@ -203,18 +202,26 @@ export default function CustomTable<T>({
     handleSetRowsPerPage(parseInt(event.target.value, 10))
   }
 
+  const onDelete = () => {
+    if (handleDelete) {
+      handleDelete(selected)
+      setSelected([])
+    }
+    // handleConfirmDelete?.(selected)
+  }
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableToolbar
           numSelected={selected.length}
           handleAccept={handleAccept}
-          handleDelete={handleDelete}
+          handleDelete={onDelete}
           handleReject={handleReject}
         />
         <TableContainer>
           <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
-            <TableHeader<T>
+            <TableHeader<DataType>
               columns={columns}
               numSelected={selected.length}
               order={order}
@@ -225,11 +232,11 @@ export default function CustomTable<T>({
             />
             <TableBody>
               {dataSource.map((row) => {
-                const isItemSelected = selected.includes(row[rowId])
+                const isItemSelected = selected.includes(row[rowId] as IdType)
                 return (
                   <TableRow
                     hover
-                    onClick={() => handleClick(row[rowId])}
+                    onClick={() => handleClick(row[rowId] as IdType)}
                     role='checkbox'
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -240,7 +247,7 @@ export default function CustomTable<T>({
                     <TableCell padding='checkbox'>
                       <Checkbox color='primary' checked={isItemSelected} />
                     </TableCell>
-                    {columns.map((col: TableColumns<T>) => (
+                    {columns.map((col: TableColumns<DataType>) => (
                       <TableCell
                         key={col.id.toString()}
                         align={col.numeric ? 'right' : 'left'}

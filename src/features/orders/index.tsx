@@ -49,7 +49,7 @@ const initFilterItems: OrderFilterItem[] = [
 const initialColumns: ColumnItem[] = [
   {
     label: 'Customers',
-    id: 'customer_id',
+    id: 'customer',
     isVisible: true,
     numeric: false,
     disablePadding: true
@@ -58,14 +58,14 @@ const initialColumns: ColumnItem[] = [
     label: 'Date',
     id: 'date',
     isVisible: false,
-    numeric: true,
+    numeric: false,
     disablePadding: false
   },
   {
     label: 'Reference',
     id: 'reference',
     isVisible: true,
-    numeric: true,
+    numeric: false,
     disablePadding: false
   },
 
@@ -73,7 +73,7 @@ const initialColumns: ColumnItem[] = [
     label: 'Address',
     id: 'address',
     isVisible: false,
-    numeric: true,
+    numeric: false,
     disablePadding: false
   },
   {

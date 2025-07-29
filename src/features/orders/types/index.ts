@@ -13,7 +13,6 @@ export type Order = {
   reference: string
   date: string
   customer: Customer
-  customer_id: number
   basket: BasketItem[]
   total_ex_taxes: number
   delivery_fees: number

@@ -4,7 +4,7 @@ import { weightedBoolean } from './utils'
 export default function (db: Db) {
   // set latest purchase date
   db.orders.forEach((order) => {
-    const customer = db.customers[order.customer_id]
+    const customer = db.customers[order.customer.id]
     if (!customer.latest_purchase || customer.latest_purchase < order.date) {
       customer.latest_purchase = order.date
     }
@@ -21,10 +21,10 @@ export default function (db: Db) {
 
   // add 'collector' group
   const customersBySpending = db.orders.reduce((customers: any, order) => {
-    if (!customers[order.customer_id]) {
-      customers[order.customer_id] = { nbProducts: 0 }
+    if (!customers[order.customer.id]) {
+      customers[order.customer.id] = { nbProducts: 0 }
     }
-    customers[order.customer_id].nbProducts += order.basket.length
+    customers[order.customer.id].nbProducts += order.basket.length
     return customers
   }, {})
   Object.keys(customersBySpending).forEach((customer_id: any) => {
@@ -50,8 +50,8 @@ export default function (db: Db) {
   db.orders
     .filter((order) => order.returned)
     .forEach((order) => {
-      if (db.customers[order.customer_id].groups.indexOf('returns') === -1) {
-        db.customers[order.customer_id].groups.push('returns')
+      if (db.customers[order.customer.id].groups.indexOf('returns') === -1) {
+        db.customers[order.customer.id].groups.push('returns')
       }
     })
 

@@ -15,7 +15,7 @@ export const generateReviews = (db: Db): Review[] => {
     .map((customer) => customer.id)
 
   return db.orders
-    .filter((order) => reviewers.indexOf(order.customer_id) !== -1)
+    .filter((order) => reviewers.indexOf(order.customer.id) !== -1)
     .reduce(
       (acc: any, order) => [
         ...acc,
@@ -36,7 +36,7 @@ export const generateReviews = (db: Db): Review[] => {
               status,
               order_id: order.id,
               product_id: product.product_id,
-              customer_id: order.customer_id,
+              customer_id: order.customer.id,
               rating: faker.number.int({ min: 1, max: 5 }),
               comment
             }
