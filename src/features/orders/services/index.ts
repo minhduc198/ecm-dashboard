@@ -24,9 +24,9 @@ export class OrdersService {
       })
 
       return {
+        ...(pagination ?? { page: 1, perPage: 10 }),
         data: response.data as Order[],
-        total: response.total || 0,
-        ...pagination
+        total: response.total || 0
       }
     } catch (error) {
       throw new Error(`Lỗi khi lấy danh sách orders: ${error instanceof Error ? error.message : 'Unknown error'}`)

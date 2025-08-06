@@ -1,7 +1,7 @@
 import { ColumnItem } from '@/types'
 import * as React from 'react'
-import { OrderFilterItem } from '../type'
-import { GetOrdersListRequest, OrderStatus } from '../types'
+import { GetOrdersListRequest, OrderFilterItem, OrderStatus } from '../types'
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 
 export interface FilterContextValue {
   orderListRq: GetOrdersListRequest
@@ -17,7 +17,12 @@ export interface FilterContextValue {
 }
 
 export const FilterContext = React.createContext<FilterContextValue>({
-  orderListRq: {},
+  orderListRq: {
+    pagination: {
+      page: DEFAULT_PAGE,
+      perPage: DEFAULT_PER_PAGE
+    }
+  },
   setOrderListRq: () => {},
   activeTab: 'ordered',
   filterItems: [],

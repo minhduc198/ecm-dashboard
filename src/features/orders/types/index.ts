@@ -1,6 +1,6 @@
 import { Customer } from '@/services/data-generator'
+import { ApiResponseList, ColumnItem, FilterItem, UrlQuery } from '@/types'
 
-// Order Types
 export type OrderStatus = 'ordered' | 'delivered' | 'cancelled'
 
 export type BasketItem = {
@@ -64,12 +64,7 @@ export interface ExportOrdersRequest {
 }
 
 // Response Types
-export interface GetOrdersListResponse {
-  data: Order[]
-  total: number
-  page: number
-  perPage: number
-}
+export type GetOrdersListResponse = ApiResponseList<Order>
 
 export interface GetOrderDetailResponse {
   data: Order
@@ -93,4 +88,24 @@ export interface OrderError {
   message: string
   code?: string
   details?: any
+}
+
+export interface OrderParams {
+  status: OrderStatus
+  customer_id: number
+  date_gte: string
+  date_lte: string
+  total_gte: number
+  returned: string
+  q: string
+}
+
+export type OrderFilterItem = FilterItem<OrderParams>
+
+export type OrderUrlQuery = UrlQuery<OrderParams>
+
+export type OrderSettingColumn = {
+  ordered: ColumnItem[]
+  delivered: ColumnItem[]
+  cancelled: ColumnItem[]
 }

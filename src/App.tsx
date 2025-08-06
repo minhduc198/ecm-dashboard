@@ -12,7 +12,7 @@ import { SessionContext } from '@/contexts/SessionContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 const NAVIGATION: Navigation = [
   {
@@ -24,7 +24,7 @@ const NAVIGATION: Navigation = [
     icon: <DashboardIcon />
   },
   {
-    segment: 'sales',
+    segment: '',
     title: 'Sales',
     icon: <AttachMoneyIcon />,
     children: [

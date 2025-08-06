@@ -12,10 +12,9 @@ import Cancelled from './components/Cancelled'
 import Delivered from './components/Delivered'
 import Ordered from './components/Ordered'
 import { FilterContext } from './context/FilterContext'
-import { OrderFilterItem } from './type'
 import { useQuery } from '@tanstack/react-query'
 import { fetchOrdersList } from './services'
-import { GetOrdersListRequest, OrderStatus } from './types'
+import { GetOrdersListRequest, OrderFilterItem, OrderStatus } from './types'
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 
 const initFilterItems: OrderFilterItem[] = [

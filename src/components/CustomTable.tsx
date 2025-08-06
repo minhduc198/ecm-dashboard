@@ -1,5 +1,5 @@
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
-import { Order } from '@/features/orders/types'
+import { IPagination } from '@/types'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
@@ -136,28 +136,30 @@ interface CustomTableProps<DataType, IdType> {
   dataSource: DataType[]
   columns: TableColumns<DataType>[]
   rowId: keyof DataType
-  page: number
-  rowsPerPage: number
+  pagination: IPagination
   totalItems: number
   handleSetPage: (page: number) => void
   handleSetRowsPerPage: (pageSize: number) => void
   handleAccept?: () => void
   handleReject?: () => void
   handleDelete?: (ids: IdType[]) => void
+  onClearAllFilter?: () => void
+  onRowClick?: (id: IdType) => void
 }
 
 export default function CustomTable<DataType, IdType>({
   columns,
   dataSource,
   rowId,
-  page = DEFAULT_PAGE,
-  rowsPerPage = DEFAULT_PER_PAGE,
+  pagination = { page: DEFAULT_PAGE, perPage: DEFAULT_PER_PAGE },
   totalItems,
   handleSetPage,
   handleSetRowsPerPage,
   handleAccept,
   handleReject,
-  handleDelete
+  handleDelete,
+  onClearAllFilter,
+  onRowClick
 }: CustomTableProps<DataType, IdType>) {
   const [order, setOrder] = React.useState<SortData>('asc')
   const [orderBy, setOrderBy] = React.useState<keyof DataType>('' as keyof DataType)
@@ -207,7 +209,12 @@ export default function CustomTable<DataType, IdType>({
       handleDelete(selected)
       setSelected([])
     }
-    // handleConfirmDelete?.(selected)
+  }
+
+  const navigateDetailPage = (id: IdType) => {
+    if (onRowClick) {
+      onRowClick(id)
+    }
   }
 
   return (
@@ -220,64 +227,88 @@ export default function CustomTable<DataType, IdType>({
           handleReject={handleReject}
         />
         <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
-            <TableHeader<DataType>
-              columns={columns}
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy.toString()}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={dataSource.length}
-            />
-            <TableBody>
-              {dataSource.map((row) => {
-                const isItemSelected = selected.includes(row[rowId] as IdType)
-                return (
-                  <TableRow
-                    hover
-                    onClick={() => handleClick(row[rowId] as IdType)}
-                    role='checkbox'
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={`${row[rowId]}`}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell padding='checkbox'>
-                      <Checkbox color='primary' checked={isItemSelected} />
-                    </TableCell>
-                    {columns.map((col: TableColumns<DataType>) => (
-                      <TableCell
-                        key={col.id.toString()}
-                        align={col.numeric ? 'right' : 'left'}
-                        padding={col.disablePadding ? 'none' : 'normal'}
-                      >
-                        {col?.cell ? col.cell(row[col.id], row) : (row[col.id] as React.ReactNode)}
+          {dataSource.length ? (
+            <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
+              <TableHeader<DataType>
+                columns={columns}
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy.toString()}
+                onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={dataSource.length}
+              />
+              <TableBody>
+                {dataSource.map((row) => {
+                  const isItemSelected = selected.includes(row[rowId] as IdType)
+                  return (
+                    <TableRow
+                      hover
+                      role='checkbox'
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={`${row[rowId]}`}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell onClick={() => handleClick(row[rowId] as IdType)} padding='checkbox'>
+                        <Checkbox color='primary' checked={isItemSelected} />
                       </TableCell>
-                    ))}
+                      {columns.map((col: TableColumns<DataType>) => (
+                        <TableCell
+                          onClick={() => navigateDetailPage(row[rowId] as IdType)}
+                          key={col.id.toString()}
+                          align={col.numeric ? 'right' : 'left'}
+                          padding={col.disablePadding ? 'none' : 'normal'}
+                        >
+                          {col?.cell ? col.cell(row[col.id], row) : (row[col.id] as React.ReactNode)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  )
+                })}
+                {dataSource.length === 0 && (
+                  <TableRow
+                    style={{
+                      height: 53 * pagination.perPage
+                    }}
+                  >
+                    <TableCell colSpan={6} />
                   </TableRow>
-                )
-              })}
-              {dataSource.length === 0 && (
-                <TableRow
-                  style={{
-                    height: 53 * rowsPerPage
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                ml: '16px',
+                pt: '28px',
+                pb: `${!totalItems && '28px'}`
+              }}
+            >
+              {!!onClearAllFilter ? (
+                <>
+                  <Typography>No Orders found using the current filters.</Typography>
+                  <Button variant='text' size='small' onClick={onClearAllFilter}>
+                    CLEAR FILTERS
+                  </Button>
+                </>
+              ) : (
+                <Typography>No Orders found</Typography>
               )}
-            </TableBody>
-          </Table>
+            </Box>
+          )}
         </TableContainer>
         {!!totalItems && (
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component='div'
             count={totalItems}
-            rowsPerPage={rowsPerPage}
-            page={page}
+            rowsPerPage={pagination.perPage}
+            page={pagination.page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />

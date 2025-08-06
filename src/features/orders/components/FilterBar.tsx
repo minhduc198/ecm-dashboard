@@ -27,7 +27,7 @@ import { useContext, useEffect, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
-import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../type'
+import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../types'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -207,7 +207,7 @@ const FilterBar = () => {
   const handleUseQueryFromLS = (param: OrderUrlQuery) => {
     const newFilterItems = filterItems.map((item) => ({
       ...item,
-      isChecked: !!param.displayedFilters[item.key]
+      isChecked: !!param.displayedFilters[item.key as keyof OrderParams]
     }))
     setFilterItems(newFilterItems)
 

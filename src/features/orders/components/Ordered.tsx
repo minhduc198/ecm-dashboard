@@ -1,21 +1,25 @@
+import { queryClient } from '@/App'
 import CustomTable from '@/components/CustomTable'
 import { DEFAULT_PAGE } from '@/constants'
 import { useSearchParam } from '@/hooks/useSearchParam'
+import { path } from '@/routers/path'
+import { useUndoStore } from '@/store/undoOrderStore'
 import { IPagination } from '@/types'
 import { TableColumns } from '@/types/table'
+import { cleanObject } from '@/utils'
 import { formatCurrency } from '@/utils/currency'
 import { formatDate } from '@/utils/date'
 import { getListParamsFormLS, saveListParamsToLS } from '@/utils/orders'
 import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
+import { Avatar, Box, Button, Link, Snackbar } from '@mui/material'
+import { useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router'
 import { FilterContext } from '../context/FilterContext'
-import { Order } from '../types'
-import { Avatar, Box, Button, IconButton, Link, Snackbar, SnackbarCloseReason } from '@mui/material'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteOrders } from '../services'
-import CloseIcon from '@mui/icons-material/Close'
+import { Order } from '../types'
 
 interface Props {
   data: Order[]
@@ -23,18 +27,28 @@ interface Props {
   pagination: IPagination
 }
 
-let timerId: NodeJS.Timeout
 export default function Ordered({ data, totalItems, pagination }: Props) {
-  const { columnSetting, activeTab, orderListRq, setOrderListRq } = useContext(FilterContext)
+  const { filterItems, columnSetting, activeTab, orderListRq, setOrderListRq, setFilterItems } =
+    useContext(FilterContext)
   const { setMany } = useSearchParam()
   const currentListParamsLS = getListParamsFormLS()
-  const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
-  const [dataSource, setDataSource] = useState<Order[]>([])
-  const [openSnackbar, setOpenSnackbar] = useState(false)
+  const { temporaryData, isOpenUndo, timerId, setTemporaryData, setIsOpenUndo, setTimerId } = useUndoStore()
+
+  const hasFilterItem = useMemo(() => {
+    const omitStatusListFilter = {
+      ...currentListParamsLS.filter,
+      status: ''
+    }
+    const filterValue = Object.values(omitStatusListFilter)
+    return filterValue.some((value) => value !== '')
+  }, [currentListParamsLS.filter])
 
   useEffect(() => {
-    setDataSource(data)
+    if (!timerId) {
+      setTemporaryData(data)
+    }
   }, [data])
 
   const { mutate: deleteItemMutation } = useMutation({
@@ -43,6 +57,11 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     }
   })
+
+  const handleViewCustomerDetail = (id: number) => (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation()
+    navigate(`${path.customers}/${id}`)
+  }
 
   const columns: TableColumns<Order>[] = useMemo(() => {
     const cloneColumnSetting = cloneDeep(columnSetting[activeTab])
@@ -78,7 +97,11 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
             return {
               ...tableColumn,
               cell: (_, row) => (
-                <Link sx={{ display: 'flex', alignItems: 'center', gap: 1 }} href='/dashboard'>
+                <Link
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  component='button'
+                  onClick={handleViewCustomerDetail(row.customer.id)}
+                >
                   <Avatar sx={{ width: 25, height: 25 }} src={row.customer.avatar} alt={row.customer.first_name} />
                   <Box>{`${row.customer.first_name} ${row.customer.last_name}`}</Box>
                 </Link>
@@ -140,20 +163,61 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
   }
 
   const handleDelete = (deletedIds: number[]) => {
-    const softDeleteOrder = dataSource.filter((data) => !deletedIds.includes(data.id))
-    setDataSource(softDeleteOrder)
-    setOpenSnackbar(true)
+    const softDeleteOrder = temporaryData.filter((data) => !deletedIds.includes(data.id))
+    setTemporaryData(softDeleteOrder)
+    setIsOpenUndo(true)
 
-    timerId = setTimeout(() => {
-      setOpenSnackbar(false)
+    const timeOut = setTimeout(() => {
+      setIsOpenUndo(false)
       deleteItemMutation(deletedIds)
+      setTimerId(null)
     }, 3000)
+
+    setTimerId(timeOut)
   }
 
   const handleUndo = () => {
-    setOpenSnackbar(false)
-    setDataSource(data)
-    clearTimeout(timerId)
+    setIsOpenUndo(false)
+    setTemporaryData(data)
+    clearTimeout(timerId ?? 0)
+  }
+
+  const handleViewDetail = (id: number) => {
+    navigate(`${path.orders}/${id}`)
+  }
+
+  const handleDeleteAllFilter = () => {
+    if (!hasFilterItem) return
+    return () => {
+      const newFilterItem = filterItems.map((item) => {
+        return {
+          ...item,
+          isChecked: false
+        }
+      })
+
+      setFilterItems(newFilterItem)
+
+      const newDisplayedFilters = cleanObject(
+        newFilterItem.reduce((acc, curr) => {
+          if (!curr.isChecked) {
+            delete currentListParamsLS.filter[curr.key]
+          }
+          return { ...acc, [curr.key]: curr.isChecked }
+        }, {})
+      )
+
+      saveListParamsToLS({
+        ...currentListParamsLS,
+        displayedFilters: newDisplayedFilters,
+        filter: currentListParamsLS.filter
+      })
+
+      setMany({
+        displayedFilters: JSON.stringify(newDisplayedFilters),
+        filter: JSON.stringify({ ...currentListParamsLS.filter })
+      })
+    }
   }
 
   return (
@@ -161,16 +225,17 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
       <CustomTable<Order, number>
         rowId='id'
         columns={columns}
-        dataSource={dataSource || []}
+        dataSource={temporaryData || []}
         totalItems={totalItems}
-        page={pagination.page}
-        rowsPerPage={pagination.perPage}
+        pagination={pagination}
         handleSetPage={handleSetPage}
         handleSetRowsPerPage={handleSetRowsPerPage}
         handleDelete={handleDelete}
+        onClearAllFilter={handleDeleteAllFilter()}
+        onRowClick={handleViewDetail}
       />
       <Snackbar
-        open={openSnackbar}
+        open={isOpenUndo}
         autoHideDuration={1000}
         message='Order deleted'
         action={

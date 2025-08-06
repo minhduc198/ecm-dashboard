@@ -58,3 +58,10 @@ export interface IPagination {
   page: number
   perPage: number
 }
+
+export interface ApiResponseList<T> {
+  data: T[]
+  total: number
+  page: number
+  perPage: number
+}
