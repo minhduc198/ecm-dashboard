@@ -8,7 +8,7 @@ import TextFieldSelect from '@/components/TextFieldSelect'
 import { RETURNED } from '@/constants'
 import { FilterContext } from '@/features/orders/context/FilterContext'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { ColumnItem, QuerySaveType, SelectOptionItem } from '@/types'
+import { QuerySaveType, SelectOptionItem } from '@/types'
 import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
 import {
   getListParamsFormLS,
@@ -27,7 +27,8 @@ import { useContext, useEffect, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
-import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../types'
+import { Order, OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../types'
+import { TableColumns } from '@/types/table'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -46,7 +47,7 @@ const FilterBarWrapper = styled('div')({
   justifyContent: 'space-between'
 })
 
-const FilterBar = () => {
+const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
   const { filterItems, columnSetting, activeTab, orderListRq, setFilterItems, setColumnSetting, setOrderListRq } =
     useContext(FilterContext)
   const { setMany } = useSearchParam()
@@ -136,7 +137,7 @@ const FilterBar = () => {
     setCurrentSaveQueries(newUseQuery)
   }
 
-  const handleChangeColumn = (columns: ColumnItem[]) => {
+  const handleChangeColumn = (columns: TableColumns<Order>[]) => {
     const value = {
       ...columnSetting,
       [activeTab]: columns
@@ -207,7 +208,7 @@ const FilterBar = () => {
   const handleUseQueryFromLS = (param: OrderUrlQuery) => {
     const newFilterItems = filterItems.map((item) => ({
       ...item,
-      isChecked: !!param.displayedFilters[item.key as keyof OrderParams]
+      isChecked: !!param.displayedFilters?.[item.key as keyof OrderParams]
     }))
     setFilterItems(newFilterItems)
 
@@ -220,7 +221,7 @@ const FilterBar = () => {
 
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (!destination) return
-    const newItems = reorderDnd<ColumnItem>(columnSetting[activeTab], source.index, destination.index)
+    const newItems = reorderDnd<TableColumns<Order>>(columnSetting[activeTab], source.index, destination.index)
     const newColSetting = { ...columnSetting, [activeTab]: newItems }
     setColumnSetting(newColSetting)
     setSettingColumnsToLS(newColSetting as OrderSettingColumn)
@@ -232,6 +233,7 @@ const FilterBar = () => {
         <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <TextFieldInput
             name='q'
+            label='Search'
             slotProps={{
               input: {
                 endAdornment: (
@@ -308,12 +310,12 @@ const FilterBar = () => {
           handleAddSaveQuery={handleAddSaveQuery}
           handleRemoveSaveQuery={handleRemoveCurrentSaveQuery}
         />
-        <SettingColumns
+        <SettingColumns<Order>
           columns={columnSetting[activeTab]}
           handleChangeColumn={handleChangeColumn}
           onDragEnd={onDragEnd}
         />
-        <Button startIcon={<FileDownloadIcon />} variant='text'>
+        <Button startIcon={<FileDownloadIcon />} variant='text' onClick={handleExport}>
           EXPORT
         </Button>
       </Box>

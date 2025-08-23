@@ -1,14 +1,16 @@
 import SearchIcon from '@mui/icons-material/Search'
-import { InputAdornment, TextField } from '@mui/material'
+import { InputAdornment, SxProps, TextField } from '@mui/material'
 import type { TextFieldProps, TextFieldVariants } from '@mui/material/TextField'
 import { Controller, useFormContext } from 'react-hook-form'
 
 interface Props extends Omit<TextFieldProps, 'variant'> {
   name: string
+  label: string
   variant?: TextFieldVariants
+  sxTextFieldInput?: SxProps
 }
 
-export default function TextFieldInput({ name, ...rest }: Props) {
+export default function TextFieldInput({ name, label, sxTextFieldInput, ...rest }: Props) {
   const { control } = useFormContext()
   return (
     <Controller
@@ -29,11 +31,12 @@ export default function TextFieldInput({ name, ...rest }: Props) {
             },
             '& .MuiInputLabel-root.Mui-focused': {
               color: '#4F3CC9'
-            }
+            },
+            ...sxTextFieldInput
           }}
           size='small'
-          id='filled-basic'
-          label='Search'
+          id={name}
+          label={label}
           variant='filled'
           {...rest}
         />

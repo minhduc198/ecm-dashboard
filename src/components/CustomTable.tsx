@@ -1,5 +1,5 @@
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
-import { IPagination } from '@/types'
+import { IPagination, SORT } from '@/types'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
@@ -11,7 +11,7 @@ import Paper from '@mui/material/Paper'
 import { alpha } from '@mui/material/styles'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
+import TableCell, { SortDirection } from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TablePagination from '@mui/material/TablePagination'
@@ -22,53 +22,59 @@ import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
 import * as React from 'react'
 
-type SortData = 'asc' | 'desc'
-
 interface TableHeaderProps<DataType> {
   columns: TableColumns<DataType>[]
   numSelected: number
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DataType) => void
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
-  order: SortData
+  order: SORT
   orderBy: string
+  selectable: boolean
   rowCount: number
+  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void
 }
 function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
-  const { columns, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
-  const createSortHandler = (property: keyof DataType) => (event: React.MouseEvent<unknown>) => {
+  const { columns, selectable, order, orderBy, numSelected, rowCount, onSelectAllClick, onRequestSort } = props
+
+  const createSortHandler = (property: string) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property)
   }
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding='checkbox'>
-          <Checkbox
-            color='primary'
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-          />
-        </TableCell>
+        {selectable && (
+          <TableCell padding='checkbox'>
+            <Checkbox
+              color='primary'
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+            />
+          </TableCell>
+        )}
         {columns.map((headCell) => (
           <TableCell
             key={headCell.id.toString()}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
+            sortDirection={orderBy === headCell.sortBy ? (order.toLowerCase() as SortDirection) : false}
           >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component='span' sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
+            {headCell.sortable ? (
+              <TableSortLabel
+                active={orderBy === headCell.sortBy}
+                direction={orderBy === headCell.sortBy ? (order.toLowerCase() as 'desc' | 'asc') : 'asc'}
+                onClick={createSortHandler(headCell.sortBy || '')}
+              >
+                {headCell.label}
+                {orderBy === headCell.sortBy ? (
+                  <Box component='span' sx={visuallyHidden}>
+                    {order === SORT.DESC ? 'sorted descending' : 'sorted ascending'}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              headCell.label
+            )}
           </TableCell>
         ))}
       </TableRow>
@@ -136,15 +142,22 @@ interface CustomTableProps<DataType, IdType> {
   dataSource: DataType[]
   columns: TableColumns<DataType>[]
   rowId: keyof DataType
-  pagination: IPagination
-  totalItems: number
-  handleSetPage: (page: number) => void
-  handleSetRowsPerPage: (pageSize: number) => void
+  pagination?: IPagination
+  usePagination?: boolean
+  selectable?: boolean
+  totalItems?: number
+  sortColFromLS?: {
+    order: SORT
+    field: string
+  }
+  handleSetPage?: (page: number) => void
+  handleSetRowsPerPage?: (pageSize: number) => void
   handleAccept?: () => void
   handleReject?: () => void
   handleDelete?: (ids: IdType[]) => void
   onClearAllFilter?: () => void
   onRowClick?: (id: IdType) => void
+  handleSort?: (field: string, order: SORT) => void
 }
 
 export default function CustomTable<DataType, IdType>({
@@ -152,23 +165,29 @@ export default function CustomTable<DataType, IdType>({
   dataSource,
   rowId,
   pagination = { page: DEFAULT_PAGE, perPage: DEFAULT_PER_PAGE },
+  usePagination = true,
   totalItems,
+  selectable = true,
+  sortColFromLS,
   handleSetPage,
   handleSetRowsPerPage,
   handleAccept,
   handleReject,
   handleDelete,
   onClearAllFilter,
-  onRowClick
+  onRowClick,
+  handleSort
 }: CustomTableProps<DataType, IdType>) {
-  const [order, setOrder] = React.useState<SortData>('asc')
-  const [orderBy, setOrderBy] = React.useState<keyof DataType>('' as keyof DataType)
+  const [order, setOrder] = React.useState<SORT>(sortColFromLS?.order ?? SORT.ASC)
+  const [orderBy, setOrderBy] = React.useState<string>(sortColFromLS?.field ?? '')
   const [selected, setSelected] = React.useState<IdType[]>([])
 
-  const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof DataType) => {
-    const isAsc = orderBy === property && order === 'asc'
-    setOrder(isAsc ? 'desc' : 'asc')
+  const handleRequestSort = (event: React.MouseEvent<unknown>, property: string) => {
+    const isAsc = orderBy === property && order === SORT.ASC
+    const sortDir = isAsc ? SORT.DESC : SORT.ASC
+    setOrder(sortDir)
     setOrderBy(property)
+    handleSort?.(property.toString(), sortDir)
   }
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,11 +216,11 @@ export default function CustomTable<DataType, IdType>({
   }
 
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    handleSetPage(newPage)
+    handleSetPage?.(newPage)
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    handleSetRowsPerPage(parseInt(event.target.value, 10))
+    handleSetRowsPerPage?.(parseInt(event.target.value, 10))
   }
 
   const onDelete = () => {
@@ -231,6 +250,7 @@ export default function CustomTable<DataType, IdType>({
             <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
               <TableHeader<DataType>
                 columns={columns}
+                selectable={selectable}
                 numSelected={selected.length}
                 order={order}
                 orderBy={orderBy.toString()}
@@ -251,9 +271,11 @@ export default function CustomTable<DataType, IdType>({
                       selected={isItemSelected}
                       sx={{ cursor: 'pointer' }}
                     >
-                      <TableCell onClick={() => handleClick(row[rowId] as IdType)} padding='checkbox'>
-                        <Checkbox color='primary' checked={isItemSelected} />
-                      </TableCell>
+                      {selectable && (
+                        <TableCell onClick={() => handleClick(row[rowId] as IdType)} padding='checkbox'>
+                          <Checkbox color='primary' checked={isItemSelected} />
+                        </TableCell>
+                      )}
                       {columns.map((col: TableColumns<DataType>) => (
                         <TableCell
                           onClick={() => navigateDetailPage(row[rowId] as IdType)}
@@ -302,7 +324,7 @@ export default function CustomTable<DataType, IdType>({
             </Box>
           )}
         </TableContainer>
-        {!!totalItems && (
+        {!!totalItems && usePagination && (
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component='div'

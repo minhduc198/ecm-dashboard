@@ -1,16 +1,17 @@
 import { baseDataProvider } from '@/services/dataProvider'
+import { SORT } from '@/types'
 import {
-  GetOrdersListRequest,
-  GetOrdersListResponse,
-  GetOrderDetailRequest,
-  GetOrderDetailResponse,
-  UpdateOrderRequest,
-  UpdateOrderResponse,
   DeleteOrderRequest,
   DeleteOrderResponse,
   ExportOrdersRequest,
   ExportOrdersResponse,
-  Order
+  GetOrderDetailRequest,
+  GetOrderDetailResponse,
+  GetOrdersListRequest,
+  GetOrdersListResponse,
+  Order,
+  UpdateOrderRequest,
+  UpdateOrderResponse
 } from '../types'
 
 export class OrdersService {
@@ -19,7 +20,7 @@ export class OrdersService {
     try {
       const response = await baseDataProvider.getList('orders', {
         pagination,
-        sort: params.sort ?? { field: 'id', order: 'DESC' },
+        sort: params.sort ?? { field: 'id', order: SORT.DESC },
         filter: params.filter ?? {}
       })
 

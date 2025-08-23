@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker'
 import { isAfter, subDays } from 'date-fns'
-import { randomDate, randomFloat, weightedArrayElement, weightedBoolean } from './utils'
+import type { Customer } from './customers'
 import type { Db } from './types'
-import { Customer } from './customers'
+import { randomDate, randomFloat, weightedArrayElement, weightedBoolean } from './utils'
 
 export const generateOrders = (db: Db): Order[] => {
   const today = new Date()
@@ -43,6 +43,7 @@ export const generateOrders = (db: Db): Order[] => {
       id,
       reference: faker.string.alphanumeric(6).toUpperCase(),
       date: date.toISOString(),
+      customer_id: customer.id,
       customer,
       basket,
       total_ex_taxes,
@@ -60,6 +61,8 @@ export type Order = {
   id: number
   reference: string
   date: string
+  customer_id: number
+  customer: Customer
   basket: BasketItem[]
   total_ex_taxes: number
   delivery_fees: number
@@ -68,7 +71,6 @@ export type Order = {
   total: number
   status: OrderStatus
   returned: boolean
-  customer: Customer
 }
 
 export type OrderStatus = 'ordered' | 'delivered' | 'cancelled'

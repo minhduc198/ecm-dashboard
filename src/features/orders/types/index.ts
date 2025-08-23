@@ -1,5 +1,6 @@
 import { Customer } from '@/services/data-generator'
-import { ApiResponseList, ColumnItem, FilterItem, UrlQuery } from '@/types'
+import { ApiResponse, ApiResponseList, FilterItem, SORT, UrlQuery } from '@/types'
+import { TableColumns } from '@/types/table'
 
 export type OrderStatus = 'ordered' | 'delivered' | 'cancelled'
 
@@ -13,6 +14,7 @@ export type Order = {
   reference: string
   date: string
   customer: Customer
+  customer_id: number
   basket: BasketItem[]
   total_ex_taxes: number
   delivery_fees: number
@@ -32,7 +34,7 @@ export interface GetOrdersListRequest {
   }
   sort?: {
     field: string
-    order: 'ASC' | 'DESC'
+    order: SORT
   }
   filter?: {
     status?: OrderStatus
@@ -66,24 +68,17 @@ export interface ExportOrdersRequest {
 // Response Types
 export type GetOrdersListResponse = ApiResponseList<Order>
 
-export interface GetOrderDetailResponse {
-  data: Order
-}
+export type GetOrderDetailResponse = ApiResponse<Order>
 
-export interface UpdateOrderResponse {
-  data: Order
-}
+export type UpdateOrderResponse = ApiResponse<Order>
 
-export interface DeleteOrderResponse {
-  data: Order
-}
+export type DeleteOrderResponse = ApiResponse<Order>
 
 export interface ExportOrdersResponse {
   url: string
   filename: string
 }
 
-// Error Types
 export interface OrderError {
   message: string
   code?: string
@@ -105,7 +100,15 @@ export type OrderFilterItem = FilterItem<OrderParams>
 export type OrderUrlQuery = UrlQuery<OrderParams>
 
 export type OrderSettingColumn = {
-  ordered: ColumnItem[]
-  delivered: ColumnItem[]
-  cancelled: ColumnItem[]
+  ordered: TableColumns<Order>[]
+  delivered: TableColumns<Order>[]
+  cancelled: TableColumns<Order>[]
+}
+
+export interface OrderDetailProduct {
+  id: number
+  reference: string
+  price: number
+  quantity: number
+  total: number
 }

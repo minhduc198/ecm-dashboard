@@ -3,6 +3,7 @@ import { subDays, isAfter } from 'date-fns'
 
 import { randomDate, weightedArrayElement, weightedBoolean } from './utils'
 import type { Db } from './types'
+import { Product } from './products'
 
 export const generateReviews = (db: Db): Review[] => {
   const today = new Date()
@@ -15,7 +16,7 @@ export const generateReviews = (db: Db): Review[] => {
     .map((customer) => customer.id)
 
   return db.orders
-    .filter((order) => reviewers.indexOf(order.customer.id) !== -1)
+    .filter((order) => reviewers.indexOf(order.customer_id) !== -1)
     .reduce(
       (acc: any, order) => [
         ...acc,
@@ -36,7 +37,8 @@ export const generateReviews = (db: Db): Review[] => {
               status,
               order_id: order.id,
               product_id: product.product_id,
-              customer_id: order.customer.id,
+              product: product,
+              customer_id: order.customer_id,
               rating: faker.number.int({ min: 1, max: 5 }),
               comment
             }
@@ -55,4 +57,5 @@ export type Review = {
   customer_id: number
   rating: number
   comment: string
+  product: Product
 }

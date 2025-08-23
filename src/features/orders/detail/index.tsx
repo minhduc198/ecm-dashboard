@@ -2,7 +2,11 @@ import { queryClient } from '@/App'
 import CustomLink from '@/components/CustomLink'
 import HookFormSwitch from '@/components/HookFormSwitch'
 import TextFieldSelect from '@/components/TextFieldSelect'
+import { ORDER_STATUS } from '@/constants'
+import { fetchCustomerDetail } from '@/features/customers/service'
 import { path } from '@/routers/path'
+import { useHeaderTitleStore } from '@/store/headerStore'
+import { useUndoOrderStore } from '@/store/undoOrderStore'
 import { formatCurrency } from '@/utils/currency'
 import { formatDate } from '@/utils/date'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -10,21 +14,43 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SaveIcon from '@mui/icons-material/Save'
 import { Box, Button, Typography } from '@mui/material'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 import * as yup from 'yup'
 import { detailOrderSchema } from '../schemas'
 import { deleteOrders, fetchOrderDetail, updateOrder } from '../services'
-import { Order, OrderStatus, UpdateOrderRequest } from '../types'
-import { useUndoStore } from '@/store/undoOrderStore'
-import { cloneDeep } from 'lodash'
+import { Order, OrderDetailProduct, OrderStatus, UpdateOrderRequest } from '../types'
+import { GetProductListReq } from '@/features/products/types'
+import { fetchProductsList } from '@/features/products/services'
+import CustomTable from '@/components/CustomTable'
+import { TableColumns } from '@/types/table'
+import { ReactNode, useMemo } from 'react'
 
 type FormValues = yup.InferType<typeof detailOrderSchema>
+
+const columnProductItems: TableColumns<OrderDetailProduct>[] = [
+  {
+    id: 'reference',
+    label: 'Reference',
+    cell: (value) => <CustomLink to={'#'}>{value?.toString()}</CustomLink>
+  },
+
+  { id: 'price', label: 'Unit price', numeric: true, cell: (value) => formatCurrency(Number(value)) },
+  {
+    id: 'quantity',
+    label: 'Quantity',
+    numeric: true,
+    cell: (value) => formatCurrency(Number(value))
+  },
+  { id: 'total', label: 'Total', numeric: true, cell: (value) => formatCurrency(Number(value)) }
+]
 
 export default function DetailOrder() {
   const param = useParams()
   const navigate = useNavigate()
-  const { temporaryData, setIsOpenUndo, setTemporaryData, setTimerId } = useUndoStore()
+  const { setHeaderData } = useHeaderTitleStore()
+  const { temporaryData, setIsOpenUndo, setTemporaryData, setTimerId } = useUndoOrderStore()
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(detailOrderSchema),
@@ -35,7 +61,6 @@ export default function DetailOrder() {
   })
 
   const returned = useWatch({ name: 'returned', control: methods.control })
-  console.log('🚀 Here we go! ________ returned:', returned)
   const status = useWatch({ name: 'status', control: methods.control })
 
   const { data: orderDetailData, isFetching } = useQuery({
@@ -51,6 +76,7 @@ export default function DetailOrder() {
     enabled: !!param.id
   })
   const orderDetail = orderDetailData?.data || ({} as Order)
+  const productIds = orderDetail.basket?.map((i) => i.product_id) || []
 
   const { mutate: deleteOrderMutation } = useMutation({
     mutationFn: (id: number[]) => deleteOrders(id),
@@ -66,14 +92,40 @@ export default function DetailOrder() {
     }
   })
 
-  // const { data: queryProduct } = useQuery({
-  //   queryKey: ['products', orderDetail?.basket[0].product_id],
-  //   queryFn: () =>
-  //     fetchProductsList({
-  //       filter: { price_gt: 5 }
-  //     }),
-  //   enabled: !!orderDetail?.basket[0]?.product_id
-  // })
+  const { data: customerDetailData } = useQuery({
+    queryKey: ['customerDetail', orderDetail.customer_id],
+    queryFn: () => fetchCustomerDetail({ id: Number(orderDetail.customer_id) }),
+    refetchOnWindowFocus: false,
+    enabled: !!param.id
+  })
+  const customerData = customerDetailData?.data
+
+  const { data: productItemsData } = useQuery({
+    queryKey: ['product_list', param.id, productIds],
+    queryFn: () => fetchProductsList({ filter: { id: productIds }, page: 1, perPage: 9999 }),
+    enabled: !!productIds.length
+  })
+  const productItems = productItemsData?.data || []
+
+  const getProductQuantityFromBasket = (productId: number): number => {
+    if (!orderDetail?.basket?.length) return 0
+    const productBasketItem = orderDetail.basket.find((i) => i.product_id === productId)
+    return productBasketItem?.quantity || 0
+  }
+
+  const productItemsDataSource: OrderDetailProduct[] = useMemo(() => {
+    return productItems.map((product) => {
+      const quantity = getProductQuantityFromBasket(product.id)
+      const total = quantity * Number(product.price)
+      return {
+        id: product.id,
+        reference: product.reference,
+        price: product.price,
+        quantity,
+        total
+      }
+    })
+  }, [productItems, orderDetail.basket])
 
   const handleSubmit = () => {
     const payload = {
@@ -115,6 +167,14 @@ export default function DetailOrder() {
     navigate(path.orders)
   }
 
+  const handleSetHeaderDetail = () => {
+    setHeaderData({
+      fullName: `${customerData?.first_name} ${customerData?.last_name}`,
+      avatar: customerData?.avatar,
+      reference: orderDetail.reference
+    })
+  }
+
   return (
     <FormProvider {...methods}>
       {isFetching ? (
@@ -143,16 +203,16 @@ export default function DetailOrder() {
                   sxTextFiled={{ width: '203px' }}
                   options={[
                     {
-                      label: 'ordered',
-                      value: 'ordered'
+                      label: ORDER_STATUS.ORDERED,
+                      value: ORDER_STATUS.ORDERED
                     },
                     {
-                      label: 'delivered',
-                      value: 'delivered'
+                      label: ORDER_STATUS.DELIVERED,
+                      value: ORDER_STATUS.DELIVERED
                     },
                     {
-                      label: 'cancelled',
-                      value: 'cancelled'
+                      label: ORDER_STATUS.CANCELLED,
+                      value: ORDER_STATUS.CANCELLED
                     }
                   ]}
                   hasAllItem
@@ -169,20 +229,32 @@ export default function DetailOrder() {
 
               <Box sx={{ ml: '120px' }}>
                 <Typography sx={{ fontWeight: 500, fontSize: '20px', mb: 2 }}>Customer</Typography>
-                <CustomLink
-                  to={`${path.customers}/${param.id}`}
-                >{`${orderDetail?.customer.first_name} ${orderDetail?.customer.last_name}`}</CustomLink>
+
+                <Box onClick={handleSetHeaderDetail}>
+                  <CustomLink
+                    to={`${path.customers}/${orderDetail.customer_id}`}
+                  >{`${orderDetail?.customer.first_name} ${orderDetail?.customer.last_name}`}</CustomLink>
+                </Box>
                 <CustomLink to={`mailto:${orderDetail?.customer.email}`}>{orderDetail?.customer.email}</CustomLink>
                 <Box sx={{ mt: 4 }}>
                   <Typography sx={{ mb: 1, fontWeight: 500, fontSize: '20px' }}>Shipping Address</Typography>
                   <Typography>{`${orderDetail?.customer.first_name} ${orderDetail?.customer.last_name}`}</Typography>
-                  <Typography>{orderDetail?.customer.address}</Typography>
+                  <Typography>
+                    {orderDetail?.customer.address} {customerData?.stateAbbr} {customerData?.zipcode}
+                  </Typography>
                 </Box>
               </Box>
             </Box>
 
             <Box sx={{ mt: 4 }}>
               <Typography sx={{ fontWeight: 500, fontSize: 20 }}>Items</Typography>
+              <CustomTable<OrderDetailProduct, number>
+                rowId='id'
+                usePagination={false}
+                selectable={false}
+                columns={columnProductItems}
+                dataSource={productItemsDataSource}
+              />
             </Box>
 
             <Box sx={{ mt: 4 }}>

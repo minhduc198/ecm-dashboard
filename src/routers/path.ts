@@ -6,5 +6,6 @@ export const path = {
   orders: '/orders',
   detailReview: '/reviews/:id',
   detailCustomer: '/customers/:id',
-  detailOrder: '/orders/:id'
+  detailOrder: '/orders/:id',
+  createCustomer: '/customers/create'
 }

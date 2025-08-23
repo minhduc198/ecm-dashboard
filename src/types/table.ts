@@ -5,5 +5,8 @@ export interface TableColumns<T> {
   label: string
   numeric?: boolean
   disablePadding?: boolean
+  sortable?: boolean
+  isVisible?: boolean
+  sortBy?: string
   cell?: (value: unknown, row: T) => ReactNode
 }

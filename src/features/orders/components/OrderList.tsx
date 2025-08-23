@@ -1,10 +1,12 @@
 import { queryClient } from '@/App'
 import CustomTable from '@/components/CustomTable'
-import { DEFAULT_PAGE } from '@/constants'
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE, ORDER_STATUS } from '@/constants'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { path } from '@/routers/path'
-import { useUndoStore } from '@/store/undoOrderStore'
-import { IPagination } from '@/types'
+import { Customer } from '@/services/data-generator'
+import { useHeaderTitleStore } from '@/store/headerStore'
+import { useUndoOrderStore } from '@/store/undoOrderStore'
+import { IPagination, SORT } from '@/types'
 import { TableColumns } from '@/types/table'
 import { cleanObject } from '@/utils'
 import { formatCurrency } from '@/utils/currency'
@@ -12,29 +14,51 @@ import { formatDate } from '@/utils/date'
 import { getListParamsFormLS, saveListParamsToLS } from '@/utils/orders'
 import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
-import { Avatar, Box, Button, Link, Snackbar } from '@mui/material'
+import { Avatar, Box, Button, Link, Snackbar, Tooltip } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { FilterContext } from '../context/FilterContext'
 import { deleteOrders } from '../services'
-import { Order } from '../types'
+import { Order, OrderParams } from '../types'
 
 interface Props {
   data: Order[]
   totalItems: number
   pagination: IPagination
+  setSortParam: React.Dispatch<
+    React.SetStateAction<{
+      sortOrdered: {
+        field: string
+        order: SORT
+      }
+      sortDelivered: {
+        field: string
+        order: SORT
+      }
+      sortCancelled: {
+        field: string
+        order: SORT
+      }
+    }>
+  >
 }
 
-export default function Ordered({ data, totalItems, pagination }: Props) {
+export default function OrderList({ data, totalItems, pagination, setSortParam }: Props) {
   const { filterItems, columnSetting, activeTab, orderListRq, setOrderListRq, setFilterItems } =
     useContext(FilterContext)
   const { setMany } = useSearchParam()
   const currentListParamsLS = getListParamsFormLS()
   const navigate = useNavigate()
 
-  const { temporaryData, isOpenUndo, timerId, setTemporaryData, setIsOpenUndo, setTimerId } = useUndoStore()
+  const { temporaryData, isOpenUndo, timerId, setTemporaryData, setIsOpenUndo, setTimerId } = useUndoOrderStore()
+  const { setHeaderData } = useHeaderTitleStore()
+
+  const sortFromLs = {
+    field: currentListParamsLS.sort,
+    order: currentListParamsLS.order
+  }
 
   const hasFilterItem = useMemo(() => {
     const omitStatusListFilter = {
@@ -58,27 +82,43 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
     }
   })
 
-  const handleViewCustomerDetail = (id: number) => (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleViewCustomerDetail = (customer: Customer) => (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation()
-    navigate(`${path.customers}/${id}`)
+    setHeaderData({
+      fullName: `${customer.first_name} ${customer.last_name}`,
+      avatar: customer.avatar
+    })
+    navigate(`${path.customers}/${customer.id}`)
   }
 
   const columns: TableColumns<Order>[] = useMemo(() => {
     const cloneColumnSetting = cloneDeep(columnSetting[activeTab])
+
     return cloneColumnSetting
       .filter((col) => col.isVisible)
       .map((col) => {
         const tableColumn = {
           id: col.id,
           label: col.label,
-          numeric: col.numeric
+          numeric: col.numeric,
+          sortable: true,
+          sortBy: col.id
         }
 
         switch (col.id) {
           case 'returned':
             return {
               ...tableColumn,
-              cell: (value) => (value ? <CheckIcon /> : <ClearIcon />)
+              cell: (value) =>
+                value ? (
+                  <Tooltip title='Yes' placement='bottom'>
+                    <CheckIcon />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title='No' placement='bottom'>
+                    <ClearIcon />
+                  </Tooltip>
+                )
             }
           case 'taxes':
           case 'total':
@@ -96,11 +136,12 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
           case 'customer':
             return {
               ...tableColumn,
+              sortBy: 'customer_id',
               cell: (_, row) => (
                 <Link
                   sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   component='button'
-                  onClick={handleViewCustomerDetail(row.customer.id)}
+                  onClick={handleViewCustomerDetail(row.customer)}
                 >
                   <Avatar sx={{ width: 25, height: 25 }} src={row.customer.avatar} alt={row.customer.first_name} />
                   <Box>{`${row.customer.first_name} ${row.customer.last_name}`}</Box>
@@ -110,12 +151,14 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
           case 'address':
             return {
               ...tableColumn,
+              sortable: false,
               cell: (_, row) => row.customer.address
             }
 
           case 'nb_items':
             return {
               ...tableColumn,
+              sortBy: 'basket',
               cell: (_, row) => row.basket.length
             }
           default:
@@ -149,6 +192,7 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
       page,
       perPage: orderListRq.pagination.perPage
     })
+
     setOrderListRq({
       ...orderListRq,
       pagination: {
@@ -184,6 +228,11 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
 
   const handleViewDetail = (id: number) => {
     navigate(`${path.orders}/${id}`)
+
+    const referenceDetail = temporaryData.find((data) => data.id === id)
+    setHeaderData({
+      reference: referenceDetail?.reference
+    })
   }
 
   const handleDeleteAllFilter = () => {
@@ -220,6 +269,44 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
     }
   }
 
+  const handleSort = (field: string, order: SORT) => {
+    const sort = {
+      field,
+      order
+    }
+
+    saveListParamsToLS({
+      ...currentListParamsLS,
+      order,
+      sort: field as keyof OrderParams
+    })
+
+    setMany({
+      sort: JSON.stringify(sort)
+    })
+
+    switch (activeTab) {
+      case ORDER_STATUS.ORDERED:
+        setSortParam((prev) => ({
+          ...prev,
+          sortOrdered: sort
+        }))
+        break
+      case ORDER_STATUS.DELIVERED:
+        setSortParam((prev) => ({
+          ...prev,
+          sortDelivered: sort
+        }))
+        break
+      case ORDER_STATUS.CANCELLED:
+        setSortParam((prev) => ({
+          ...prev,
+          sortCancelled: sort
+        }))
+        break
+    }
+  }
+
   return (
     <>
       <CustomTable<Order, number>
@@ -228,11 +315,13 @@ export default function Ordered({ data, totalItems, pagination }: Props) {
         dataSource={temporaryData || []}
         totalItems={totalItems}
         pagination={pagination}
+        sortColFromLS={sortFromLs}
         handleSetPage={handleSetPage}
         handleSetRowsPerPage={handleSetRowsPerPage}
         handleDelete={handleDelete}
         onClearAllFilter={handleDeleteAllFilter()}
         onRowClick={handleViewDetail}
+        handleSort={handleSort}
       />
       <Snackbar
         open={isOpenUndo}
