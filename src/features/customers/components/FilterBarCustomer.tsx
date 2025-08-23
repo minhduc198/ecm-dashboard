@@ -43,7 +43,8 @@ export default function FilterBarCustomer() {
     const customerFilterParamsFromLS = customerParamFromLS.filter
     if (customerParamFromLS) {
       method.reset({
-        ...customerFilterParamsFromLS
+        ...customerFilterParamsFromLS,
+        segment: customerFilterParamsFromLS.groups
       })
     }
   }, [])
@@ -73,7 +74,8 @@ export default function FilterBarCustomer() {
       ...customerParamFromLS,
       filter: {
         ...filterParam,
-        groups: segment as Groups
+        groups: segment as Groups,
+        has_newsletter
       }
     })
   }, [q, last_seen_gte, has_newsletter, nb_orders_gte, segment])
