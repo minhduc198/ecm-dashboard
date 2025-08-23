@@ -1,5 +1,6 @@
 import { Customer } from '@/services/data-generator'
 import { ApiResponse, ApiResponseList, UrlQuery } from '@/types'
+import { TableColumns } from '@/types/table'
 
 export type GetCustomerListReq = {
   filter: Customer
@@ -27,3 +28,5 @@ interface CustomerParam {
 }
 
 export type CustomerUrlQuery = UrlQuery<CustomerParam>
+
+export type TableColumnsCustomer = TableColumns<Customer>[]

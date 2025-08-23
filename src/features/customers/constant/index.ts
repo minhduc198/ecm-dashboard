@@ -1,4 +1,6 @@
+import { Customer } from '@/services/data-generator'
 import { SelectOptionItem } from '@/types'
+import { TableColumns } from '@/types/table'
 
 export enum NEWSLETTER {
   Y = 'Y',
@@ -50,4 +52,64 @@ export const hasOrderedOptions: SelectOptionItem[] = [
 export const hasNewsletterOptions: SelectOptionItem[] = [
   { value: 'true', label: 'Yes' },
   { value: 'false', label: 'No' }
+]
+
+export const initialCustomerColumns: TableColumns<Customer>[] = [
+  {
+    label: 'Name',
+    id: 'first_name',
+    isVisible: true,
+    numeric: false,
+    disablePadding: true
+  },
+  {
+    label: 'Last seen',
+    id: 'last_seen',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Orders',
+    id: 'nb_orders',
+    isVisible: false,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Total spent',
+    id: 'total_spent',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+
+  {
+    label: 'Latest purchase',
+    id: 'latest_purchase',
+    isVisible: false,
+    numeric: false,
+    disablePadding: false
+  },
+  {
+    label: 'News',
+    id: 'has_newsletter',
+    isVisible: false,
+    numeric: false,
+    disablePadding: false
+  },
+  {
+    label: 'Segments',
+    id: 'groups',
+    isVisible: false,
+    numeric: false,
+    disablePadding: false
+  },
+  {
+    label: 'Birthday',
+    id: 'birthday',
+    isVisible: false,
+    numeric: false,
+    disablePadding: false
+  }
 ]

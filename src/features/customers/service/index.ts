@@ -6,8 +6,8 @@ import { CustomerListResponse, GetCustomerDetailRequest, GetCustomerDetailRespon
 export class CustomerService {
   static async getCustomersList(params: Partial<GetCustomerListReq>): Promise<CustomerListResponse> {
     const pagination = {
-      page: params.page || DEFAULT_PAGE,
-      perPage: params.perPage || DEFAULT_PER_PAGE
+      page: params.page || DEFAULT_PAGE + 1,
+      perPage: params.perPage || 25
     }
 
     try {
