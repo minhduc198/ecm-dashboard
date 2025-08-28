@@ -1,16 +1,17 @@
 import { baseDataProvider } from '@/services/dataProvider'
+import { SORT } from '@/types'
 import {
-  GetOrdersListRequest,
-  GetOrdersListResponse,
-  GetOrderDetailRequest,
-  GetOrderDetailResponse,
-  UpdateOrderRequest,
-  UpdateOrderResponse,
   DeleteOrderRequest,
   DeleteOrderResponse,
   ExportOrdersRequest,
   ExportOrdersResponse,
-  Order
+  GetOrderDetailRequest,
+  GetOrderDetailResponse,
+  GetOrdersListRequest,
+  GetOrdersListResponse,
+  Order,
+  UpdateOrderRequest,
+  UpdateOrderResponse
 } from '../types'
 
 export class OrdersService {
@@ -19,14 +20,14 @@ export class OrdersService {
     try {
       const response = await baseDataProvider.getList('orders', {
         pagination,
-        sort: params.sort ?? { field: 'id', order: 'DESC' },
+        sort: params.sort ?? { field: 'id', order: SORT.DESC },
         filter: params.filter ?? {}
       })
 
       return {
+        ...(pagination ?? { page: 1, perPage: 10 }),
         data: response.data as Order[],
-        total: response.total || 0,
-        ...pagination
+        total: response.total || 0
       }
     } catch (error) {
       throw new Error(`Lỗi khi lấy danh sách orders: ${error instanceof Error ? error.message : 'Unknown error'}`)

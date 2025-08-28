@@ -1,20 +1,21 @@
-import { ColumnItem } from '@/types'
+import { TableColumns } from '@/types/table'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import ViewWeekIcon from '@mui/icons-material/ViewWeek'
 import { Box, Button, Popover, Switch, Typography } from '@mui/material'
+import clsx from 'clsx'
 import cloneDeep from 'lodash/cloneDeep'
 import React, { FC } from 'react'
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd'
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 
-type PropsDraggableSettingCol = {
-  item: ColumnItem
+type PropsDraggableSettingCol<T> = {
+  item: TableColumns<T>
   index: number
   handleChange: (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const DraggableSettingCol: FC<PropsDraggableSettingCol> = ({ item, index, handleChange }) => {
+function DraggableSettingCol<T>({ item, index, handleChange }: PropsDraggableSettingCol<T>) {
   return (
-    <Draggable draggableId={item.id} index={index}>
+    <Draggable draggableId={item.id.toString()} index={index}>
       {(provided, snapshot) => (
         <Box
           key={index}
@@ -43,13 +44,13 @@ const DraggableSettingCol: FC<PropsDraggableSettingCol> = ({ item, index, handle
   )
 }
 
-interface Props {
-  columns: ColumnItem[]
+interface Props<T> {
+  columns: TableColumns<T>[]
   onDragEnd: OnDragEndResponder
-  handleChangeColumn: (columns: ColumnItem[]) => void
+  handleChangeColumn: (columns: TableColumns<T>[]) => void
 }
 
-const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) => {
+export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColumn }: Props<T>) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -98,7 +99,12 @@ const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) =
                 sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', minHeight: '240px' }}
               >
                 {columns.map((item, index) => (
-                  <DraggableSettingCol key={item.id} item={item} index={index} handleChange={handleChange} />
+                  <DraggableSettingCol<T>
+                    key={item.id.toString()}
+                    item={item}
+                    index={index}
+                    handleChange={handleChange}
+                  />
                 ))}
               </Box>
             )}
@@ -108,5 +114,3 @@ const SettingColumns: FC<Props> = ({ columns, onDragEnd, handleChangeColumn }) =
     </div>
   )
 }
-
-export default SettingColumns

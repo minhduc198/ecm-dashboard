@@ -20,7 +20,6 @@ export default function CustomDatePicker({ datePickerLabel, sxDatePicker, handle
   return (
     <Box
       sx={{
-        ...wrapperProps,
         display: 'flex',
         gap: '2px',
         alignItems: 'center',
@@ -30,7 +29,8 @@ export default function CustomDatePicker({ datePickerLabel, sxDatePicker, handle
         },
         '& .MuiInputLabel-root': {
           color: '#555'
-        }
+        },
+        ...wrapperProps
       }}
     >
       <Controller

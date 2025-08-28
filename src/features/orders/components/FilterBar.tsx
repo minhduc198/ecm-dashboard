@@ -1,14 +1,16 @@
 import AddFilter from '@/components/AddFilter'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import SettingColumns from '@/components/SettingColumns'
-import TextFieldAutoComplete from '@/components/TextFieldAutocomplete'
+import TextFieldAutocompleteVirtualized from '@/components/TextFieldAutocompleteVirtualized'
 import TextFieldInput from '@/components/TextFieldInput'
 import TextFieldNumber from '@/components/TextFieldNumber'
 import TextFieldSelect from '@/components/TextFieldSelect'
 import { RETURNED } from '@/constants'
 import { FilterContext } from '@/features/orders/context/FilterContext'
+import { useInfiniteCustomers } from '@/hooks/useInfiniteCustomers'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { ColumnItem, QuerySaveType, SelectOptionItem } from '@/types'
+import { QuerySaveType, SelectOptionItem } from '@/types'
+import { TableColumns } from '@/types/table'
 import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
 import {
   getListParamsFormLS,
@@ -21,13 +23,14 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import SearchIcon from '@mui/icons-material/Search'
 import { Box, Button, InputAdornment, styled } from '@mui/material'
+import { debounce } from 'lodash'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
-import { OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../type'
+import { Order, OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../types'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -46,7 +49,7 @@ const FilterBarWrapper = styled('div')({
   justifyContent: 'space-between'
 })
 
-const FilterBar = () => {
+const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
   const { filterItems, columnSetting, activeTab, orderListRq, setFilterItems, setColumnSetting, setOrderListRq } =
     useContext(FilterContext)
   const { setMany } = useSearchParam()
@@ -55,8 +58,9 @@ const FilterBar = () => {
   const currentSaveQueriesLS = getOrderSaveQueryFormLS()
   const [currentSaveQueries, setCurrentSaveQueries] = useState<QuerySaveType[]>(currentSaveQueriesLS)
 
+  const [debouncedQ, setDebouncedQ] = useState(currentListParamsLS.filter.q)
+
   const methods = useForm({
-    mode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: {
       returned: '',
@@ -71,11 +75,36 @@ const FilterBar = () => {
   const passedSince = useWatch({ name: 'date_gte', control: methods.control })
   const q = useWatch({ name: 'q', control: methods.control })
 
-  const spreadSetMany = {
-    order: JSON.stringify(currentListParamsLS.order),
-    page: JSON.stringify(currentListParamsLS.page),
-    perPage: JSON.stringify(currentListParamsLS.perPage),
-    sort: JSON.stringify(currentListParamsLS.sort)
+  const debouncedSetQ = useMemo(() => debounce((value: string) => setDebouncedQ(value), 500), [])
+
+  useEffect(() => {
+    debouncedSetQ(q ?? '')
+    return () => {
+      debouncedSetQ.cancel()
+    }
+  }, [q, debouncedSetQ])
+
+  const tableParamsFromLS = {
+    order: currentListParamsLS.order,
+    page: currentListParamsLS.page.toString(),
+    perPage: currentListParamsLS.perPage.toString(),
+    sort: currentListParamsLS.sort
+  }
+
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('')
+
+  const {
+    customerOptions,
+    hasNextPage,
+    loadMore,
+    isLoading: isLoadingCustomers
+  } = useInfiniteCustomers({
+    searchTerm: customerSearchTerm,
+    enabled: filterItems[0]?.isChecked || false
+  })
+
+  const handleCustomerSearch = (searchTerm: string) => {
+    setCustomerSearchTerm(searchTerm)
   }
 
   useEffect(() => {
@@ -97,7 +126,7 @@ const FilterBar = () => {
     }
 
     const newFilter = cleanObject({
-      q: q,
+      q: debouncedQ,
       returned: returned,
       total_gte: minAmount,
       date_lte: passedBefore ? passedBefore.toISOString() : '',
@@ -111,6 +140,7 @@ const FilterBar = () => {
       displayedFilters: currentListParamsLS.displayedFilters,
       filter: newFilter
     })
+
     setOrderListRq({
       ...orderListRq,
       filter: newFilter
@@ -120,12 +150,12 @@ const FilterBar = () => {
     const currentFilterLS = cloneDeep(currentListParamsLS.filter)
     if (!isEqual(currentFilterLS, currentFilterForm)) {
       setMany({
-        ...spreadSetMany,
+        ...tableParamsFromLS,
         displayedFilters: JSON.stringify(currentListParamsLS.displayedFilters),
         filter: JSON.stringify(newFilter)
       })
     }
-  }, [q, customerId, returned, minAmount, passedBefore, passedSince, activeTab])
+  }, [debouncedQ, customerId, returned, minAmount, passedBefore, passedSince, activeTab])
 
   const handleAddSaveQuery = (value: QuerySaveType[]) => {
     setCurrentSaveQueries(value)
@@ -136,7 +166,7 @@ const FilterBar = () => {
     setCurrentSaveQueries(newUseQuery)
   }
 
-  const handleChangeColumn = (columns: ColumnItem[]) => {
+  const handleChangeColumn = (columns: TableColumns<Order>[]) => {
     const value = {
       ...columnSetting,
       [activeTab]: columns
@@ -146,7 +176,7 @@ const FilterBar = () => {
     setSettingColumnsToLS(value as OrderSettingColumn)
   }
 
-  const setParamUrlAndLS = (filterItem: OrderFilterItem[]) => {
+  const handleSetFilterItemsToUrlAndLS = (filterItem: OrderFilterItem[]) => {
     const newDisplayedFilters = cleanObject(
       filterItem.reduce((acc, curr) => {
         if (!curr.isChecked) {
@@ -163,7 +193,7 @@ const FilterBar = () => {
     })
 
     setMany({
-      ...spreadSetMany,
+      ...tableParamsFromLS,
       displayedFilters: JSON.stringify(newDisplayedFilters),
       filter: JSON.stringify({ ...currentListParamsLS.filter })
     })
@@ -184,7 +214,7 @@ const FilterBar = () => {
     })
 
     setMany({
-      ...spreadSetMany,
+      ...tableParamsFromLS,
       displayedFilters: JSON.stringify(newDisplayedFilters),
       filter: JSON.stringify({ ...currentListParamsLS.filter })
     })
@@ -195,19 +225,19 @@ const FilterBar = () => {
     filterItems[indexOfFilterItems].isChecked = false
     setFilterItems([...filterItems])
 
-    setParamUrlAndLS(filterItems)
+    handleSetFilterItemsToUrlAndLS(filterItems)
   }
 
   const handleRemoveAllFilterItem = (newFilterItems: OrderFilterItem[]) => {
     setFilterItems(newFilterItems)
 
-    setParamUrlAndLS(newFilterItems)
+    handleSetFilterItemsToUrlAndLS(newFilterItems)
   }
 
   const handleUseQueryFromLS = (param: OrderUrlQuery) => {
     const newFilterItems = filterItems.map((item) => ({
       ...item,
-      isChecked: !!param.displayedFilters[item.key]
+      isChecked: !!param.displayedFilters?.[item.key as keyof OrderParams]
     }))
     setFilterItems(newFilterItems)
 
@@ -220,7 +250,7 @@ const FilterBar = () => {
 
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (!destination) return
-    const newItems = reorderDnd<ColumnItem>(columnSetting[activeTab], source.index, destination.index)
+    const newItems = reorderDnd<TableColumns<Order>>(columnSetting[activeTab], source.index, destination.index)
     const newColSetting = { ...columnSetting, [activeTab]: newItems }
     setColumnSetting(newColSetting)
     setSettingColumnsToLS(newColSetting as OrderSettingColumn)
@@ -232,6 +262,7 @@ const FilterBar = () => {
         <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <TextFieldInput
             name='q'
+            label='Search'
             slotProps={{
               input: {
                 endAdornment: (
@@ -244,21 +275,16 @@ const FilterBar = () => {
           />
 
           {filterItems[0].isChecked && (
-            <TextFieldAutoComplete
+            <TextFieldAutocompleteVirtualized
               label='Customer'
               name='customer_id'
-              options={[
-                {
-                  label: 'Minh duc',
-                  value: '1'
-                },
-                {
-                  label: 'ReactJS',
-                  value: '2'
-                }
-              ]}
+              options={customerOptions}
               handleClose={handleRemoveFilterItem('customer_id')}
               sxAutocomplete={{ width: '203px' }}
+              onSearch={handleCustomerSearch}
+              hasNextPage={hasNextPage}
+              loadMore={loadMore}
+              isLoading={isLoadingCustomers}
             />
           )}
           {filterItems[1].isChecked && (
@@ -308,12 +334,12 @@ const FilterBar = () => {
           handleAddSaveQuery={handleAddSaveQuery}
           handleRemoveSaveQuery={handleRemoveCurrentSaveQuery}
         />
-        <SettingColumns
+        <SettingColumns<Order>
           columns={columnSetting[activeTab]}
           handleChangeColumn={handleChangeColumn}
           onDragEnd={onDragEnd}
         />
-        <Button startIcon={<FileDownloadIcon />} variant='text'>
+        <Button startIcon={<FileDownloadIcon />} variant='text' onClick={handleExport}>
           EXPORT
         </Button>
       </Box>

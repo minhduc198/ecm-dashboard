@@ -26,3 +26,8 @@ export const schema = yup.object().shape(
   },
   [['date_lte', 'date_gte']]
 )
+
+export const detailOrderSchema = yup.object({
+  returned: yup.boolean().default(false),
+  status: yup.string().default('')
+})

@@ -9,6 +9,7 @@ interface Props {
   options: SelectOptionItem[]
   wrapperProps?: BoxProps
   sxAutocomplete?: SxProps
+  multiple?: boolean
   handleClose?: () => void
 }
 
@@ -16,9 +17,10 @@ export default function TextFieldAutoComplete({
   name,
   label,
   options,
-  handleClose,
+  multiple,
   wrapperProps,
-  sxAutocomplete
+  sxAutocomplete,
+  handleClose
 }: Props) {
   const {
     control,
@@ -32,13 +34,19 @@ export default function TextFieldAutoComplete({
         control={control}
         render={({ field }) => {
           const { onChange, value, ref } = field
-          const selectedOption = options.find((opt) => opt.value === value) || null
+          const fieldValue = multiple
+            ? options.filter((opt) => field.value?.includes(opt.value)) || []
+            : options.find((opt) => opt.value === value) || null
 
           return (
             <Autocomplete
-              value={selectedOption}
+              multiple={multiple}
+              value={fieldValue}
               onChange={(_, newValue) => {
-                onChange(newValue?.value || '')
+                const val = multiple
+                  ? (newValue as SelectOptionItem[])?.map((opt) => opt.value)
+                  : (newValue as SelectOptionItem)?.value || ''
+                onChange(val)
               }}
               options={options}
               getOptionLabel={(option) => option.label || ''}
@@ -57,7 +65,7 @@ export default function TextFieldAutoComplete({
                   paddingRight: '8px'
                 }
               }}
-              id='size-small-filled'
+              id={name}
               size='small'
               renderInput={(params) => (
                 <TextField
