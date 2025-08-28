@@ -1,17 +1,21 @@
+import { ORDER_STATUS } from '@/constants'
 import { fetchOrdersList } from '@/features/orders/services'
 import { fetchProductsList } from '@/features/products/services'
 import { fetchReviewsList } from '@/features/reviews/services'
+import { path } from '@/routers/path'
+import { useOrderStore } from '@/store/orderStore'
 import { formatCurrency } from '@/utils/currency'
 import { formatDate } from '@/utils/date'
+import { getListParamsFormLS, saveListParamsToLS } from '@/utils/orders'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import CommentIcon from '@mui/icons-material/Comment'
 import QueryBuilderIcon from '@mui/icons-material/QueryBuilder'
 import StarsIcon from '@mui/icons-material/Stars'
 import { Box, Grid, Link, styled, Typography } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'react-router'
-import { fetchCustomerDetail } from '../service'
+import { useNavigate, useParams } from 'react-router'
 import FormCustomer from '../components/FormCustomer'
+import { fetchCustomerDetail } from '../service'
 
 const DetailTypography = styled(Typography)({
   fontSize: '14px',
@@ -20,6 +24,8 @@ const DetailTypography = styled(Typography)({
 
 export default function DetailCustomer() {
   const param = useParams()
+  const navigate = useNavigate()
+  const currentListParamsLS = getListParamsFormLS()
 
   const { data: customerDetailData, isFetching } = useQuery({
     queryKey: ['customer_detail', param.id],
@@ -72,6 +78,26 @@ export default function DetailCustomer() {
       })
   }
 
+  const goToOrderOfCustomer = () => {
+    const searchParams = {
+      displayedFilters: {
+        customer_id: true
+      },
+      filter: {
+        customer_id: customerData?.id,
+        status: ORDER_STATUS.DELIVERED
+      }
+    }
+
+    saveListParamsToLS({
+      ...currentListParamsLS,
+      ...searchParams
+    })
+
+    const queryString = `displayedFilters=${JSON.stringify(searchParams.displayedFilters)}&filter=${JSON.stringify(searchParams.filter)}`
+    navigate(`${path.orders}?${queryString}`)
+  }
+
   const handleDeleteCustomer = () => {}
 
   return (
@@ -81,7 +107,6 @@ export default function DetailCustomer() {
       ) : (
         <Grid container spacing={2}>
           <FormCustomer hasStats customerData={customerData} size={9} />
-          {/* bang ben phai */}
           <Grid size={{ xs: 3 }} container direction={'column'}>
             <Box sx={{ pt: 2, pr: 2, pl: 2, pb: 3, borderRadius: '10px', border: '1px solid rgba(0, 0, 0, 0.1)' }}>
               <Typography sx={{ fontSize: '20px', fontWeight: 500, mb: '7px' }}>History</Typography>
@@ -93,12 +118,16 @@ export default function DetailCustomer() {
                       First seen {formatDate(String(customerData?.first_seen), 'd/M/yyyy')}
                     </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
-                    <AttachMoneyIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
-                    <Link href={'#'} sx={{ fontSize: '14px' }}>
-                      {`${customerData?.nb_orders} ${(customerData?.nb_orders ?? 1) > 1 ? 'orders' : 'order'}`}
-                    </Link>
-                  </Box>
+                  {!!customerData?.nb_orders && (
+                    <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
+                      <AttachMoneyIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                      <Box sx={{ cursor: 'pointer' }} onClick={goToOrderOfCustomer}>
+                        <Link sx={{ fontSize: '14px' }}>
+                          {`${customerData.nb_orders} ${customerData.nb_orders > 1 ? 'orders' : 'order'}`}
+                        </Link>
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
@@ -108,17 +137,19 @@ export default function DetailCustomer() {
                       Last seen {formatDate(String(customerData?.last_seen), 'd/M/yyyy')}
                     </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
-                    <CommentIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
-                    <Link href={'#'} sx={{ fontSize: '14px' }}>
-                      {`${reviewData?.length} ${(reviewData?.length ?? 1) > 1 ? 'reviews' : 'review'}`}
-                    </Link>
-                  </Box>
+                  {!!reviewData?.length && (
+                    <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
+                      <CommentIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                      <Link href={'#'} sx={{ fontSize: '14px' }}>
+                        {`${reviewData.length} ${reviewData.length > 1 ? 'reviews' : 'review'}`}
+                      </Link>
+                    </Box>
+                  )}
                 </Box>
               </Box>
             </Box>
 
-            {reviewData?.length &&
+            {!!reviewData?.length &&
               reviewData.map((review) => (
                 <Box key={review.id} sx={{ paddingInline: 2 }}>
                   <Box sx={{ display: 'flex', paddingBlock: 1 }}>

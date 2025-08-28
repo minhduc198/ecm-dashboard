@@ -6,9 +6,11 @@ import TextFieldInput from '@/components/TextFieldInput'
 import TextFieldNumber from '@/components/TextFieldNumber'
 import TextFieldSelect from '@/components/TextFieldSelect'
 import { RETURNED } from '@/constants'
+import { fetchCustomersList } from '@/features/customers/service'
 import { FilterContext } from '@/features/orders/context/FilterContext'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { QuerySaveType, SelectOptionItem } from '@/types'
+import { TableColumns } from '@/types/table'
 import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
 import {
   getListParamsFormLS,
@@ -21,14 +23,15 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import SearchIcon from '@mui/icons-material/Search'
 import { Box, Button, InputAdornment, styled } from '@mui/material'
+import { useQuery } from '@tanstack/react-query'
+import { debounce } from 'lodash'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
 import { Order, OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../types'
-import { TableColumns } from '@/types/table'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -56,8 +59,9 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
   const currentSaveQueriesLS = getOrderSaveQueryFormLS()
   const [currentSaveQueries, setCurrentSaveQueries] = useState<QuerySaveType[]>(currentSaveQueriesLS)
 
+  const [debouncedQ, setDebouncedQ] = useState(currentListParamsLS.filter.q)
+
   const methods = useForm({
-    mode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: {
       returned: '',
@@ -72,12 +76,36 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
   const passedSince = useWatch({ name: 'date_gte', control: methods.control })
   const q = useWatch({ name: 'q', control: methods.control })
 
+  const debouncedSetQ = useMemo(() => debounce((value: string) => setDebouncedQ(value), 500), [])
+
+  useEffect(() => {
+    debouncedSetQ(q ?? '')
+    return () => {
+      debouncedSetQ.cancel()
+    }
+  }, [q, debouncedSetQ])
+
   const tableParamsFromLS = {
     order: currentListParamsLS.order,
     page: currentListParamsLS.page.toString(),
     perPage: currentListParamsLS.perPage.toString(),
     sort: currentListParamsLS.sort
   }
+
+  const { data: customerListData } = useQuery({
+    queryKey: ['customer_list'],
+    queryFn: () => fetchCustomersList({ pagination: { page: 1, perPage: 999 } })
+  })
+
+  const customerOptions: SelectOptionItem[] = useMemo(() => {
+    if (!customerListData?.data) return []
+    return customerListData?.data?.map((customer) => {
+      return {
+        label: `${customer.first_name} ${customer.last_name}`,
+        value: customer.id
+      }
+    })
+  }, [customerListData?.data])
 
   useEffect(() => {
     methods.reset({
@@ -98,7 +126,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
     }
 
     const newFilter = cleanObject({
-      q: q,
+      q: debouncedQ,
       returned: returned,
       total_gte: minAmount,
       date_lte: passedBefore ? passedBefore.toISOString() : '',
@@ -112,6 +140,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
       displayedFilters: currentListParamsLS.displayedFilters,
       filter: newFilter
     })
+
     setOrderListRq({
       ...orderListRq,
       filter: newFilter
@@ -126,7 +155,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
         filter: JSON.stringify(newFilter)
       })
     }
-  }, [q, customerId, returned, minAmount, passedBefore, passedSince, activeTab])
+  }, [debouncedQ, customerId, returned, minAmount, passedBefore, passedSince, activeTab])
 
   const handleAddSaveQuery = (value: QuerySaveType[]) => {
     setCurrentSaveQueries(value)
@@ -249,16 +278,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
             <TextFieldAutoComplete
               label='Customer'
               name='customer_id'
-              options={[
-                {
-                  label: 'Minh duc',
-                  value: '1'
-                },
-                {
-                  label: 'ReactJS',
-                  value: '2'
-                }
-              ]}
+              options={customerOptions}
               handleClose={handleRemoveFilterItem('customer_id')}
               sxAutocomplete={{ width: '203px' }}
             />

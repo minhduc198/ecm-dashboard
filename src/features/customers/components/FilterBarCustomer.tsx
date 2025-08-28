@@ -9,18 +9,30 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined'
 import SearchIcon from '@mui/icons-material/Search'
 import { Box, IconButton, InputAdornment, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
-import { hasNewsletterOptions, hasOrderedOptions, lastSeenGteOptions, segmentsOptions } from '../constant'
+import {
+  DEFAULT_PER_PAGE_CUSTOMER,
+  hasNewsletterOptions,
+  hasOrderedOptions,
+  lastSeenGteOptions,
+  segmentsOptions
+} from '../constant'
 import { filterCustomerSchema } from '../schemas'
-import { Groups } from '../types'
+import { GetCustomersListRequest, Groups } from '../types'
 import SelectFilter from './SelectFilter'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { cleanObject } from '@/utils'
+import { DEFAULT_PAGE } from '@/constants'
+import { debounce } from 'lodash'
 
-export default function FilterBarCustomer() {
+interface Props {
+  setCustomerListRq: React.Dispatch<React.SetStateAction<GetCustomersListRequest>>
+}
+export default function FilterBarCustomer({ setCustomerListRq }: Props) {
   const customerParamFromLS = getCustomerListParamsFormLS()
   const { setMany } = useSearchParam()
+  const [debouncedQ, setDebouncedQ] = useState(customerParamFromLS.filter.q)
 
   const method = useForm({
     resolver: yupResolver(filterCustomerSchema),
@@ -39,6 +51,15 @@ export default function FilterBarCustomer() {
   const nb_orders_gte = useWatch({ name: 'nb_orders_gte', control: method.control })
   const segment = useWatch({ name: 'segment', control: method.control })
 
+  const debouncedSetQ = useMemo(() => debounce((value: string) => setDebouncedQ(value), 500), [])
+
+  useEffect(() => {
+    debouncedSetQ(q ?? '')
+    return () => {
+      debouncedSetQ.cancel()
+    }
+  }, [q, debouncedSetQ])
+
   useEffect(() => {
     const customerFilterParamsFromLS = customerParamFromLS.filter
     if (customerParamFromLS) {
@@ -55,7 +76,7 @@ export default function FilterBarCustomer() {
     }
 
     const filterParam = cleanObject({
-      q,
+      q: debouncedQ,
       last_seen_gte,
       has_newsletter,
       nb_orders_gte,
@@ -65,8 +86,8 @@ export default function FilterBarCustomer() {
     setMany({
       filter: JSON.stringify(filterParam),
       order: customerParamFromLS.order,
-      page: JSON.stringify(customerParamFromLS.page + 1),
-      perPage: JSON.stringify(customerParamFromLS.perPage),
+      page: JSON.stringify(DEFAULT_PAGE),
+      perPage: JSON.stringify(DEFAULT_PER_PAGE_CUSTOMER),
       sort: customerParamFromLS.sort
     })
 
@@ -76,9 +97,27 @@ export default function FilterBarCustomer() {
         ...filterParam,
         groups: segment as Groups,
         has_newsletter
+      },
+      page: DEFAULT_PAGE,
+      perPage: DEFAULT_PER_PAGE_CUSTOMER
+    })
+
+    setCustomerListRq({
+      filter: {
+        ...filterParam,
+        groups: segment as Groups,
+        has_newsletter
+      },
+      sort: {
+        field: customerParamFromLS.sort,
+        order: customerParamFromLS.order
+      },
+      pagination: {
+        page: DEFAULT_PAGE + 1,
+        perPage: DEFAULT_PER_PAGE_CUSTOMER
       }
     })
-  }, [q, last_seen_gte, has_newsletter, nb_orders_gte, segment])
+  }, [debouncedQ, last_seen_gte, has_newsletter, nb_orders_gte, segment])
 
   return (
     <FormProvider {...method}>

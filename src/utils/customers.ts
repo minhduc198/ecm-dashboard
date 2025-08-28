@@ -1,4 +1,5 @@
 import { DEFAULT_PAGE } from '@/constants'
+import { DEFAULT_PER_PAGE_CUSTOMER } from '@/features/customers/constant'
 import { CustomerUrlQuery, TableColumnsCustomer } from '@/features/customers/types'
 import { Customer } from '@/services/data-generator'
 import { SORT } from '@/types'
@@ -19,7 +20,7 @@ export function getCustomerListParamsFormLS(): CustomerUrlQuery {
       filter: {},
       order: SORT.ASC,
       page: DEFAULT_PAGE,
-      perPage: 25,
+      perPage: DEFAULT_PER_PAGE_CUSTOMER,
       sort: 'groups'
     }
   const obj = JSON.parse(dataLs)

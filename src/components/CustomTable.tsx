@@ -55,6 +55,7 @@ function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
         {columns.map((headCell) => (
           <TableCell
             key={headCell.id.toString()}
+            sx={{ minWidth: headCell.minWidth }}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.sortBy ? (order.toLowerCase() as SortDirection) : false}
@@ -278,6 +279,7 @@ export default function CustomTable<DataType, IdType>({
                       )}
                       {columns.map((col: TableColumns<DataType>) => (
                         <TableCell
+                          sx={{ minWidth: col.minWidth }}
                           onClick={() => navigateDetailPage(row[rowId] as IdType)}
                           key={col.id.toString()}
                           align={col.numeric ? 'right' : 'left'}

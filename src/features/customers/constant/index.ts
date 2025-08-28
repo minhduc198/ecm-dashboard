@@ -66,7 +66,7 @@ export const initialCustomerColumns: TableColumns<Customer>[] = [
     label: 'Last seen',
     id: 'last_seen',
     isVisible: false,
-    numeric: true,
+    numeric: false,
     disablePadding: false
   },
   {
@@ -113,3 +113,6 @@ export const initialCustomerColumns: TableColumns<Customer>[] = [
     disablePadding: false
   }
 ]
+
+export const DEFAULT_PAGE_CUSTOMER = 1
+export const DEFAULT_PER_PAGE_CUSTOMER = 25

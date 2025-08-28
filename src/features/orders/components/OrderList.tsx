@@ -137,6 +137,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
             return {
               ...tableColumn,
               sortBy: 'customer_id',
+              minWidth: 200,
               cell: (_, row) => (
                 <Link
                   sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
@@ -152,6 +153,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
             return {
               ...tableColumn,
               sortable: false,
+              minWidth: 200,
               cell: (_, row) => row.customer.address
             }
 

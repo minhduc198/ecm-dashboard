@@ -1,13 +1,23 @@
 import { Customer } from '@/services/data-generator'
-import { ApiResponse, ApiResponseList, UrlQuery } from '@/types'
+import { ApiResponse, ApiResponseList, SORT, UrlQuery } from '@/types'
 import { TableColumns } from '@/types/table'
 
-export type GetCustomerListReq = {
-  filter: Customer
-  order: 'ASC' | 'DESC'
-  page: number
-  perPage: number
-  sort: string
+export interface GetCustomersListRequest {
+  pagination: {
+    page: number
+    perPage: number
+  }
+  sort?: {
+    field: string
+    order: SORT
+  }
+  filter?: {
+    groups?: string
+    last_seen_gte?: string | Date
+    has_newsletter?: string
+    nb_orders_gte?: string
+    q?: string
+  }
 }
 
 export type CustomerListResponse = ApiResponseList<Customer>
@@ -30,3 +40,9 @@ interface CustomerParam {
 export type CustomerUrlQuery = UrlQuery<CustomerParam>
 
 export type TableColumnsCustomer = TableColumns<Customer>[]
+
+export type DeleteCustomersRequest = {
+  ids: number[]
+}
+
+export type DeleteCustomersResponse = ApiResponse<Customer>
