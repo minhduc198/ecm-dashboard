@@ -2,7 +2,7 @@ import * as yup from 'yup'
 
 export const schema = yup.object().shape(
   {
-    customer_id: yup.string().required('Vui lòng chọn người dùng'),
+    customer_id: yup.number().required('Vui lòng chọn người dùng'),
     total_gte: yup
       .number()
       .transform((value, originalValue) => (originalValue === '' ? null : value))
@@ -26,3 +26,8 @@ export const schema = yup.object().shape(
   },
   [['date_lte', 'date_gte']]
 )
+
+export const detailOrderSchema = yup.object({
+  returned: yup.boolean().default(false),
+  status: yup.string().default('')
+})

@@ -1,35 +1,33 @@
 import { baseDataProvider } from '@/services/dataProvider'
+import { SORT } from '@/types'
 import {
-  GetOrdersListRequest,
-  GetOrdersListResponse,
-  GetOrderDetailRequest,
-  GetOrderDetailResponse,
-  UpdateOrderRequest,
-  UpdateOrderResponse,
   DeleteOrderRequest,
   DeleteOrderResponse,
   ExportOrdersRequest,
   ExportOrdersResponse,
+  GetOrderDetailRequest,
+  GetOrderDetailResponse,
+  GetOrdersListRequest,
+  GetOrdersListResponse,
   Order,
-  OrderError
+  UpdateOrderRequest,
+  UpdateOrderResponse
 } from '../types'
 
 export class OrdersService {
-  static async getOrdersList(params: GetOrdersListRequest = {}): Promise<GetOrdersListResponse> {
+  static async getOrdersList(params: GetOrdersListRequest): Promise<GetOrdersListResponse> {
+    const pagination = params.pagination
     try {
-      const { pagination = { page: 1, perPage: 10 }, sort = { field: 'id', order: 'DESC' }, filter = {} } = params
-
       const response = await baseDataProvider.getList('orders', {
         pagination,
-        sort,
-        filter
+        sort: params.sort ?? { field: 'id', order: SORT.DESC },
+        filter: params.filter ?? {}
       })
 
       return {
+        ...(pagination ?? { page: 1, perPage: 10 }),
         data: response.data as Order[],
-        total: response.total || 0,
-        page: pagination.page,
-        perPage: pagination.perPage
+        total: response.total || 0
       }
     } catch (error) {
       throw new Error(`Lỗi khi lấy danh sách orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -111,7 +109,7 @@ export class OrdersService {
         ID: order.id,
         'Mã đơn hàng': order.reference,
         'Ngày đặt': new Date(order.date).toLocaleDateString('vi-VN'),
-        'Khách hàng ID': order.customer_id,
+        'Khách hàng': order.customer,
         'Số sản phẩm': order.basket.length,
         'Tổng tiền (chưa thuế)': order.total_ex_taxes,
         'Phí giao hàng': order.delivery_fees,
@@ -181,7 +179,7 @@ export class OrdersService {
   }
 }
 
-export const fetchOrdersList = (params?: GetOrdersListRequest) => OrdersService.getOrdersList(params)
+export const fetchOrdersList = (params: GetOrdersListRequest) => OrdersService.getOrdersList(params)
 
 export const fetchOrderDetail = (params: GetOrderDetailRequest) => OrdersService.getOrderDetail(params)
 

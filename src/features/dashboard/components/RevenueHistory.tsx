@@ -46,7 +46,7 @@ function RevenueHistory() {
             <Stack sx={{ fontSize: '14px' }}>
               <Box>{formatDateTime(data.date, 'dd/MM/y, HH:mm:ss')}</Box>
               <Box sx={{ color: 'rgba(0, 0, 0, 0.6)' }}>
-                by {data.name}, {data.quantity} items{' '}
+                by {data.name}, {data.quantity} {data.quantity > 1 ? 'items' : 'item'}
               </Box>
             </Stack>
           </Box>

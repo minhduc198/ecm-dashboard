@@ -1,5 +1,3 @@
-import { Order } from '@/features/orders/types'
-
 export interface UserData {
   id: number
   avatar: string
@@ -21,17 +19,9 @@ export interface FilterQuery {
   value: string
 }
 
-export interface ColumnItem {
-  id: keyof Order
-  label: string
-  isVisible: boolean
-  numeric: boolean
-  disablePadding: boolean
-}
-
 export interface SelectOptionItem {
   label: string
-  value: string
+  value: string | number | Object
 }
 
 export interface QuerySaveType {
@@ -40,7 +30,32 @@ export interface QuerySaveType {
   id: number
 }
 
+export enum SORT {
+  DESC = 'DESC',
+  ASC = 'ASC'
+}
+
 export interface UrlQuery<T> {
-  displayedFilters: { [key in keyof T]?: boolean }
+  displayedFilters?: { [key in keyof T]?: boolean }
   filter: { [key in keyof T]?: T[key] }
+  order: SORT
+  page: number
+  perPage: number
+  sort: keyof T
+}
+
+export interface IPagination {
+  page: number
+  perPage: number
+}
+
+export interface ApiResponseList<T> {
+  data: T[]
+  total: number
+  page: number
+  perPage: number
+}
+
+export interface ApiResponse<T> {
+  data: T
 }

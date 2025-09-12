@@ -1,6 +1,13 @@
+import { ReactNode } from 'react'
+
 export interface TableColumns<T> {
-  disablePadding?: boolean
   id: keyof T
   label: string
   numeric?: boolean
+  disablePadding?: boolean
+  sortable?: boolean
+  isVisible?: boolean
+  sortBy?: string
+  minWidth?: number
+  cell?: (value: unknown, row: T) => ReactNode
 }

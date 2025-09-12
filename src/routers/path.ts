@@ -1,11 +1,12 @@
 export const path = {
-  sales: '/sales',
   catalog: '/catalog',
-  invoices: 'sales/invoices',
+  invoices: '/invoices',
   customers: '/customers',
   reviews: '/reviews',
-  orders: 'sales/orders',
+  orders: '/orders',
   detailReview: '/reviews/:id',
   detailCustomer: '/customers/:id',
-  detailOrder: 'orders/:id'
+  detailOrder: '/orders/:id',
+  createCustomer: '/customers/create',
+  segments: '/segments'
 }

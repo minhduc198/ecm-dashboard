@@ -6,14 +6,12 @@ export function formatDateTime(dateData: string, formatPattern: string) {
 
 export function cleanObject<T extends Record<string, any>>(obj: T): Partial<T> {
   const result: Partial<T> = {}
-
   for (const key in obj) {
     const value = obj[key]
-    if (value && value !== 'false') {
+    if (value !== undefined && value !== null && value !== '') {
       result[key] = value
     }
   }
-
   return result
 }
 

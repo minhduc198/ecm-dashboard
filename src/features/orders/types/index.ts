@@ -1,4 +1,9 @@
+import { Customer } from '@/services/data-generator'
+
 // Order Types
+import { ApiResponse, ApiResponseList, FilterItem, SORT, UrlQuery } from '@/types'
+import { TableColumns } from '@/types/table'
+
 export type OrderStatus = 'ordered' | 'delivered' | 'cancelled'
 
 export type BasketItem = {
@@ -10,6 +15,7 @@ export type Order = {
   id: number
   reference: string
   date: string
+  customer: Customer
   customer_id: number
   basket: BasketItem[]
   total_ex_taxes: number
@@ -24,13 +30,13 @@ export type Order = {
 }
 
 export interface GetOrdersListRequest {
-  pagination?: {
+  pagination: {
     page: number
     perPage: number
   }
   sort?: {
     field: string
-    order: 'ASC' | 'DESC'
+    order: SORT
   }
   filter?: {
     status?: OrderStatus
@@ -62,33 +68,49 @@ export interface ExportOrdersRequest {
 }
 
 // Response Types
-export interface GetOrdersListResponse {
-  data: Order[]
-  total: number
-  page: number
-  perPage: number
-}
+export type GetOrdersListResponse = ApiResponseList<Order>
 
-export interface GetOrderDetailResponse {
-  data: Order
-}
+export type GetOrderDetailResponse = ApiResponse<Order>
 
-export interface UpdateOrderResponse {
-  data: Order
-}
+export type UpdateOrderResponse = ApiResponse<Order>
 
-export interface DeleteOrderResponse {
-  data: Order
-}
+export type DeleteOrderResponse = ApiResponse<Order>
 
 export interface ExportOrdersResponse {
   url: string
   filename: string
 }
 
-// Error Types
 export interface OrderError {
   message: string
   code?: string
   details?: any
+}
+
+export interface OrderParams {
+  status: OrderStatus
+  customer_id: number
+  date_gte: string
+  date_lte: string
+  total_gte: number
+  returned: string
+  q: string
+}
+
+export type OrderFilterItem = FilterItem<OrderParams>
+
+export type OrderUrlQuery = UrlQuery<OrderParams>
+
+export type OrderSettingColumn = {
+  ordered: TableColumns<Order>[]
+  delivered: TableColumns<Order>[]
+  cancelled: TableColumns<Order>[]
+}
+
+export interface OrderDetailProduct {
+  id: number
+  reference: string
+  price: number
+  quantity: number
+  total: number
 }
