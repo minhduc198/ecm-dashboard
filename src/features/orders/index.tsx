@@ -221,11 +221,11 @@ const OrderPage = () => {
 
     const exportData = cloneDeep(tempData || []).map((item) => {
       const obj = {
-        date: formatDate(String(item.date), 'HH:mm:ss d/M/yyyy'),
-        taxes: formatCurrency(Number(item.taxes)),
-        total: formatCurrency(Number(item.total)),
-        delivery_fees: formatCurrency(Number(item.delivery_fees)),
-        total_ex_taxes: formatCurrency(Number(item.total_ex_taxes)),
+        date: formatDate(item.date, 'HH:mm:ss d/M/yyyy'),
+        taxes: formatCurrency(item.taxes),
+        total: formatCurrency(item.total),
+        delivery_fees: formatCurrency(item.delivery_fees),
+        total_ex_taxes: formatCurrency(item.total_ex_taxes),
         customer: item.customer.first_name + ' ' + item.customer.last_name,
         returned: item.returned ? 'Yes' : 'No',
         nb_items: item.basket.length,

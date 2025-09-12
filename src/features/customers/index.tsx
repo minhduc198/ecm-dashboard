@@ -290,14 +290,12 @@ export default function Customers() {
           ? formatDate(data.last_seen, 'HH:mm:ss d/M/yyyy')
           : '',
         ['Orders']: customerSettingNameCols.includes('nb_orders') ? data.nb_orders : '',
-        ['Total spent']: customerSettingNameCols.includes('total_spent')
-          ? formatCurrency(Number(data.total_spent))
-          : '',
+        ['Total spent']: customerSettingNameCols.includes('total_spent') ? formatCurrency(data.total_spent ?? 0) : '',
         ['Latest purchase']: customerSettingNameCols.includes('latest_purchase')
           ? formatDate(data.last_seen, 'HH:mm:ss d/M/yyyy')
           : '',
         ['News']: customerSettingNameCols.includes('has_newsletter') ? (data.has_newsletter ? 'Yes' : 'No') : '',
-        ['Segments']: customerSettingNameCols.includes('groups') ? data.groups.join(',').replace(',', ' ') : '',
+        ['Segments']: customerSettingNameCols.includes('groups') ? data?.groups?.join(',').replace(',', ' ') : '',
         ['Birthday']: customerSettingNameCols.includes('birthday') ? formatDate(data.last_seen, 'd/M/yyyy') : ''
       }
 

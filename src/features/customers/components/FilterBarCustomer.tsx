@@ -79,12 +79,15 @@ export default function FilterBarCustomer({ setCustomerListRq, customerListRq }:
       groups: ''
     }
   })
-  const { isDirty } = method.formState
-  const q = useWatch({ name: 'q', control: method.control })
-  const last_seen = useWatch({ name: 'last_seen', control: method.control })
-  const has_newsletter = useWatch({ name: 'has_newsletter', control: method.control })
-  const nb_orders_gte = useWatch({ name: 'nb_orders_gte', control: method.control })
-  const groups = useWatch({ name: 'groups', control: method.control })
+  const {
+    formState: { isDirty },
+    control
+  } = method
+  const q = useWatch({ name: 'q', control })
+  const last_seen = useWatch({ name: 'last_seen', control })
+  const has_newsletter = useWatch({ name: 'has_newsletter', control })
+  const nb_orders_gte = useWatch({ name: 'nb_orders_gte', control })
+  const groups = useWatch({ name: 'groups', control })
 
   const onDebounceSearch = useMemo(() => debounce((value?: string) => setSearchName(value), 300), [])
 
