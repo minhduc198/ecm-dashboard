@@ -157,7 +157,7 @@ interface CustomTableProps<DataType, IdType> {
   handleReject?: () => void
   handleDelete?: (ids: IdType[]) => void
   onClearAllFilter?: () => void
-  onRowClick?: (id: IdType) => void
+  onRowClick?: (row: DataType) => void
   handleSort?: (field: string, order: SORT) => void
 }
 
@@ -231,9 +231,13 @@ export default function CustomTable<DataType, IdType>({
     }
   }
 
-  const navigateDetailPage = (id: IdType) => {
+  const navigateDetailPage = (row: DataType) => (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
+    if ((e.target as HTMLElement).nodeName !== 'TD') {
+      return
+    }
+
     if (onRowClick) {
-      onRowClick(id)
+      onRowClick(row)
     }
   }
 
@@ -246,9 +250,9 @@ export default function CustomTable<DataType, IdType>({
           handleDelete={onDelete}
           handleReject={handleReject}
         />
-        <TableContainer>
+        <TableContainer sx={{ maxHeight: '200dvh' }}>
           {dataSource.length ? (
-            <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
+            <Table stickyHeader sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
               <TableHeader<DataType>
                 columns={columns}
                 selectable={selectable}
@@ -280,7 +284,7 @@ export default function CustomTable<DataType, IdType>({
                       {columns.map((col: TableColumns<DataType>) => (
                         <TableCell
                           sx={{ minWidth: col.minWidth }}
-                          onClick={() => navigateDetailPage(row[rowId] as IdType)}
+                          onClick={navigateDetailPage(row)}
                           key={col.id.toString()}
                           align={col.numeric ? 'right' : 'left'}
                           padding={col.disablePadding ? 'none' : 'normal'}

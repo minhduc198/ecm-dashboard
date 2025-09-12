@@ -16,6 +16,14 @@ export const useSearchParam = () => {
     setSearchParams(newParams)
   }
 
+  const replaceParams = (params: SearchParamsRecord) => {
+    const newParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      newParams.set(key, value)
+    })
+    setSearchParams(newParams)
+  }
+
   const setMany = (params: SearchParamsRecord) => {
     const newParams = new URLSearchParams(searchParams.toString())
     Object.entries(params).forEach(([key, value]) => {
@@ -40,6 +48,7 @@ export const useSearchParam = () => {
     getAll,
     setOne,
     setMany,
+    replaceParams,
     deleteOne,
     deleteMany
   }

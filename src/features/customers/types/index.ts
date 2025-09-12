@@ -13,7 +13,8 @@ export interface GetCustomersListRequest {
   }
   filter?: {
     groups?: string
-    last_seen_gte?: string | Date
+    last_seen_gte?: string
+    last_seen_lte?: string
     has_newsletter?: string
     nb_orders_gte?: string
     q?: string
@@ -29,9 +30,12 @@ export type GetCustomerDetailRequest = {
 export type GetCustomerDetailResponse = ApiResponse<Customer>
 
 export type Groups = 'compulsive' | 'collector' | 'ordered_once' | 'regular' | 'returns' | 'reviewer'
-interface CustomerParam {
-  last_seen_gte: string
-  groups: Groups
+
+export interface CustomerParam {
+  id?: string
+  last_seen_gte?: string
+  last_seen_lte?: string
+  groups: string
   has_newsletter: string
   nb_orders_gte: string
   q: string
@@ -46,3 +50,14 @@ export type DeleteCustomersRequest = {
 }
 
 export type DeleteCustomersResponse = ApiResponse<Customer>
+
+export interface UpdateCustomerRequest {
+  id: number
+  data: Partial<Omit<Customer, 'id'>>
+}
+
+export type UpdateCustomerResponse = ApiResponse<Customer>
+
+export interface CreateCustomerRequest {
+  data: Partial<Omit<Customer, 'id'>>
+}

@@ -1,12 +1,11 @@
 import { DEFAULT_PAGE } from '@/constants'
 import { DEFAULT_PER_PAGE_CUSTOMER } from '@/features/customers/constant'
 import { CustomerUrlQuery, TableColumnsCustomer } from '@/features/customers/types'
-import { Customer } from '@/services/data-generator'
-import { SORT } from '@/types'
-import { TableColumns } from '@/types/table'
+import { QuerySaveType, SORT } from '@/types'
 
 const customerListParamsLSName = 'customer.listParams'
 const customerSettingColumnsLSName = 'customer.settingColumns'
+const customerSaveQueries = 'customer.saveQueries'
 
 export function saveCustomerListParamsToLS(value: CustomerUrlQuery) {
   localStorage.setItem(customerListParamsLSName, JSON.stringify(value))
@@ -18,10 +17,10 @@ export function getCustomerListParamsFormLS(): CustomerUrlQuery {
   if (!dataLs)
     return {
       filter: {},
-      order: SORT.ASC,
+      order: SORT.DESC,
       page: DEFAULT_PAGE,
       perPage: DEFAULT_PER_PAGE_CUSTOMER,
-      sort: 'groups'
+      sort: 'id'
     }
   const obj = JSON.parse(dataLs)
   return obj
@@ -39,4 +38,21 @@ export function getCustomerSettingColumnsFromLS(): TableColumnsCustomer {
   }
 
   return JSON.parse(dataLs)
+}
+
+export function saveQueriesCustomer(data: QuerySaveType[]) {
+  if (!data.length) {
+    localStorage.removeItem(customerSaveQueries)
+  } else {
+    localStorage.setItem(customerSaveQueries, JSON.stringify(data))
+  }
+}
+
+export function getCustomerSaveQueries(): QuerySaveType[] {
+  const dataLs = localStorage.getItem(customerSaveQueries)
+  if (!dataLs) {
+    return []
+  } else {
+    return JSON.parse(dataLs)
+  }
 }

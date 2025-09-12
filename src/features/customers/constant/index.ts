@@ -1,6 +1,13 @@
 import { Customer } from '@/services/data-generator'
 import { SelectOptionItem } from '@/types'
 import { TableColumns } from '@/types/table'
+import {
+  getLastDaysOfPreviousMonth,
+  getLastDaysOfTwoPreviousMonths,
+  getLastSaturdayISO,
+  getSaturdayOfTwoWeeksAgo,
+  getYesterday
+} from '@/utils/date'
 
 export enum NEWSLETTER {
   Y = 'Y',
@@ -20,27 +27,48 @@ export const segmentsOptions: SelectOptionItem[] = [
 export const lastSeenGteOptions: SelectOptionItem[] = [
   {
     label: 'Today',
-    value: 'today'
+    value: {
+      last_seen_gte: getYesterday(),
+      last_seen_lte: ''
+    }
   },
   {
     label: 'This week',
-    value: 'this_week'
+    value: {
+      last_seen_gte:
+        getLastSaturdayISO() === getYesterday()
+          ? new Date(new Date(getLastSaturdayISO()).getTime() + 1).toISOString()
+          : getLastSaturdayISO(),
+      last_seen_lte: ''
+    }
   },
   {
     label: 'Last week',
-    value: 'last_week'
+    value: {
+      last_seen_gte: getSaturdayOfTwoWeeksAgo(),
+      last_seen_lte: getLastSaturdayISO()
+    }
   },
   {
     label: 'This month',
-    value: 'this_month'
+    value: {
+      last_seen_gte: getLastDaysOfPreviousMonth(),
+      last_seen_lte: ''
+    }
   },
   {
     label: 'Last month',
-    value: 'last_month'
+    value: {
+      last_seen_gte: getLastDaysOfTwoPreviousMonths(),
+      last_seen_lte: getLastDaysOfPreviousMonth()
+    }
   },
   {
     label: 'Earlier',
-    value: 'earlier'
+    value: {
+      last_seen_gte: '',
+      last_seen_lte: getLastDaysOfTwoPreviousMonths()
+    }
   }
 ]
 
@@ -65,14 +93,14 @@ export const initialCustomerColumns: TableColumns<Customer>[] = [
   {
     label: 'Last seen',
     id: 'last_seen',
-    isVisible: false,
+    isVisible: true,
     numeric: false,
     disablePadding: false
   },
   {
     label: 'Orders',
     id: 'nb_orders',
-    isVisible: false,
+    isVisible: true,
     numeric: true,
     disablePadding: false
   },
@@ -87,21 +115,21 @@ export const initialCustomerColumns: TableColumns<Customer>[] = [
   {
     label: 'Latest purchase',
     id: 'latest_purchase',
-    isVisible: false,
+    isVisible: true,
     numeric: false,
     disablePadding: false
   },
   {
     label: 'News',
     id: 'has_newsletter',
-    isVisible: false,
+    isVisible: true,
     numeric: false,
     disablePadding: false
   },
   {
     label: 'Segments',
     id: 'groups',
-    isVisible: false,
+    isVisible: true,
     numeric: false,
     disablePadding: false
   },

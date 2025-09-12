@@ -53,10 +53,10 @@ export default function CustomDatePicker({ datePickerLabel, sxDatePicker, handle
                   size: 'small',
                   sx: {
                     '& .MuiFilledInput-root:after': {
-                      borderBottom: '2px solid #4F3CC9'
+                      color: errors[name]?.message ? 'red' : '#4F3CC9'
                     },
                     '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#4F3CC9'
+                      color: errors[name]?.message ? 'red' : '#4F3CC9'
                     },
                     ...sxDatePicker,
                     '& .MuiFilledInput-root': {

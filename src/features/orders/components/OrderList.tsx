@@ -52,7 +52,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
   const currentListParamsLS = getListParamsFormLS()
   const navigate = useNavigate()
 
-  const { temporaryData, isOpenUndo, timerId, setTemporaryData, setIsOpenUndo, setTimerId } = useUndoOrderStore()
+  const { tmpUndoData, isOpenUndo, timerId, setTmpUndoData, setIsOpenUndo, setTimerId } = useUndoOrderStore()
   const { setHeaderData } = useHeaderTitleStore()
 
   const sortFromLs = {
@@ -71,7 +71,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
 
   useEffect(() => {
     if (!timerId) {
-      setTemporaryData(data)
+      setTmpUndoData(data)
     }
   }, [data])
 
@@ -209,8 +209,8 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
   }
 
   const handleDelete = (deletedIds: number[]) => {
-    const softDeleteOrder = temporaryData.filter((data) => !deletedIds.includes(data.id))
-    setTemporaryData(softDeleteOrder)
+    const softDeleteOrder = tmpUndoData.filter((data) => !deletedIds.includes(data.id))
+    setTmpUndoData(softDeleteOrder)
     setIsOpenUndo(true)
 
     const timeOut = setTimeout(() => {
@@ -224,14 +224,15 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
 
   const handleUndo = () => {
     setIsOpenUndo(false)
-    setTemporaryData(data)
+    setTimerId(null)
+    setTmpUndoData(data)
     clearTimeout(timerId ?? 0)
   }
 
-  const handleViewDetail = (id: number) => {
-    navigate(`${path.orders}/${id}`)
+  const handleViewDetail = (row: Order) => {
+    navigate(`${path.orders}/${row.id}`)
 
-    const referenceDetail = temporaryData.find((data) => data.id === id)
+    const referenceDetail = tmpUndoData.find((data) => data.id === row.id)
     setHeaderData({
       reference: referenceDetail?.reference
     })
@@ -314,7 +315,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
       <CustomTable<Order, number>
         rowId='id'
         columns={columns}
-        dataSource={temporaryData || []}
+        dataSource={tmpUndoData || []}
         totalItems={totalItems}
         pagination={pagination}
         sortColFromLS={sortFromLs}

@@ -21,7 +21,7 @@ export interface FilterQuery {
 
 export interface SelectOptionItem {
   label: string
-  value: string | number
+  value: string | number | Object
 }
 
 export interface QuerySaveType {

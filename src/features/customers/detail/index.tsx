@@ -3,7 +3,6 @@ import { fetchOrdersList } from '@/features/orders/services'
 import { fetchProductsList } from '@/features/products/services'
 import { fetchReviewsList } from '@/features/reviews/services'
 import { path } from '@/routers/path'
-import { useOrderStore } from '@/store/orderStore'
 import { formatCurrency } from '@/utils/currency'
 import { formatDate } from '@/utils/date'
 import { getListParamsFormLS, saveListParamsToLS } from '@/utils/orders'
@@ -16,6 +15,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import FormCustomer from '../components/FormCustomer'
 import { fetchCustomerDetail } from '../service'
+import { useUndoCustomerStore } from '@/store/undoCustomerStore'
+import { useHeaderTitleStore } from '@/store/headerStore'
 
 const DetailTypography = styled(Typography)({
   fontSize: '14px',
@@ -26,12 +27,23 @@ export default function DetailCustomer() {
   const param = useParams()
   const navigate = useNavigate()
   const currentListParamsLS = getListParamsFormLS()
+  const { setHeaderData } = useHeaderTitleStore()
 
-  const { data: customerDetailData, isFetching } = useQuery({
+  const { timerId } = useUndoCustomerStore()
+
+  const { data: customerDetailData, isLoading } = useQuery({
     queryKey: ['customer_detail', param.id],
     queryFn: () => fetchCustomerDetail({ id: Number(param.id) }),
     refetchOnWindowFocus: false,
-    enabled: !!param.id
+    keepPreviousData: true,
+    enabled: !!param.id && !timerId,
+    onSuccess: (res) => {
+      const data = res.data
+      setHeaderData({
+        fullName: `${data.first_name} ${data.last_name}`,
+        avatar: data.avatar
+      })
+    }
   })
   const customerData = customerDetailData?.data
 
@@ -98,11 +110,9 @@ export default function DetailCustomer() {
     navigate(`${path.orders}?${queryString}`)
   }
 
-  const handleDeleteCustomer = () => {}
-
   return (
     <Box>
-      {isFetching ? (
+      {isLoading ? (
         'loading'
       ) : (
         <Grid container spacing={2}>
@@ -114,9 +124,7 @@ export default function DetailCustomer() {
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
                   <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
                     <QueryBuilderIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
-                    <Box sx={{ fontSize: '14px' }}>
-                      First seen {formatDate(String(customerData?.first_seen), 'd/M/yyyy')}
-                    </Box>
+                    <Box sx={{ fontSize: '14px' }}>First seen {formatDate(customerData?.first_seen, 'd/M/yyyy')}</Box>
                   </Box>
                   {!!customerData?.nb_orders && (
                     <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
@@ -133,9 +141,7 @@ export default function DetailCustomer() {
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
                   <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
                     <QueryBuilderIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
-                    <Box sx={{ fontSize: '14px' }}>
-                      Last seen {formatDate(String(customerData?.last_seen), 'd/M/yyyy')}
-                    </Box>
+                    <Box sx={{ fontSize: '14px' }}>Last seen {formatDate(customerData?.last_seen, 'd/M/yyyy')}</Box>
                   </Box>
                   {!!reviewData?.length && (
                     <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>

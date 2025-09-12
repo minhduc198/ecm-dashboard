@@ -21,6 +21,7 @@ import OrderList from './components/OrderList'
 import { FilterContext } from './context/FilterContext'
 import { fetchOrdersList } from './services'
 import { GetOrdersListRequest, Order, OrderFilterItem, OrderStatus } from './types'
+import { useUndoOrderStore } from '@/store/undoOrderStore'
 
 const initFilterItems: OrderFilterItem[] = [
   {
@@ -128,7 +129,6 @@ const returnedColumn: TableColumns<Order> = {
 const OrderPage = () => {
   const { filter, displayedFilters, sort, page, order, perPage } = getListParamsFormLS()
   const columnsLS = getSettingColumnsFromLS()
-
   const [filterItems, setFilterItems] = useState<OrderFilterItem[]>(
     initFilterItems.map((item) => ({
       ...item,
@@ -167,19 +167,18 @@ const OrderPage = () => {
   const { ORDERED, DELIVERED, CANCELLED } = ORDER_STATUS
 
   const { data: orderedData, isFetching: isOrderedFetching } = useQuery({
-    queryKey: [ORDERED, orderListRq, sortParam.sortOrdered],
+    queryKey: ['order_list', ORDERED, orderListRq, sortParam.sortOrdered],
     queryFn: () =>
       fetchOrdersList({
         ...orderListRq,
         sort: sortParam.sortOrdered,
         filter: { ...orderListRq.filter, status: ORDERED }
       }),
-    keepPreviousData: true,
-    staleTime: 60 * 60 * 1000
+    keepPreviousData: true
   })
 
   const { data: deliveredData, isFetching: isDeliveredFetching } = useQuery({
-    queryKey: [DELIVERED, orderListRq, sortParam.sortDelivered],
+    queryKey: ['order_list', DELIVERED, orderListRq, sortParam.sortDelivered],
     queryFn: () =>
       fetchOrdersList({
         ...orderListRq,
@@ -187,12 +186,11 @@ const OrderPage = () => {
 
         filter: { ...orderListRq.filter, status: DELIVERED }
       }),
-    keepPreviousData: true,
-    staleTime: 60 * 60 * 1000
+    keepPreviousData: true
   })
 
   const { data: cancelledData, isFetching: isCancelledFetching } = useQuery({
-    queryKey: [CANCELLED, orderListRq, sortParam.sortCancelled],
+    queryKey: ['order_list', CANCELLED, orderListRq, sortParam.sortCancelled],
     queryFn: () =>
       fetchOrdersList({
         ...orderListRq,
@@ -200,8 +198,7 @@ const OrderPage = () => {
 
         filter: { ...orderListRq.filter, status: CANCELLED }
       }),
-    keepPreviousData: true,
-    staleTime: 60 * 60 * 1000
+    keepPreviousData: true
   })
 
   useEffect(() => {

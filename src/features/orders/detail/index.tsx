@@ -25,7 +25,8 @@ import { GetProductListReq } from '@/features/products/types'
 import { fetchProductsList } from '@/features/products/services'
 import CustomTable from '@/components/CustomTable'
 import { TableColumns } from '@/types/table'
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useContext, useMemo } from 'react'
+import { FilterContext } from '../context/FilterContext'
 
 type FormValues = yup.InferType<typeof detailOrderSchema>
 
@@ -50,7 +51,8 @@ export default function DetailOrder() {
   const param = useParams()
   const navigate = useNavigate()
   const { setHeaderData } = useHeaderTitleStore()
-  const { temporaryData, setIsOpenUndo, setTemporaryData, setTimerId } = useUndoOrderStore()
+  const { tmpUndoData, setIsOpenUndo, setTmpUndoData, setTimerId } = useUndoOrderStore()
+  const { orderListRq } = useContext(FilterContext)
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(detailOrderSchema),
@@ -81,14 +83,16 @@ export default function DetailOrder() {
   const { mutate: deleteOrderMutation } = useMutation({
     mutationFn: (id: number[]) => deleteOrders(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['order_list'] })
+      setTimerId(null)
     }
   })
 
   const { mutate: updateOrderMutation } = useMutation({
     mutationFn: (orderDetail: UpdateOrderRequest) => updateOrder(orderDetail),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['order_list'] })
+      setTimerId(null)
     }
   })
 
@@ -137,12 +141,14 @@ export default function DetailOrder() {
       }
     }
 
+    const newTmpData = tmpUndoData.filter((data) => data.id !== payload.id)
+    setTmpUndoData(newTmpData)
+
     setIsOpenUndo(true)
 
     const timeOut = setTimeout(() => {
       setIsOpenUndo(false)
       updateOrderMutation(payload)
-      setTimerId(null)
     }, 3000)
 
     setTimerId(timeOut)
@@ -151,16 +157,15 @@ export default function DetailOrder() {
   }
 
   const handleDelete = () => {
-    const cloneData = cloneDeep(temporaryData)
+    const cloneData = cloneDeep(tmpUndoData)
     const newTemporaryData = cloneData.filter((data) => data.id !== Number(param.id))
 
-    setTemporaryData(newTemporaryData)
+    setTmpUndoData(newTemporaryData)
     setIsOpenUndo(true)
 
     const timeOut = setTimeout(() => {
       setIsOpenUndo(false)
       deleteOrderMutation([Number(param.id)])
-      setTimerId(null)
     }, 3000)
 
     setTimerId(timeOut)

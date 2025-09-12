@@ -19,8 +19,6 @@ export class ProductService {
         filter: params.filter ?? {}
       })
 
-      console.log('response', response)
-
       return {
         ...pagination,
         data: response.data,
