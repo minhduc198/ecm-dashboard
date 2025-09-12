@@ -1,7 +1,9 @@
-import { ColumnItem } from '@/types'
-import * as React from 'react'
-import { GetOrdersListRequest, OrderFilterItem, OrderStatus } from '../types'
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
+import { TableColumns } from '@/types/table'
+import * as React from 'react'
+import { GetOrdersListRequest, Order, OrderFilterItem, OrderStatus } from '../types'
+
+type ColumnItem = TableColumns<Order>
 
 export interface FilterContextValue {
   orderListRq: GetOrdersListRequest

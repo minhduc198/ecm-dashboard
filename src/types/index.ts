@@ -21,6 +21,10 @@ export interface FilterQuery {
 
 export interface SelectOptionItem {
   label: string
+  value: string | number
+}
+export interface SelectFilterItem {
+  label: string
   value: string | number | Object
 }
 

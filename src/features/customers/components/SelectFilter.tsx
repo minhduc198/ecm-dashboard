@@ -1,4 +1,4 @@
-import { SelectOptionItem } from '@/types'
+import { SelectFilterItem } from '@/types'
 import { cleanObject } from '@/utils'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import { Box, FormControl, FormLabel, IconButton, RadioGroup, Typography } from '@mui/material'
@@ -11,7 +11,7 @@ interface Props {
   defaultValue?: null | string | object
   filterLabel: string
   IconFilter: ReactNode
-  options: SelectOptionItem[]
+  options: SelectFilterItem[]
 }
 
 export default function SelectFilter({ name, defaultValue = null, filterLabel, IconFilter, options }: Props) {

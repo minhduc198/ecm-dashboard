@@ -1,5 +1,5 @@
 import { Customer } from '@/services/data-generator'
-import { SelectOptionItem } from '@/types'
+import { SelectFilterItem, SelectOptionItem } from '@/types'
 import { TableColumns } from '@/types/table'
 import {
   getLastDaysOfPreviousMonth,
@@ -24,7 +24,7 @@ export const segmentsOptions: SelectOptionItem[] = [
   { value: 'reviewer', label: 'Reviewer' }
 ]
 
-export const lastSeenGteOptions: SelectOptionItem[] = [
+export const lastSeenGteOptions: SelectFilterItem[] = [
   {
     label: 'Today',
     value: {
