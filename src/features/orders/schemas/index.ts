@@ -5,6 +5,7 @@ export const schema = yup.object().shape(
     customer_id: yup.number().required('Vui lòng chọn người dùng'),
     total_gte: yup
       .number()
+      .nullable()
       .transform((value, originalValue) => (originalValue === '' ? null : value))
       .min(0, 'Số tiền tối thiểu phải lớn hơn hoặc bằng 0'),
     returned: yup.string(),

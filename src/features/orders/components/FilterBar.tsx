@@ -61,6 +61,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
   const [debouncedQ, setDebouncedQ] = useState(currentListParamsLS.filter.q)
 
   const methods = useForm({
+    mode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: {
       returned: '',
@@ -113,7 +114,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
       date_gte: isoStringToDate(currentListParamsLS.filter.date_gte),
       date_lte: isoStringToDate(currentListParamsLS.filter.date_lte)
     })
-  }, [JSON.stringify(currentListParamsLS.filter)])
+  }, [])
 
   useEffect(() => {
     setOrderSaveQueryToLS(currentSaveQueries)
@@ -128,7 +129,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
     const newFilter = cleanObject({
       q: debouncedQ,
       returned: returned,
-      total_gte: minAmount,
+      total_gte: minAmount ?? 0,
       date_lte: passedBefore ? passedBefore.toISOString() : '',
       date_gte: passedSince ? passedSince.toISOString() : '',
       customer_id: customerId,
