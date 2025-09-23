@@ -58,6 +58,8 @@ export default function FilterBarInvoices({
       }
     })
   )
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('')
+  const [orderSearchTerm, setOrderSearchTerm] = useState('')
 
   const tableParamsFromLS = {
     order: currentListParamsLS.order,
@@ -87,8 +89,8 @@ export default function FilterBarInvoices({
     loadMore,
     isLoading: isLoadingCustomers
   } = useInfiniteCustomers({
-    searchTerm: '',
-    enabled: filterItems[0]?.isChecked || false
+    searchTerm: customerSearchTerm,
+    enabled: !!filterItems[0]?.isChecked
   })
 
   const {
@@ -97,8 +99,8 @@ export default function FilterBarInvoices({
     loadMore: loadMoreOrder,
     isLoading: isLoadingOrder
   } = useInfiniteOrders({
-    searchTerm: '',
-    enabled: filterItems[1]?.isChecked || false
+    searchTerm: orderSearchTerm,
+    enabled: !!filterItems[1]?.isChecked
   })
 
   useEffect(() => {
@@ -150,6 +152,14 @@ export default function FilterBarInvoices({
     }
   }, [date_gte, date_lte, customer_id, order_id])
 
+  const handleCustomerSearch = (searchTerm: string) => {
+    setCustomerSearchTerm(searchTerm)
+  }
+
+  const handleOrderSearch = (searchTerm: string) => {
+    setOrderSearchTerm(searchTerm)
+  }
+
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (!destination) return
     const newItems = reorderDnd<TableColumns<Invoice>>(invoiceSettingCol, source.index, destination.index)
@@ -159,9 +169,8 @@ export default function FilterBarInvoices({
   }
 
   const handleChangeColumn = (columns: TableColumnsInvoice) => {
-    const value = [...columns]
-    setInvoiceSettingCol(value)
-    setInvoicesSettingColumnsToLS(value)
+    setInvoiceSettingCol(columns)
+    setInvoicesSettingColumnsToLS(columns)
   }
 
   const handleSetFilterItemsToUrlAndLS = (filterItem: InvoiceFilterItem[]) => {
@@ -241,11 +250,17 @@ export default function FilterBarInvoices({
   }
 
   const handleRemoveFilterItem = (key: string) => () => {
-    const indexOfFilterItems = filterItems.findIndex((item) => item.key === key)
-    filterItems[indexOfFilterItems].isChecked = false
-    setFilterItems([...filterItems])
-
-    handleSetFilterItemsToUrlAndLS(filterItems)
+    const newFilterItems = filterItems.map((item) => {
+      if (item.key === key) {
+        return {
+          ...item,
+          isChecked: false
+        }
+      }
+      return item
+    })
+    setFilterItems(newFilterItems)
+    handleSetFilterItemsToUrlAndLS(newFilterItems)
   }
 
   return (
@@ -260,6 +275,7 @@ export default function FilterBarInvoices({
               label='Customer'
               sxAutocomplete={{ width: '164px' }}
               options={customerOptions}
+              onSearch={handleCustomerSearch}
               loadMore={loadMore}
               hasNextPage={hasNextPage}
               isLoading={isLoadingCustomers}
@@ -272,6 +288,7 @@ export default function FilterBarInvoices({
               label='Order'
               sxAutocomplete={{ width: '164px' }}
               options={orderOptions}
+              onSearch={handleOrderSearch}
               loadMore={loadMoreOrder}
               hasNextPage={hasNextPageOrder}
               isLoading={isLoadingOrder}
@@ -280,7 +297,7 @@ export default function FilterBarInvoices({
           )}
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2, flexShrink: 0 }}>
           <AddFilter<InvoiceParam>
             queryObject={currentListParamsLS}
             filterItems={filterItems}

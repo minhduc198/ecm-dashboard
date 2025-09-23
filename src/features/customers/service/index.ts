@@ -12,6 +12,7 @@ import {
   UpdateCustomerRequest,
   UpdateCustomerResponse
 } from '../types'
+import { DEFAULT_PAGE_CUSTOMER, DEFAULT_PER_PAGE_CUSTOMER } from '../constant'
 
 export class CustomerService {
   static async getCustomerList(params: GetCustomersListRequest): Promise<CustomerListResponse> {
@@ -25,7 +26,7 @@ export class CustomerService {
       })
 
       return {
-        ...(pagination ?? { page: 1, perPage: 25 }),
+        ...(pagination ?? { page: DEFAULT_PAGE_CUSTOMER, perPage: DEFAULT_PER_PAGE_CUSTOMER }),
         data: response.data as Customer[],
         total: response.total || 0
       }

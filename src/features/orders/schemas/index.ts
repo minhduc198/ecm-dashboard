@@ -2,7 +2,10 @@ import * as yup from 'yup'
 
 export const schema = yup.object().shape(
   {
-    customer_id: yup.number().required('Vui lòng chọn người dùng'),
+    customer_id: yup
+      .number()
+      .nullable()
+      .transform((value, originalValue) => (originalValue === '' ? null : value)),
     total_gte: yup
       .number()
       .nullable()
@@ -13,14 +16,14 @@ export const schema = yup.object().shape(
       .date()
       .nullable()
       .when('date_lte', {
-        is: (val: any) => val != null,
+        is: (val: any) => !!val,
         then: (schema) => schema.max(yup.ref('date_lte'), 'Ngày bắt đầu phải trước ngày kết thúc')
       }),
     date_lte: yup
       .date()
       .nullable()
       .when('date_gte', {
-        is: (val: any) => val != null,
+        is: (val: any) => !!val,
         then: (schema) => schema.min(yup.ref('date_gte'), 'Ngày kết thúc phải sau ngày bắt đầu')
       }),
     q: yup.string()

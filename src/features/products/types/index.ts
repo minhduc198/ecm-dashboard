@@ -12,6 +12,7 @@ export type Product = {
   description: string
   stock: number
   sales: number
+  quantity?: number
 }
 
 export interface GetProductListReq {

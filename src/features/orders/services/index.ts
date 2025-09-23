@@ -13,6 +13,7 @@ import {
   UpdateOrderRequest,
   UpdateOrderResponse
 } from '../types'
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 
 export class OrdersService {
   static async getOrdersList(params: GetOrdersListRequest): Promise<GetOrdersListResponse> {
@@ -25,7 +26,7 @@ export class OrdersService {
       })
 
       return {
-        ...(pagination ?? { page: 1, perPage: 10 }),
+        ...(pagination ?? { page: DEFAULT_PAGE + 1, perPage: DEFAULT_PER_PAGE }),
         data: response.data as Order[],
         total: response.total || 0
       }

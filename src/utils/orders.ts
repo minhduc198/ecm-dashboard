@@ -1,7 +1,6 @@
 import { DEFAULT_PAGE } from '@/constants'
 import { OrderSettingColumn, OrderUrlQuery } from '@/features/orders/types'
-import { Order } from '@/services/data-generator'
-import { QuerySaveType, SORT, UrlQuery } from '@/types'
+import { QuerySaveType, SORT } from '@/types'
 
 const saveQueryLsName = 'orders_save_query'
 const orderListParamsLSName = 'order.listParams'
@@ -35,7 +34,7 @@ export function getListParamsFormLS(): OrderUrlQuery {
       order: SORT.ASC,
       page: DEFAULT_PAGE,
       perPage: 10,
-      sort: 'customer_id'
+      sort: 'id'
     }
   const obj = JSON.parse(dataLs)
   return obj

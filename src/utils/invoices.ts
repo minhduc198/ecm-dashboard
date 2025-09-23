@@ -35,7 +35,7 @@ export function getInvoiceListParamsFormLS(): InvoiceUrlQuery {
       order: SORT.DESC,
       page: DEFAULT_PAGE,
       perPage: DEFAULT_PER_PAGE_INVOICE,
-      sort: 'customer_id'
+      sort: 'id'
     }
   const obj = JSON.parse(dataLs)
   return obj

@@ -132,8 +132,8 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
       total_gte: minAmount ?? 0,
       date_lte: passedBefore ? passedBefore.toISOString() : '',
       date_gte: passedSince ? passedSince.toISOString() : '',
-      customer_id: customerId,
-      status: activeTab
+      status: activeTab,
+      customerId: customerId ?? ''
     })
 
     saveListParamsToLS({
@@ -221,12 +221,22 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
     })
   }
 
-  const handleRemoveFilterItem = (key: string) => () => {
-    const indexOfFilterItems = filterItems.findIndex((item) => item.key === key)
-    filterItems[indexOfFilterItems].isChecked = false
-    setFilterItems([...filterItems])
-
-    handleSetFilterItemsToUrlAndLS(filterItems)
+  const handleRemoveFilterItem = (key: 'returned' | 'q' | 'customer_id' | 'total_gte' | 'date_gte' | 'date_lte') => {
+    return () => {
+      const newFilterItem = filterItems.map((item) => {
+        if (item.key === key) {
+          return {
+            ...item,
+            isChecked: false
+          }
+        }
+        return item
+      })
+      methods.setValue(key, '')
+      methods.clearErrors(key)
+      setFilterItems(newFilterItem)
+      handleSetFilterItemsToUrlAndLS(newFilterItem)
+    }
   }
 
   const handleRemoveAllFilterItem = (newFilterItems: OrderFilterItem[]) => {
@@ -260,7 +270,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
   return (
     <FilterBarWrapper>
       <FormProvider {...methods}>
-        <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'start' }}>
           <TextFieldInput
             name='q'
             label='Search'
@@ -291,6 +301,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
           {filterItems[1].isChecked && (
             <CustomDatePicker
               name='date_gte'
+              triggerFiled='date_lte'
               datePickerLabel='Passed Since'
               sxDatePicker={{ width: '169px' }}
               handleClose={handleRemoveFilterItem('date_gte')}
@@ -299,6 +310,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
           {filterItems[2].isChecked && (
             <CustomDatePicker
               name='date_lte'
+              triggerFiled='date_gte'
               datePickerLabel='Passed Before'
               sxDatePicker={{ width: '169px' }}
               handleClose={handleRemoveFilterItem('date_lte')}

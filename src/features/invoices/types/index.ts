@@ -7,6 +7,7 @@ export type InvoiceParam = {
   order_id: string
   date_gte: string
   date_lte: string
+  id?: string
 }
 
 export type TableColumnsInvoice = TableColumns<Invoice>[]
@@ -25,10 +26,10 @@ export interface GetInvoicesListRequest {
     order: SORT
   }
   filter?: {
-    date_gte: string
-    date_lte: string
-    customer_id: string
-    order_id: string
+    date_gte?: string
+    date_lte?: string
+    customer_id?: string
+    order_id?: string
   }
 }
 

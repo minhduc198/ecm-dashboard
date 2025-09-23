@@ -95,6 +95,7 @@ export interface OrderParams {
   total_gte: number
   returned: string
   q: string
+  id?: string
 }
 
 export type OrderFilterItem = FilterItem<OrderParams>

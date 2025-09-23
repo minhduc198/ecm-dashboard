@@ -3,6 +3,7 @@ import { TableColumns } from '@/types/table'
 import { InvoiceFilterItem } from '../types'
 
 export const DEFAULT_PER_PAGE_INVOICE = 25
+export const DEFAULT_PER_INVOICE = 1
 
 export const initialInvoiceColumns: TableColumns<Invoice>[] = [
   {
@@ -36,7 +37,7 @@ export const initialInvoiceColumns: TableColumns<Invoice>[] = [
 
   {
     label: 'Order',
-    id: 'order_id',
+    id: 'reference',
     isVisible: true,
     numeric: true,
     disablePadding: false

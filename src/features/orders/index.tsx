@@ -21,7 +21,6 @@ import OrderList from './components/OrderList'
 import { FilterContext } from './context/FilterContext'
 import { fetchOrdersList } from './services'
 import { GetOrdersListRequest, Order, OrderFilterItem, OrderStatus } from './types'
-import { useUndoOrderStore } from '@/store/undoOrderStore'
 
 const initFilterItems: OrderFilterItem[] = [
   {
