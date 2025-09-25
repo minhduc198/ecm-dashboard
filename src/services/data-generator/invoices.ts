@@ -31,7 +31,7 @@ export const generateInvoices = (db: Db): Invoice[] => {
           order_id: order.id,
           reference: order.reference,
           customer_id: order.customer_id,
-          customerDetail: order.customer,
+          customer_detail: order.customer,
           total_ex_taxes: order.total_ex_taxes,
           delivery_fees: order.delivery_fees,
           tax_rate: order.tax_rate,
@@ -49,7 +49,7 @@ export type Invoice = {
   reference: string
   customer_id: number
   products: Product[]
-  customerDetail: Customer
+  customer_detail: Customer
   total_ex_taxes: number
   delivery_fees: number
   tax_rate: number

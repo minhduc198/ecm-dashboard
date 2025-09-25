@@ -1,8 +1,11 @@
 import { queryClient } from '@/App'
+import CustomLink from '@/components/CustomLink'
 import CustomTable from '@/components/CustomTable'
 import { DEFAULT_PAGE } from '@/constants'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { Invoice } from '@/services/data-generator'
+import { path } from '@/routers/path'
+import { Customer, Invoice } from '@/services/data-generator'
+import { useHeaderTitleStore } from '@/store/headerStore'
 import { useUndoInvoiceStore } from '@/store/undoInvocieStore'
 import { SORT } from '@/types'
 import { TableColumns } from '@/types/table'
@@ -13,17 +16,21 @@ import {
   getInvoicesSettingColumnsFromLS,
   saveInvoiceListParamsToLS
 } from '@/utils/invoices'
-import { Box, Button, Snackbar } from '@mui/material'
+import { Avatar, Box, Button, Snackbar, Typography } from '@mui/material'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
+import { OrderDetailProduct } from '../orders/types'
+import { Product } from '../products/types'
 import FilterBarInvoices from './components/FilterBarInvoices'
 import { initialInvoiceColumns } from './constant'
 import { deleteInvoices, fetchInvoicesList } from './services'
 import { GetInvoicesListRequest, InvoiceParam, TableColumnsInvoice } from './types'
+import { utils, writeFileXLSX } from 'xlsx'
 
 const Invoices = () => {
   const { setMany } = useSearchParam()
+  const { setHeaderData } = useHeaderTitleStore()
   const { action, tmpUndoData, isOpenUndo, timerId, setTmpUndoData, setIsOpenUndo, setTimerId, setAction } =
     useUndoInvoiceStore()
   const { filter, sort, page, order, perPage } = getInvoiceListParamsFormLS()
@@ -34,7 +41,7 @@ const Invoices = () => {
   )
 
   const [invoiceListRq, setInvoiceListRq] = useState<GetInvoicesListRequest>({
-    filter: filter as GetInvoicesListRequest['filter'],
+    filter,
     sort: {
       field: sort,
       order
@@ -64,6 +71,19 @@ const Invoices = () => {
     order: currentListParamsLS.order
   }
 
+  const handleSetQueryDetail = (row: Customer) => {
+    setHeaderData({
+      fullName: `${row.first_name} ${row.last_name}`,
+      avatar: row.avatar
+    })
+  }
+
+  const handleSetReference = (reference: string) => {
+    setHeaderData({
+      reference
+    })
+  }
+
   const columns: TableColumns<Invoice>[] = useMemo(() => {
     const cloneColumnSetting = cloneDeep(invoiceSettingCol)
 
@@ -82,21 +102,44 @@ const Invoices = () => {
           case 'customer_id':
             return {
               ...tableColumn,
-              minWidth: 200,
-              cell: (_, row) => `${row.customerDetail.first_name} ${row.customerDetail.last_name}`
+              cell: (_, row) => (
+                <CustomLink
+                  to={`${path.customers}/${row.customer_detail.id}`}
+                  onClick={() => handleSetQueryDetail(row.customer_detail)}
+                >
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Avatar
+                      sx={{ width: 25, height: 25 }}
+                      src={row.customer_detail.avatar}
+                      alt={row.customer_detail.first_name}
+                    />
+                    <Box>{`${row.customer_detail.first_name} ${row.customer_detail.last_name}`}</Box>
+                  </Box>
+                </CustomLink>
+              )
             }
 
-          case 'customerDetail':
+          case 'customer_detail':
             return {
               ...tableColumn,
               minWidth: 200,
-              cell: (_, row) => row.customerDetail.address
+              cell: (_, row) => row.customer_detail.address
             }
 
           case 'date':
             return {
               ...tableColumn,
               cell: (value) => (typeof value === 'string' ? formatDate(value, 'd/M/yyyy') : null)
+            }
+
+          case 'reference':
+            return {
+              ...tableColumn,
+              cell: (_, row) => (
+                <CustomLink to={`${path.orders}/${row.order_id}`} onClick={() => handleSetReference(row.reference)}>
+                  <Box>{row.reference}</Box>
+                </CustomLink>
+              )
             }
 
           case 'delivery_fees':
@@ -128,6 +171,36 @@ const Invoices = () => {
         }
       })
   }, [invoiceSettingCol])
+
+  const columnProductItems: TableColumns<OrderDetailProduct>[] = [
+    {
+      id: 'reference',
+      label: 'Reference',
+      cell: (value) => <CustomLink to={'#'}>{value?.toString()}</CustomLink>
+    },
+
+    { id: 'price', label: 'Unit price', numeric: true, cell: (value) => formatCurrency(Number(value)) },
+    {
+      id: 'quantity',
+      label: 'Quantity',
+      numeric: true,
+      cell: (value) => Number(value)
+    },
+    { id: 'total', label: 'Total', numeric: true, cell: (value) => formatCurrency(Number(value)) }
+  ]
+
+  const productItemsDataSource = (productList: Product[]) => {
+    return productList.map((product) => {
+      const total = (product.quantity ?? 1) * Number(product.price)
+      return {
+        id: product.id,
+        reference: product.reference,
+        price: product.price,
+        quantity: product.quantity || 0,
+        total
+      }
+    })
+  }
 
   useEffect(() => {
     if (!timerId) {
@@ -176,7 +249,7 @@ const Invoices = () => {
     })
 
     setMany({
-      perPage: JSON.stringify(rowPerPage)
+      perPage: String(rowPerPage)
     })
   }
 
@@ -196,7 +269,7 @@ const Invoices = () => {
     })
 
     setMany({
-      page: JSON.stringify(page)
+      page: String(page)
     })
   }
 
@@ -223,6 +296,93 @@ const Invoices = () => {
     })
   }
 
+  const collapsibleContent = (row: Invoice) => {
+    return (
+      <Box
+        sx={{
+          width: '598px',
+          mt: 1,
+          marginInline: 'auto',
+          paddingInline: 2,
+          pt: 2,
+          pb: 3,
+          border: '1px solid rgb(0, 0, 0, 0.1)',
+          borderRadius: '10px'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Posters Galore</Typography>
+          <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{row.id}</Typography>
+        </Box>
+        <Box>{`${row.customer_detail.first_name} ${row.customer_detail.last_name}`}</Box>
+        <Box>{row.customer_detail.address}</Box>
+        <Box sx={{ mt: '20px', mb: '20px', display: 'flex', justifyContent: 'space-around' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Date</Typography>
+            <Typography>{formatDate(row.date, 'd/M/yyyy')}</Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Order</Typography>
+            <Typography>{row.reference}</Typography>
+          </Box>
+        </Box>
+        <CustomTable<OrderDetailProduct, number>
+          rowId='id'
+          usePagination={false}
+          selectable={false}
+          columns={columnProductItems}
+          dataSource={productItemsDataSource(row.products)}
+        />
+      </Box>
+    )
+  }
+
+  const handleExport = () => {
+    const ids = invoiceSettingCol
+      .filter((col) => col.isVisible)
+      .map((col) => {
+        if (col.id === 'customer_detail') {
+          return 'address'
+        }
+        return col.id
+      })
+
+    const exportData = tmpUndoData.map((item) => {
+      const obj = {
+        id: item.id,
+        date: formatDate(item.date, 'HH:mm:ss d/M/yyyy'),
+        order_id: item.order_id,
+        address: item.customer_detail.address,
+        customer_id: item.customer_id,
+        total_ex_taxes: formatCurrency(item.total_ex_taxes ?? 0),
+        delivery_fees: formatCurrency(item.delivery_fees ?? 0),
+        tax_rate: formatCurrency(item.tax_rate ?? 0),
+        taxes: formatCurrency(item.taxes ?? 0),
+        total: formatCurrency(item.total ?? 0)
+      }
+
+      Object.keys(cloneDeep(obj)).forEach((key: string) => {
+        if (!ids.includes(key as keyof (Invoice | 'address'))) {
+          delete obj[key as keyof typeof obj]
+        }
+      })
+
+      return obj
+    })
+
+    const ws = utils.json_to_sheet(exportData)
+    const wb = utils.book_new()
+    utils.book_append_sheet(wb, ws, 'Data')
+    writeFileXLSX(wb, `Invoice_list_${formatDate(new Date().toISOString(), 'dMyyyy')}.xlsx`)
+  }
+
   return (
     <Box>
       <FilterBarInvoices
@@ -230,17 +390,19 @@ const Invoices = () => {
         invoiceSettingCol={invoiceSettingCol}
         setInvoiceListRq={setInvoiceListRq}
         setInvoiceSettingCol={setInvoiceSettingCol}
+        handleExport={handleExport}
       />
       <CustomTable<Invoice, number>
+        collapsibleTable
         rowId={'id'}
         columns={columns}
         dataSource={tmpUndoData ?? []}
-        handleDelete={handleDeleteInvoices}
+        sortColFromLS={sortFromLs}
         handleSetPage={handleSetPage}
         handleSetRowsPerPage={handleSetRowsPerPage}
         handleSort={handleSort}
-        sortColFromLS={sortFromLs}
-        // onRowClick={handleViewCustomerDetail}
+        collapsibleContent={collapsibleContent}
+        handleDelete={handleDeleteInvoices}
         pagination={{
           page,
           perPage

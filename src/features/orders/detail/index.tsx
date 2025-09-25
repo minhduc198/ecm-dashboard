@@ -96,7 +96,7 @@ export default function DetailOrder() {
   })
 
   const { data: customerDetailData } = useQuery({
-    queryKey: ['customerDetail', orderDetail.customer_id],
+    queryKey: ['customer_detail', orderDetail.customer_id],
     queryFn: () => fetchCustomerDetail({ id: Number(orderDetail.customer_id) }),
     refetchOnWindowFocus: false,
     enabled: !!param.id

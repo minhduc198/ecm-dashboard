@@ -29,7 +29,7 @@ export const initialInvoiceColumns: TableColumns<Invoice>[] = [
   },
   {
     label: 'Address',
-    id: 'customerDetail',
+    id: 'customer_detail',
     isVisible: true,
     numeric: false,
     disablePadding: false

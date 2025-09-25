@@ -14,6 +14,8 @@ import DetailCustomer from '@/features/customers/detail'
 import DetailReview from '@/features/reviews/detail'
 import CreateCustomerPage from '@/features/customers/pageCreate'
 import Segments from '@/features/segments'
+import Products from '@/features/products'
+import Categories from '@/features/categories'
 
 export const router = createBrowserRouter([
   {
@@ -32,8 +34,12 @@ export const router = createBrowserRouter([
             Component: Orders
           },
           {
-            path: path.catalog,
-            Component: Orders
+            path: path.posters,
+            Component: Products
+          },
+          {
+            path: path.categories,
+            Component: Categories
           },
           {
             path: path.customers,

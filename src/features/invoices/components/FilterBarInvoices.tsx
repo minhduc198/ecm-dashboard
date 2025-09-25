@@ -4,6 +4,7 @@ import SettingColumns from '@/components/SettingColumns'
 import TextFieldAutocompleteVirtualized from '@/components/TextFieldAutocompleteVirtualized'
 import { useInfiniteCustomers } from '@/hooks/useInfiniteCustomers'
 import { useInfiniteOrders } from '@/hooks/useInfiniteOrders'
+import { useSearchParam } from '@/hooks/useSearchParam'
 import { Invoice } from '@/services/data-generator'
 import { QuerySaveType } from '@/types'
 import { TableColumns } from '@/types/table'
@@ -11,7 +12,6 @@ import { cleanObject, isoStringToDate, reorderDnd } from '@/utils'
 import {
   getInvoiceListParamsFormLS,
   getInvoiceSaveQueries,
-  getInvoicesSettingColumnsFromLS,
   saveInvoiceListParamsToLS,
   saveQueriesInvoice,
   setInvoicesSettingColumnsToLS
@@ -19,15 +19,14 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import { Box, Button } from '@mui/material'
+import { cloneDeep, isEqual } from 'lodash'
 import { useEffect, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, Resolver, useForm, useWatch } from 'react-hook-form'
 import { InferType } from 'yup'
-import { initFilterInvoiceItems, initialInvoiceColumns } from '../constant'
+import { initFilterInvoiceItems } from '../constant'
 import { filterInvoicesSchema } from '../schemas'
 import { GetInvoicesListRequest, InvoiceFilterItem, InvoiceParam, InvoiceUrlQuery, TableColumnsInvoice } from '../types'
-import { useSearchParam } from '@/hooks/useSearchParam'
-import { cloneDeep, isEqual } from 'lodash'
 
 type FormValues = InferType<typeof filterInvoicesSchema>
 
@@ -36,13 +35,15 @@ interface Props {
   setInvoiceListRq: React.Dispatch<React.SetStateAction<GetInvoicesListRequest>>
   invoiceSettingCol: TableColumnsInvoice
   setInvoiceSettingCol: React.Dispatch<React.SetStateAction<TableColumnsInvoice>>
+  handleExport: () => void
 }
 
 export default function FilterBarInvoices({
   invoiceListRq,
   invoiceSettingCol,
   setInvoiceListRq,
-  setInvoiceSettingCol
+  setInvoiceSettingCol,
+  handleExport
 }: Props) {
   const { setMany } = useSearchParam()
   const [isFirstRender, setIsFirstRender] = useState(true)
@@ -108,7 +109,7 @@ export default function FilterBarInvoices({
   }, [JSON.stringify(currentSaveQueries)])
 
   useEffect(() => {
-    if (currentListParamsLS.displayedFilters) {
+    if (currentListParamsLS.filter) {
       method.reset({
         ...currentListParamsLS.filter,
         date_gte: isoStringToDate(currentListParamsLS.filter.date_gte),
@@ -116,7 +117,7 @@ export default function FilterBarInvoices({
       })
     }
     return
-  }, [JSON.stringify(currentListParamsLS.displayedFilters)])
+  }, [JSON.stringify(currentListParamsLS.filter)])
 
   useEffect(() => {
     if (isFirstRender) {
@@ -309,7 +310,7 @@ export default function FilterBarInvoices({
             handleRemoveSaveQuery={handleRemoveCurrentSaveQuery}
           />
           <SettingColumns columns={invoiceSettingCol} onDragEnd={onDragEnd} handleChangeColumn={handleChangeColumn} />
-          <Button startIcon={<FileDownloadIcon />} variant='text'>
+          <Button startIcon={<FileDownloadIcon />} onClick={handleExport} variant='text'>
             EXPORT
           </Button>
         </Box>
