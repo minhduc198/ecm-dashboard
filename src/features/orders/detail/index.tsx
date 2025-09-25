@@ -42,7 +42,7 @@ const columnProductItems: TableColumns<OrderDetailProduct>[] = [
     id: 'quantity',
     label: 'Quantity',
     numeric: true,
-    cell: (value) => formatCurrency(Number(value))
+    cell: (value) => Number(value)
   },
   { id: 'total', label: 'Total', numeric: true, cell: (value) => formatCurrency(Number(value)) }
 ]
@@ -52,7 +52,6 @@ export default function DetailOrder() {
   const navigate = useNavigate()
   const { setHeaderData } = useHeaderTitleStore()
   const { tmpUndoData, setIsOpenUndo, setTmpUndoData, setTimerId } = useUndoOrderStore()
-  const { orderListRq } = useContext(FilterContext)
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(detailOrderSchema),
@@ -97,7 +96,7 @@ export default function DetailOrder() {
   })
 
   const { data: customerDetailData } = useQuery({
-    queryKey: ['customerDetail', orderDetail.customer_id],
+    queryKey: ['customer_detail', orderDetail.customer_id],
     queryFn: () => fetchCustomerDetail({ id: Number(orderDetail.customer_id) }),
     refetchOnWindowFocus: false,
     enabled: !!param.id

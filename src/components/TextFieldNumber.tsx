@@ -1,7 +1,6 @@
-import { Box, BoxProps, IconButton, SxProps, TextField } from '@mui/material'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
+import { Box, BoxProps, IconButton, SxProps, TextField } from '@mui/material'
 
-import React from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 interface Props {
@@ -19,7 +18,7 @@ export default function TextFieldNumber({ label, handleClose, wrapperProps, sxTe
   } = useFormContext()
 
   return (
-    <Box sx={{ display: 'flex', gap: '2px', alignItems: 'center' }} {...wrapperProps}>
+    <Box sx={{ display: 'flex', gap: '2px', alignItems: 'baseline' }} {...wrapperProps}>
       <Controller
         control={control}
         name={name}

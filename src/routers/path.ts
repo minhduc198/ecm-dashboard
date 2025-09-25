@@ -1,5 +1,4 @@
 export const path = {
-  catalog: '/catalog',
   invoices: '/invoices',
   customers: '/customers',
   reviews: '/reviews',
@@ -8,5 +7,7 @@ export const path = {
   detailCustomer: '/customers/:id',
   detailOrder: '/orders/:id',
   createCustomer: '/customers/create',
-  segments: '/segments'
+  segments: '/segments',
+  posters: '/posters',
+  categories: '/categories'
 }

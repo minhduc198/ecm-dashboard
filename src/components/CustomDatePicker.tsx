@@ -1,20 +1,31 @@
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { IconButton, SxProps, TextField } from '@mui/material'
 import { Box, BoxProps } from '@mui/system'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { Controller, useFormContext } from 'react-hook-form'
 
 interface Props {
   name: string
+  triggerFiled?: string
   datePickerLabel: string
   sxDatePicker?: SxProps
   wrapperProps?: BoxProps
   handleClose?: () => void
+  triggerValidate?: () => void
 }
 
-export default function CustomDatePicker({ datePickerLabel, sxDatePicker, handleClose, wrapperProps, name }: Props) {
+export default function CustomDatePicker({
+  name,
+  datePickerLabel,
+  sxDatePicker,
+  wrapperProps,
+  triggerFiled = '',
+  handleClose
+}: Props) {
   const {
     control,
+    getValues,
+    trigger,
     formState: { errors }
   } = useFormContext()
   return (
@@ -22,7 +33,7 @@ export default function CustomDatePicker({ datePickerLabel, sxDatePicker, handle
       sx={{
         display: 'flex',
         gap: '2px',
-        alignItems: 'center',
+        alignItems: 'baseline',
         '& .MuiOutlinedInput-root': {
           borderRadius: '16px',
           backgroundColor: '#f5f5f5'
@@ -43,6 +54,12 @@ export default function CustomDatePicker({ datePickerLabel, sxDatePicker, handle
               value={field.value || null}
               label={datePickerLabel}
               format='dd/MM/yyyy'
+              onChange={(v) => {
+                field.onChange(v)
+                if (triggerFiled && !!errors[triggerFiled]?.message) {
+                  trigger(triggerFiled)
+                }
+              }}
               enableAccessibleFieldDOMStructure={false}
               slots={{ textField: TextField }}
               slotProps={{

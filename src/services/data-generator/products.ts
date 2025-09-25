@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { randomFloat, weightedBoolean } from './utils'
 import type { Db } from './types'
+import { Product } from '@/features/products/types'
 
 const productReferences: any = {
   animals: [
@@ -189,18 +190,4 @@ export const generateProducts = (db: Db): Product[] => {
     ],
     [] as Product[]
   )
-}
-
-export type Product = {
-  id: number
-  category_id: number
-  reference: string
-  width: number
-  height: number
-  price: number
-  thumbnail: string
-  image: string
-  description: string
-  stock: number
-  sales: number
 }

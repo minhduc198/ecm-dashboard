@@ -15,6 +15,7 @@ import { ReactRouterAppProvider } from '@toolpad/core/react-router'
 import { useCallback, useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router'
 import { useHeaderTitleStore } from './store/headerStore'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { path as pathConfig } from './routers/path'
 export const queryClient = new QueryClient()
 
@@ -45,9 +46,22 @@ const NAVIGATION: Navigation = [
     ]
   },
   {
-    segment: 'catalog',
+    segment: '',
     title: 'Catalog',
-    icon: <CollectionsIcon />
+    icon: <CollectionsIcon />,
+    children: [
+      {
+        segment: 'posters',
+        title: 'Posters',
+        icon: <CollectionsIcon />
+      },
+
+      {
+        segment: 'categories',
+        title: 'Categories',
+        icon: <BookmarkIcon />
+      }
+    ]
   },
   {
     segment: '',

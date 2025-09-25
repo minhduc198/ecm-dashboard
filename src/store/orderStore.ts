@@ -1,8 +1,6 @@
-import { ORDER_STATUS } from '@/constants'
-import { Order, OrderParams } from '@/features/orders/types'
+import { OrderParams } from '@/features/orders/types'
 import { UrlQuery } from '@/types'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 
 type OderStoreType = Pick<UrlQuery<OrderParams>, 'displayedFilters' | 'filter'>
 

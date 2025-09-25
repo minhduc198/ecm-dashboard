@@ -7,7 +7,6 @@ import {
   IconButton,
   SxProps,
   TextField,
-  Typography,
   ListSubheader,
   Popper,
   autocompleteClasses,

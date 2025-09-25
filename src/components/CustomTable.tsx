@@ -2,9 +2,11 @@ import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
 import { IPagination, SORT } from '@/types'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import { Button } from '@mui/material'
+import { Button, Collapse, IconButton } from '@mui/material'
 import Box from '@mui/material/Box'
 import Checkbox from '@mui/material/Checkbox'
 import Paper from '@mui/material/Paper'
@@ -20,6 +22,7 @@ import TableSortLabel from '@mui/material/TableSortLabel'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
+import { first } from 'lodash'
 import * as React from 'react'
 
 interface TableHeaderProps<DataType> {
@@ -29,19 +32,52 @@ interface TableHeaderProps<DataType> {
   orderBy: string
   selectable: boolean
   rowCount: number
+  collapsibleTable: boolean
+  collapseRows: Record<string, boolean>
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
   onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void
+  onCollapseAllRow: (isOpenAll: boolean) => void
 }
 function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
-  const { columns, selectable, order, orderBy, numSelected, rowCount, onSelectAllClick, onRequestSort } = props
+  const [openCollapseAll, setOpenCollapseAll] = React.useState(false)
+  const {
+    columns,
+    selectable,
+    order,
+    orderBy,
+    numSelected,
+    rowCount,
+    collapsibleTable,
+    collapseRows,
+    onSelectAllClick,
+    onRequestSort,
+    onCollapseAllRow
+  } = props
 
   const createSortHandler = (property: string) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property)
   }
 
+  const handleCollapseAll = () => {
+    setOpenCollapseAll(!openCollapseAll)
+    onCollapseAllRow(!openCollapseAll)
+  }
+
+  React.useEffect(() => {
+    const openCount = Object.values(collapseRows).some(Boolean)
+    setOpenCollapseAll(!!openCount)
+  }, [collapseRows, rowCount])
+
   return (
     <TableHead>
       <TableRow>
+        {collapsibleTable && (
+          <TableCell>
+            <IconButton aria-label='expand row' size='small' onClick={handleCollapseAll}>
+              {openCollapseAll ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+            </IconButton>
+          </TableCell>
+        )}
         {selectable && (
           <TableCell padding='checkbox'>
             <Checkbox
@@ -55,7 +91,7 @@ function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
         {columns.map((headCell) => (
           <TableCell
             key={headCell.id.toString()}
-            sx={{ minWidth: headCell.minWidth }}
+            sx={{ minWidth: headCell.minWidth, width: headCell.width }}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.sortBy ? (order.toLowerCase() as SortDirection) : false}
@@ -151,6 +187,7 @@ interface CustomTableProps<DataType, IdType> {
     order: SORT
     field: string
   }
+  collapsibleTable?: boolean
   handleSetPage?: (page: number) => void
   handleSetRowsPerPage?: (pageSize: number) => void
   handleAccept?: () => void
@@ -159,6 +196,7 @@ interface CustomTableProps<DataType, IdType> {
   onClearAllFilter?: () => void
   onRowClick?: (row: DataType) => void
   handleSort?: (field: string, order: SORT) => void
+  collapsibleContent?: (row: DataType) => React.ReactNode
 }
 
 export default function CustomTable<DataType, IdType>({
@@ -177,11 +215,18 @@ export default function CustomTable<DataType, IdType>({
   handleDelete,
   onClearAllFilter,
   onRowClick,
-  handleSort
+  handleSort,
+  collapsibleTable = false,
+  collapsibleContent
 }: CustomTableProps<DataType, IdType>) {
   const [order, setOrder] = React.useState<SORT>(sortColFromLS?.order ?? SORT.ASC)
   const [orderBy, setOrderBy] = React.useState<string>(sortColFromLS?.field ?? '')
   const [selected, setSelected] = React.useState<IdType[]>([])
+  const [collapseRows, setCollapseRows] = React.useState<Record<string, boolean>>({})
+
+  const allRowIds = dataSource.map((data) => {
+    return String(data[rowId])
+  })
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === SORT.ASC
@@ -189,6 +234,15 @@ export default function CustomTable<DataType, IdType>({
     setOrder(sortDir)
     setOrderBy(property)
     handleSort?.(property.toString(), sortDir)
+  }
+
+  const toggleRow = (id: IdType) => {
+    setCollapseRows((prev) => {
+      return {
+        ...prev,
+        [String(id)]: !prev[String(id)]
+      }
+    })
   }
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,14 +285,33 @@ export default function CustomTable<DataType, IdType>({
     }
   }
 
-  const navigateDetailPage = (row: DataType) => (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
-    if ((e.target as HTMLElement).nodeName !== 'TD') {
-      return
+  const navigateDetailPage =
+    (row: DataType, rowId?: IdType) => (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
+      if ((e.target as HTMLElement).nodeName !== 'TD') {
+        return
+      }
+
+      if (collapsibleTable && rowId) {
+        toggleRow(rowId)
+        return
+      }
+
+      if (onRowClick) {
+        onRowClick(row)
+      }
     }
 
-    if (onRowClick) {
-      onRowClick(row)
-    }
+  const calcBorderBottomWidth = (row: DataType) => (collapseRows[String(row[rowId])] ? 0 : 1)
+
+  const onCollapseAllRow = (isOpenAll: boolean) => {
+    const reduceCollapseRow: Record<string, boolean> = allRowIds.reduce(
+      (prev, curId) => ({
+        ...prev,
+        [curId]: isOpenAll
+      }),
+      {}
+    )
+    setCollapseRows(reduceCollapseRow)
   }
 
   return (
@@ -250,9 +323,9 @@ export default function CustomTable<DataType, IdType>({
           handleDelete={onDelete}
           handleReject={handleReject}
         />
-        <TableContainer sx={{ maxHeight: '200dvh' }}>
+        <TableContainer sx={{ maxHeight: '100%' }}>
           {dataSource.length ? (
-            <Table stickyHeader sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
+            <Table aria-labelledby='tableTitle' size='medium'>
               <TableHeader<DataType>
                 columns={columns}
                 selectable={selectable}
@@ -262,37 +335,78 @@ export default function CustomTable<DataType, IdType>({
                 onSelectAllClick={handleSelectAllClick}
                 onRequestSort={handleRequestSort}
                 rowCount={dataSource.length}
+                collapseRows={collapseRows}
+                collapsibleTable={collapsibleTable}
+                onCollapseAllRow={onCollapseAllRow}
               />
               <TableBody>
                 {dataSource.map((row) => {
                   const isItemSelected = selected.includes(row[rowId] as IdType)
                   return (
-                    <TableRow
-                      hover
-                      role='checkbox'
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={`${row[rowId]}`}
-                      selected={isItemSelected}
-                      sx={{ cursor: 'pointer' }}
-                    >
-                      {selectable && (
-                        <TableCell onClick={() => handleClick(row[rowId] as IdType)} padding='checkbox'>
-                          <Checkbox color='primary' checked={isItemSelected} />
-                        </TableCell>
+                    <React.Fragment key={`${row[rowId]}`}>
+                      <TableRow
+                        hover
+                        role='checkbox'
+                        aria-checked={isItemSelected}
+                        tabIndex={-1}
+                        selected={isItemSelected}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {collapsibleTable && (
+                          <TableCell sx={{ borderBottomWidth: calcBorderBottomWidth(row) }}>
+                            <IconButton size='small' onClick={() => toggleRow(row[rowId] as IdType)}>
+                              {collapseRows[String(row[rowId])] ? (
+                                <KeyboardArrowDownIcon />
+                              ) : (
+                                <KeyboardArrowRightIcon />
+                              )}
+                            </IconButton>
+                          </TableCell>
+                        )}
+                        {selectable && (
+                          <TableCell
+                            sx={{ borderBottomWidth: calcBorderBottomWidth(row) }}
+                            onClick={() => handleClick(row[rowId] as IdType)}
+                            padding='checkbox'
+                          >
+                            <Checkbox color='primary' checked={isItemSelected} />
+                          </TableCell>
+                        )}
+                        {columns.map((col: TableColumns<DataType>) => (
+                          <TableCell
+                            sx={{
+                              minWidth: col.minWidth,
+                              width: col.width,
+                              borderBottomWidth: calcBorderBottomWidth(row)
+                            }}
+                            onClick={navigateDetailPage(row, row[rowId] as IdType)}
+                            key={col.id.toString()}
+                            align={col.numeric ? 'right' : 'left'}
+                            padding={col.disablePadding ? 'none' : 'normal'}
+                          >
+                            {col?.cell ? col.cell(row[col.id], row) : (row[col.id] as React.ReactNode)}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+
+                      {collapsibleTable && (
+                        <TableRow>
+                          <TableCell
+                            style={{
+                              paddingBottom: 0,
+                              paddingTop: 0,
+                              borderWidth: 0,
+                              borderBottomWidth: 1 - calcBorderBottomWidth(row)
+                            }}
+                            colSpan={12}
+                          >
+                            <Collapse in={collapseRows[String(row[rowId])]} timeout='auto' unmountOnExit>
+                              {collapsibleContent?.(row)}
+                            </Collapse>
+                          </TableCell>
+                        </TableRow>
                       )}
-                      {columns.map((col: TableColumns<DataType>) => (
-                        <TableCell
-                          sx={{ minWidth: col.minWidth }}
-                          onClick={navigateDetailPage(row)}
-                          key={col.id.toString()}
-                          align={col.numeric ? 'right' : 'left'}
-                          padding={col.disablePadding ? 'none' : 'normal'}
-                        >
-                          {col?.cell ? col.cell(row[col.id], row) : (row[col.id] as React.ReactNode)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
+                    </React.Fragment>
                   )
                 })}
                 {dataSource.length === 0 && (
