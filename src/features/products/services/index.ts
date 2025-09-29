@@ -1,27 +1,24 @@
 import { baseDataProvider } from '@/services/dataProvider'
-import { GetProductListReq, ProductListResponse } from '../types'
-import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
+import { SORT } from '@/types'
+import { DEFAULT_PER_PAGE_PRODUCT } from '../constant'
+import { GetProductListRequest, GetProductsListResponse, Product } from '../types'
+import { DEFAULT_PER_PAGE_CUSTOMER } from '@/features/customers/constant'
+import { DEFAULT_PAGE } from '@/constants'
 
 export class ProductService {
-  static async getProductList(params: Partial<GetProductListReq>): Promise<ProductListResponse> {
-    const pagination = {
-      page: params.page || DEFAULT_PAGE,
-      perPage: params.perPage || DEFAULT_PER_PAGE
-    }
+  static async getProductList(params: GetProductListRequest): Promise<GetProductsListResponse> {
+    const pagination = params.pagination
 
     try {
       const response = await baseDataProvider.getList('products', {
         pagination,
-        sort: {
-          field: params.sort || 'id',
-          order: params.order || 'ASC'
-        },
+        sort: params.sort ?? { field: 'reference', order: SORT.DESC },
         filter: params.filter ?? {}
       })
 
       return {
-        ...pagination,
-        data: response.data,
+        ...(pagination ?? { page: DEFAULT_PAGE, perPage: DEFAULT_PER_PAGE_PRODUCT }),
+        data: response.data as Product[],
         total: response.total || 0
       }
     } catch (error) {
@@ -30,4 +27,4 @@ export class ProductService {
   }
 }
 
-export const fetchProductsList = (params: Partial<GetProductListReq>) => ProductService.getProductList(params)
+export const fetchProductsList = (params: GetProductListRequest) => ProductService.getProductList(params)

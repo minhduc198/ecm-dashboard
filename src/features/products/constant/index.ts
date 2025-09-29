@@ -1,89 +1,125 @@
-import { SelectFilterItem, SORT } from '@/types'
+import { SelectFilterItem, SelectOptionItem } from '@/types'
 
 export const salesOptions: SelectFilterItem[] = [
   {
     label: 'Best sellers',
-    value: 'best_sellers'
+    value: {
+      sales_gt: 25
+    }
   },
   {
     label: 'Average',
-    value: 'average'
+    value: {
+      sales_gt: 10,
+      sales_lte: 25
+    }
   },
   {
     label: 'Low',
-    value: 'low'
+    value: {
+      sales_gt: 0,
+      sales_lte: 10
+    }
   },
   {
     label: 'Never sold',
-    value: 'never_sold'
+    value: { sales: 0 }
   }
 ]
 
 export const stockOptions: SelectFilterItem[] = [
   {
     label: 'Out of stock',
-    value: 'out_of_stock'
+    value: {
+      stock: 0
+    }
   },
   {
     label: '1 - 9 items',
-    value: '1_9_items'
+    value: {
+      stock_lt: 10,
+      stock_gt: 0
+    }
   },
   {
     label: '10 - 49 items',
-    value: '10_49_items'
+    value: {
+      stock_lt: 50,
+      stock_gt: 9
+    }
   },
   {
     label: '50 items & more',
-    value: 'more_50'
+    value: {
+      stock_gt: 49
+    }
   }
 ]
 
-export const categoryOptions: SelectFilterItem[] = [
+export const categoryOptions: SelectOptionItem[] = [
   {
     label: 'Animals',
-    value: 'animal'
+    value: 0
   },
   {
     label: 'Beard',
-    value: 'beard'
+    value: 1
   },
   {
     label: 'Business',
-    value: 'business'
+    value: 2
   },
   {
     label: 'Cars',
-    value: 'cars'
+    value: 3
   },
   {
     label: 'City',
-    value: 'city'
+    value: 4
   },
   {
     label: 'Flowers',
-    value: 'flowers'
+    value: 5
   },
   {
     label: 'Food',
-    value: 'food'
+    value: 6
+  },
+  {
+    label: 'Nature',
+    value: 7
+  },
+  {
+    label: 'People',
+    value: 8
+  },
+  {
+    label: 'Sports',
+    value: 9
+  },
+  {
+    label: 'Tech',
+    value: 10
+  },
+  {
+    label: 'Travel',
+    value: 11
+  },
+  {
+    label: 'Water',
+    value: 12
   }
 ]
 
-export interface GetProductListRequest {
-  pagination: {
-    page: number
-    perPage: number
-  }
-  sort?: {
-    field: string
-    order: SORT
-  }
-  filter?: {
-    sale?: string
-    stock?: string
-    categories?: string
-    q?: string
-  }
+export const DEFAULT_PER_PAGE_PRODUCT = 25
+
+export const sortName = {
+  REFERENCE: 'Reference',
+  SALES: 'Sales',
+  STOCK: 'Stock'
 }
 
-export const DEFAULT_PER_PAGE_PRODUCT = 24
+export const sortOrder = {
+  DESC: 'descending',
+  ASC: 'ascending'
+}

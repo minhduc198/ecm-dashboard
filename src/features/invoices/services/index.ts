@@ -1,6 +1,8 @@
+import { DEFAULT_PAGE } from '@/constants'
 import { Invoice } from '@/services/data-generator'
 import { baseDataProvider } from '@/services/dataProvider'
 import { SORT } from '@/types'
+import { DEFAULT_PER_PAGE_INVOICE } from '../constant'
 import {
   DeleteInvoicesRequest,
   DeleteInvoicesResponse,
@@ -9,7 +11,6 @@ import {
   GetInvoicesListRequest,
   GetInvoicesListResponse
 } from '../types'
-import { DEFAULT_PER_INVOICE, DEFAULT_PER_PAGE_INVOICE } from '../constant'
 
 export class InvoicesService {
   static async getInvoicesList(params: GetInvoicesListRequest): Promise<GetInvoicesListResponse> {
@@ -22,7 +23,7 @@ export class InvoicesService {
       })
 
       return {
-        ...(pagination ?? { page: DEFAULT_PER_INVOICE, perPage: DEFAULT_PER_PAGE_INVOICE }),
+        ...(pagination ?? { page: DEFAULT_PAGE, perPage: DEFAULT_PER_PAGE_INVOICE }),
         data: response.data as Invoice[],
         total: response.total || 0
       }

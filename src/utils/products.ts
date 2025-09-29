@@ -1,6 +1,6 @@
 import { DEFAULT_PAGE } from '@/constants'
-import { ProductUrlQuery } from '@/features/products/components/types'
 import { DEFAULT_PER_PAGE_PRODUCT } from '@/features/products/constant'
+import { ProductUrlQuery } from '@/features/products/types'
 import { QuerySaveType, SORT } from '@/types'
 
 const productListParamsLSName = 'product.listParams'
@@ -19,7 +19,7 @@ export function getProductListParamsFormLS(): ProductUrlQuery {
       order: SORT.DESC,
       page: DEFAULT_PAGE,
       perPage: DEFAULT_PER_PAGE_PRODUCT,
-      sort: 'id'
+      sort: 'reference'
     }
   const obj = JSON.parse(dataLs)
   return obj
