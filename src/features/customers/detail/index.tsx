@@ -75,7 +75,7 @@ export default function DetailCustomer() {
 
   const { data: productListData } = useQuery({
     queryKey: ['product_list', param.id, reviewIds],
-    queryFn: () => fetchProductsList({ filter: { id: reviewIds }, page: 1, perPage: 9999 })
+    queryFn: () => fetchProductsList({ filter: { id: reviewIds }, pagination: { page: 1, perPage: 9999 } })
   })
   const productData = productListData?.data
 

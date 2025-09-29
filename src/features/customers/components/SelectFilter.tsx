@@ -14,7 +14,7 @@ interface Props {
   options: SelectFilterItem[]
 }
 
-export default function SelectFilter({ name, defaultValue = null, filterLabel, IconFilter, options }: Props) {
+export default function SelectFilter({ name, defaultValue = '', filterLabel, IconFilter, options }: Props) {
   const { control } = useFormContext()
 
   return (
@@ -34,14 +34,14 @@ export default function SelectFilter({ name, defaultValue = null, filterLabel, I
               <Box sx={{ letterSpacing: 2, fontSize: '12px' }}>{filterLabel}</Box>
             </FormLabel>
             <RadioGroup
-              value={String(field.value)}
+              value={field.value ?? ''}
               onChange={(e) => field.onChange((e.target as HTMLInputElement).value)}
             >
               {options.map((opt) => {
                 const isSelected =
                   typeof opt.value === 'object'
                     ? isEqual(cleanObject(field.value), cleanObject(opt.value))
-                    : String(field.value) === String(opt.value)
+                    : field.value === opt.value
                 return (
                   <Box
                     key={opt.label}
