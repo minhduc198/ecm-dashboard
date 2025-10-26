@@ -36,8 +36,8 @@ type FormValues = InferType<typeof formCustomerSchema>
 export default function FormCustomer({ customerData, hasStats, size }: Props) {
   const [displayPassword, setDisplayPassword] = useState(false)
   const [displayConfirmPassword, setDisplayConfirmPassword] = useState(false)
-  const { tmpUndoData, setIsOpenUndo, setTimerId, setAction, setTmpUndoData } = useUndoCustomerStore()
-  const { setHeaderData } = useHeaderTitleStore()
+  const { tmpUndoData, dataPending, timerId, setIsOpenUndo, setTimerId, setAction, setTmpUndoData, setDataPending } =
+    useUndoCustomerStore()
 
   const navigate = useNavigate()
 
@@ -82,7 +82,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
     }
   })
 
-  const { mutate: updateCustomerMutation } = useMutation({
+  const { mutateAsync: updateCustomerMutation, isPending } = useMutation({
     mutationFn: (params: UpdateCustomerRequest) => updateCustomer({ data: params.data, id: params.id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer_list'] })
@@ -92,7 +92,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
     }
   })
 
-  const { mutate: deleteCustomerMutation } = useMutation({
+  const { mutateAsync: deleteCustomerMutation } = useMutation({
     mutationFn: (ids: number[]) => deleteCustomers({ ids }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer_list'] })
@@ -125,7 +125,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
     setDisplayConfirmPassword(!displayConfirmPassword)
   }
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     const commonDetailCustomer = {
       first_name,
       last_name,
@@ -153,23 +153,29 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
         }
       })
 
+      if (timerId && dataPending.id) {
+        clearTimeout(timerId)
+        await updateCustomerMutation(dataPending)
+      }
+
+      const body = {
+        id: customerData?.id ?? 0,
+        data: {
+          ...commonDetailCustomer,
+          groups: segments?.length ? segments : [],
+          has_newsletter: news_letter === 'true' ? true : false
+        }
+      }
+
       setTmpUndoData(newData as Customer[])
 
       setIsOpenUndo(true)
-      if (setAction) {
-        setAction('Save Customer')
-      }
+      setAction('Save Customer')
+      setDataPending(body)
 
       const updateTimerId = setTimeout(() => {
         if (customerData?.id) {
-          updateCustomerMutation({
-            id: customerData.id,
-            data: {
-              ...commonDetailCustomer,
-              groups: segments?.length ? segments : [],
-              has_newsletter: news_letter === 'true' ? true : false
-            }
-          })
+          updateCustomerMutation(body)
         }
       }, 3000)
 
@@ -188,8 +194,11 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
     navigate(path.customers)
 
     setIsOpenUndo(true)
-    if (setAction) {
-      setAction('Delete Customer')
+    setAction('Delete Customer')
+
+    if (timerId && dataPending.id) {
+      clearTimeout(timerId)
+      setDataPending(dataPending)
     }
 
     const deleteTimerId = setTimeout(() => {
@@ -200,10 +209,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
     }, 3000)
 
     setTimerId(deleteTimerId)
-
-    if (deleteTimerId) {
-      navigate(path.customers)
-    }
+    navigate(path.customers)
   }
 
   return (
@@ -344,8 +350,9 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
               sx={{ borderRadius: '8px' }}
               type='submit'
               variant='contained'
-              disabled={!isDirty}
+              disabled={!isDirty || isPending}
               startIcon={<SaveIcon />}
+              loading={isPending}
             >
               SAVE
             </Button>

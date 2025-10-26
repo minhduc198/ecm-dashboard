@@ -5,7 +5,6 @@ import { SORT } from '@/types'
 import { DEFAULT_PER_PAGE_INVOICE } from '../constant'
 import {
   DeleteInvoicesRequest,
-  DeleteInvoicesResponse,
   GetInvoiceDetailRequest,
   GetInvoiceDetailResponse,
   GetInvoicesListRequest,
@@ -46,18 +45,13 @@ export class InvoicesService {
     }
   }
 
-  static async deleteInvoices(params: DeleteInvoicesRequest): Promise<DeleteInvoicesResponse> {
+  static async deleteInvoices(params: DeleteInvoicesRequest): Promise<null> {
     try {
-      const currentData = await baseDataProvider.getOne('invoices', { id: params.ids })
-
-      const response = await baseDataProvider.delete('invoices', {
-        id: params.ids,
-        previousData: currentData.data
+      const response = await baseDataProvider.deleteMany('invoices', {
+        ids: params.ids
       })
 
-      return {
-        data: response.data as Invoice
-      }
+      return null
     } catch (error) {
       throw new Error(`Lỗi khi xóa customer ${params.ids}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }

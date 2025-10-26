@@ -41,8 +41,6 @@ export type DeleteInvoicesRequest = {
   ids: number[]
 }
 
-export type DeleteInvoicesResponse = ApiResponse<Invoice>
-
 export type GetInvoicesListResponse = ApiResponseList<Invoice>
 
 export type GetInvoiceDetailResponse = ApiResponse<Invoice>

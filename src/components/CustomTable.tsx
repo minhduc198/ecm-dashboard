@@ -183,6 +183,7 @@ interface CustomTableProps<DataType, IdType> {
   usePagination?: boolean
   selectable?: boolean
   totalItems?: number
+  emptyText?: string
   sortColFromLS?: {
     order: SORT
     field: string
@@ -208,6 +209,7 @@ export default function CustomTable<DataType, IdType>({
   totalItems,
   selectable = true,
   sortColFromLS,
+  emptyText = 'No Orders Found',
   handleSetPage,
   handleSetRowsPerPage,
   handleAccept,
@@ -433,13 +435,13 @@ export default function CustomTable<DataType, IdType>({
             >
               {!!onClearAllFilter ? (
                 <>
-                  <Typography>No Orders found using the current filters.</Typography>
+                  <Typography>{`${emptyText} using the current filters.`}</Typography>
                   <Button variant='text' size='small' onClick={onClearAllFilter}>
                     CLEAR FILTERS
                   </Button>
                 </>
               ) : (
-                <Typography>No Orders found</Typography>
+                <Typography>{emptyText}</Typography>
               )}
             </Box>
           )}

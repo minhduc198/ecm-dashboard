@@ -59,7 +59,7 @@ export default function SelectFilter({ name, defaultValue = '', filterLabel, Ico
                       transition: '0.2s'
                     }}
                   >
-                    <Typography sx={{ fontSize: '14px' }}>{opt.label}</Typography>
+                    <Typography sx={{ fontSize: '14px', textTransform: 'capitalize' }}>{opt.label}</Typography>
                     {isSelected && (
                       <IconButton sx={{ width: '24px', height: '24px' }} size='small' onClick={handleClear}>
                         <HighlightOffIcon color='action' />

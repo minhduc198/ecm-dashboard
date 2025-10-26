@@ -1,4 +1,6 @@
 import { SelectFilterItem, SelectOptionItem } from '@/types'
+import { TableColumns } from '@/types/table'
+import { Product } from '../types'
 
 export const salesOptions: SelectFilterItem[] = [
   {
@@ -123,3 +125,72 @@ export const sortOrder = {
   DESC: 'descending',
   ASC: 'ascending'
 }
+
+export enum SortByEnum {
+  REFERENCE_DESC = 'REFERENCE_DESC',
+  REFERENCE_ASC = 'REFERENCE_ASC',
+  SALES_DESC = 'SALES_DESC',
+  SALES_ASC = 'SALES_ASC',
+  STOCK_DESC = 'STOCK_DESC',
+  STOCK_ASC = 'STOCK_ASC'
+}
+
+export enum TabProduct {
+  IMAGE = 'image',
+  DETAILS = 'details',
+  DESCRIPTION = 'description',
+  REVIEWS = 'reviews'
+}
+
+export const initialProductColumns: TableColumns<Product>[] = [
+  {
+    label: 'Reference',
+    id: 'reference',
+    isVisible: true,
+    numeric: false,
+    disablePadding: true
+  },
+  {
+    label: 'Price',
+    id: 'price',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Width',
+    id: 'width',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Height',
+    id: 'height',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+
+  {
+    label: 'Stock',
+    id: 'stock',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Sales',
+    id: 'sales',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: '',
+    id: 'category_id',
+    isVisible: true,
+    numeric: false,
+    disablePadding: false
+  }
+]

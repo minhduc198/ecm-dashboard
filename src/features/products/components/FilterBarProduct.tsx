@@ -27,12 +27,13 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { debounce, isEqual } from 'lodash'
 import { FormProvider, Resolver, useForm, useWatch } from 'react-hook-form'
 import { InferType } from 'yup'
-import { categoryOptions, DEFAULT_PER_PAGE_PRODUCT, salesOptions, stockOptions } from '../constant'
+import { DEFAULT_PER_PAGE_PRODUCT, salesOptions, stockOptions } from '../constant'
 import { filterProductSchema } from '../schemas'
 
 import { DEFAULT_PAGE } from '@/constants'
+import { fetchCategoriesList } from '@/features/categories/services'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { QuerySaveType } from '@/types'
+import { QuerySaveType, SelectOptionItem } from '@/types'
 import { cleanObject } from '@/utils'
 import {
   getProductListParamsFormLS,
@@ -40,6 +41,7 @@ import {
   saveProductListParamsToLS,
   saveQueriesProduct
 } from '@/utils/products'
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { GetProductListRequest, ProductUrlQuery } from '../types'
 
@@ -82,7 +84,29 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
   const category_id = useWatch({ name: 'category_id', control: method.control })
   const stockValue = useWatch({ name: 'stock', control: method.control })
 
-  const hasParams = !!q || !!salesValue || !!category_id || !!stockValue
+  const { data: categoriesList } = useQuery({
+    queryKey: ['categories_list'],
+    queryFn: () => fetchCategoriesList({})
+  })
+  const categoriesListData = categoriesList?.data || []
+
+  const categoryOptions = useMemo<SelectOptionItem[]>(() => {
+    return categoriesListData.map((category) => {
+      return {
+        label: category.name,
+        value: category.id.toString()
+      }
+    })
+  }, [categoriesListData])
+
+  const hasParams = useMemo(() => {
+    return (
+      !!q ||
+      !!Object.keys(cleanObject(salesValue)).length ||
+      !!category_id ||
+      !!Object.keys(cleanObject(stockValue)).length
+    )
+  }, [q, category_id, stockValue, salesValue])
 
   const onDebounceSearch = useMemo(() => debounce((value?: string) => setSearchName(value), 300), [])
 
@@ -121,7 +145,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         }
       })
     }
-  }, [])
+  }, [JSON.stringify(productParamFromLS)])
 
   useEffect(() => {
     saveQueriesProduct(saveQueries)

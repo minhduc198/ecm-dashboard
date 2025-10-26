@@ -209,9 +209,7 @@ const Invoices = () => {
   }, [invoicesData?.data])
 
   const handleDeleteInvoices = (ids: number[]) => {
-    if (setAction) {
-      setAction('Delete Invoices')
-    }
+    setAction('Delete Invoices')
     const softDeleteOrder = invoicesData?.data.filter((data) => !ids.includes(data.id))
     setTmpUndoData(softDeleteOrder ?? [])
     setIsOpenUndo(true)

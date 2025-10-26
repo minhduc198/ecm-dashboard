@@ -17,7 +17,13 @@ import { Outlet, useLocation, useNavigate } from 'react-router'
 import { useHeaderTitleStore } from './store/headerStore'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { path as pathConfig } from './routers/path'
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+    }
+  }
+})
 
 const NAVIGATION: Navigation = [
   {
@@ -51,7 +57,7 @@ const NAVIGATION: Navigation = [
     icon: <CollectionsIcon />,
     children: [
       {
-        segment: 'posters',
+        segment: 'products',
         title: 'Posters',
         icon: <CollectionsIcon />
       },
@@ -123,6 +129,13 @@ export default function App() {
       headerTitle = {
         logo: <Box></Box>,
         title: 'Create Customer'
+      }
+    }
+
+    if (path.startsWith(`${pathConfig.products}/`)) {
+      headerTitle = {
+        logo: <Box></Box>,
+        title: headerData?.reference ? `Product "${headerData.reference}"` : ''
       }
     }
 

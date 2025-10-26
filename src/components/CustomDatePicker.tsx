@@ -10,6 +10,7 @@ interface Props {
   datePickerLabel: string
   sxDatePicker?: SxProps
   wrapperProps?: BoxProps
+  isRequired?: boolean
   handleClose?: () => void
   triggerValidate?: () => void
 }
@@ -20,6 +21,7 @@ export default function CustomDatePicker({
   sxDatePicker,
   wrapperProps,
   triggerFiled = '',
+  isRequired = false,
   handleClose
 }: Props) {
   const {
@@ -68,6 +70,7 @@ export default function CustomDatePicker({
                   fullWidth: true,
                   variant: 'filled',
                   size: 'small',
+                  required: isRequired,
                   sx: {
                     '& .MuiFilledInput-root:after': {
                       color: errors[name]?.message ? 'red' : '#4F3CC9'

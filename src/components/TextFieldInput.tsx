@@ -1,3 +1,4 @@
+import { fa } from '@faker-js/faker'
 import SearchIcon from '@mui/icons-material/Search'
 import { Box, InputAdornment, SxProps, TextField, Typography } from '@mui/material'
 import type { TextFieldProps, TextFieldVariants } from '@mui/material/TextField'
@@ -8,9 +9,10 @@ interface Props extends Omit<TextFieldProps, 'variant'> {
   label: string
   variant?: TextFieldVariants
   sxTextFieldInput?: SxProps
+  isRequired?: boolean
 }
 
-export default function TextFieldInput({ name, label, sxTextFieldInput, ...rest }: Props) {
+export default function TextFieldInput({ name, label, sxTextFieldInput, isRequired = false, ...rest }: Props) {
   const {
     control,
     formState: { errors }
@@ -44,6 +46,7 @@ export default function TextFieldInput({ name, label, sxTextFieldInput, ...rest 
             label={label}
             variant='filled'
             error={!!errors[name]?.message}
+            required={isRequired}
             {...rest}
             helperText={errors[name]?.message as string}
           />

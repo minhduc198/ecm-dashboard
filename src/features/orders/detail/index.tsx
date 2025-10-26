@@ -21,7 +21,6 @@ import * as yup from 'yup'
 import { detailOrderSchema } from '../schemas'
 import { deleteOrders, fetchOrderDetail, updateOrder } from '../services'
 import { Order, OrderDetailProduct, OrderStatus, UpdateOrderRequest } from '../types'
-import { GetProductListReq } from '@/features/products/types'
 import { fetchProductsList } from '@/features/products/services'
 import CustomTable from '@/components/CustomTable'
 import { TableColumns } from '@/types/table'
@@ -105,7 +104,7 @@ export default function DetailOrder() {
 
   const { data: productItemsData } = useQuery({
     queryKey: ['product_list', param.id, productIds],
-    queryFn: () => fetchProductsList({ filter: { id: productIds }, page: 1, perPage: 9999 }),
+    queryFn: () => fetchProductsList({ filter: { id: productIds }, pagination: { page: 1, perPage: 999 } }),
     enabled: !!productIds.length
   })
   const productItems = productItemsData?.data || []

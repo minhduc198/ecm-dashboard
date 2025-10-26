@@ -1,7 +1,7 @@
 import { ORDER_STATUS } from '@/constants'
 import { fetchOrdersList } from '@/features/orders/services'
 import { fetchProductsList } from '@/features/products/services'
-import { fetchReviewsList } from '@/features/reviews/services'
+import { fetchReviewList } from '@/features/reviews/services'
 import { path } from '@/routers/path'
 import { formatCurrency } from '@/utils/currency'
 import { formatDate } from '@/utils/date'
@@ -64,7 +64,8 @@ export default function DetailCustomer() {
 
   const { data: reviewListData } = useQuery({
     queryKey: ['review_list', param.id, customerData?.id],
-    queryFn: () => fetchReviewsList({ filter: { customer_id: customerData?.id }, page: 1, perPage: 9999 }),
+    queryFn: () =>
+      fetchReviewList({ pagination: { page: 1, perPage: 9999 }, filter: { customer_id: customerData?.id } }),
     enabled: !!customerData?.id,
     refetchOnWindowFocus: false
   })

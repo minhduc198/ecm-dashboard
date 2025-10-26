@@ -96,7 +96,7 @@ export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColu
               <Box
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', minHeight: '240px' }}
+                sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', maxHeight: '250px' }}
               >
                 {columns.map((item, index) => (
                   <DraggableSettingCol<T>

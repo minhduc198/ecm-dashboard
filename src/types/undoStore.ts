@@ -5,6 +5,6 @@ export interface UndoStore<T> {
   setTmpUndoData: (data: T[]) => void
   timerId: NodeJS.Timeout | null
   setTimerId: (timer: NodeJS.Timeout | null) => void
-  action?: string
-  setAction?: (message: string) => void
+  action: string
+  setAction: (message: string) => void
 }

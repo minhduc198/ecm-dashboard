@@ -49,8 +49,6 @@ export type DeleteCustomersRequest = {
   ids: number[]
 }
 
-export type DeleteCustomersResponse = ApiResponse<Customer>
-
 export interface UpdateCustomerRequest {
   id: number
   data: Partial<Omit<Customer, 'id'>>

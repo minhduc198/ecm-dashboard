@@ -24,7 +24,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import { Avatar, Box, Button, Grid, Snackbar, Tooltip } from '@mui/material'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import cloneDeep from 'lodash/cloneDeep'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { useNavigate } from 'react-router'
 import { utils, writeFileXLSX } from 'xlsx'
@@ -61,11 +61,15 @@ export default function Customers() {
     queryKey: ['customer_list', customerListRq],
     queryFn: () => fetchCustomersList(customerListRq),
     keepPreviousData: true,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    onSuccess: (customerList) => {
+      if (!timerId) {
+        setTmpUndoData(customerList.data)
+      }
+    }
   })
 
   const { mutate: deleteCustomersMutation } = useMutation({
-    mutationKey: ['delete_customers'],
     mutationFn: (ids: number[]) => deleteCustomers({ ids }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['customer_list'] })
   })
@@ -187,12 +191,6 @@ export default function Customers() {
       })
   }, [customerSettingCol])
 
-  useEffect(() => {
-    if (!timerId) {
-      setTmpUndoData(customerListData?.data ?? [])
-    }
-  }, [customerListData?.data])
-
   const handleViewCustomerDetail = (row: Customer) => {
     handleSetQueryDetail(row)
     navigate(`${path.customers}/${row.id}`)
@@ -221,9 +219,7 @@ export default function Customers() {
     const softDeleteOrder = tmpUndoData.filter((data) => !ids.includes(data.id))
     setTmpUndoData(softDeleteOrder)
     setIsOpenUndo(true)
-    if (setAction) {
-      setAction('Delete Customer')
-    }
+    setAction('Delete Customer')
 
     const timeOut = setTimeout(() => {
       setIsOpenUndo(false)
