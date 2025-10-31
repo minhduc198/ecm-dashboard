@@ -114,7 +114,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
       date_gte: isoStringToDate(currentListParamsLS.filter.date_gte),
       date_lte: isoStringToDate(currentListParamsLS.filter.date_lte)
     })
-  }, [])
+  }, [JSON.stringify(currentListParamsLS)])
 
   useEffect(() => {
     setOrderSaveQueryToLS(currentSaveQueries)

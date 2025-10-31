@@ -86,7 +86,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
 
   const { data: categoriesList } = useQuery({
     queryKey: ['categories_list'],
-    queryFn: () => fetchCategoriesList({})
+    queryFn: () => fetchCategoriesList()
   })
   const categoriesListData = categoriesList?.data || []
 

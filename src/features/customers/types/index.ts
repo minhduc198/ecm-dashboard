@@ -12,12 +12,13 @@ export interface GetCustomersListRequest {
     order: SORT
   }
   filter?: {
+    id?: string
+    q?: string
     groups?: string
     last_seen_gte?: string
     last_seen_lte?: string
     has_newsletter?: string
     nb_orders_gte?: string
-    q?: string
   }
 }
 

@@ -3,6 +3,8 @@ import { Outlet, Navigate, useLocation } from 'react-router'
 import { DashboardLayout } from '@toolpad/core/DashboardLayout'
 import { PageContainer } from '@toolpad/core/PageContainer'
 import { useSession } from '@/hooks/useSession'
+import { Box } from '@mui/material'
+import DetailReview from '@/features/reviews/detail'
 
 export default function Layout() {
   // const { session } = useSession()
@@ -17,8 +19,15 @@ export default function Layout() {
 
   return (
     <DashboardLayout>
-      <PageContainer>
-        <Outlet />
+      <PageContainer sx={{ maxWidth: '100% !important', position: 'relative' }}>
+        <Box sx={{ display: 'flex' }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <Outlet />
+          </Box>
+          {/* <Box sx={{}}>
+            <DetailReview />
+          </Box> */}
+        </Box>
       </PageContainer>
     </DashboardLayout>
   )

@@ -1,20 +1,22 @@
 import { fetchCustomersList } from '@/features/customers/service'
 import { SelectOptionItem } from '@/types'
+import { cleanObject } from '@/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 interface UseInfiniteCustomersProps {
   searchTerm?: string
   enabled?: boolean
+  customerId?: string
 }
 
-export const useInfiniteCustomers = ({ searchTerm, enabled = true }: UseInfiniteCustomersProps) => {
+export const useInfiniteCustomers = ({ searchTerm, customerId, enabled = true }: UseInfiniteCustomersProps) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } = useInfiniteQuery({
-    queryKey: ['customers_infinite', searchTerm],
+    queryKey: ['customers_infinite', searchTerm, customerId],
     queryFn: ({ pageParam = 1 }) =>
       fetchCustomersList({
         pagination: { page: pageParam, perPage: 50 },
-        filter: searchTerm ? { q: searchTerm } : undefined
+        filter: searchTerm ? cleanObject({ q: searchTerm, id: customerId?.toString() }) : undefined
       }),
     getNextPageParam: (lastPage, allPages) => {
       const totalItems = lastPage.total
@@ -27,7 +29,8 @@ export const useInfiniteCustomers = ({ searchTerm, enabled = true }: UseInfinite
     },
     enabled,
     staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    keepPreviousData: true
   })
 
   const customerOptions: SelectOptionItem[] = useMemo(() => {

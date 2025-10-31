@@ -2,9 +2,8 @@ import { TableColumns } from '@/types/table'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import ViewWeekIcon from '@mui/icons-material/ViewWeek'
 import { Box, Button, Popover, Switch, Typography } from '@mui/material'
-import clsx from 'clsx'
 import cloneDeep from 'lodash/cloneDeep'
-import React, { FC } from 'react'
+import React from 'react'
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd'
 
 type PropsDraggableSettingCol<T> = {
@@ -96,7 +95,13 @@ export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColu
               <Box
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', maxHeight: '250px' }}
+                sx={{
+                  paddingBlock: '8px',
+                  paddingRight: '6px',
+                  minWidth: '165px',
+                  maxHeight: '250px',
+                  minHeight: `${24 * columns.length + 20}px`
+                }}
               >
                 {columns.map((item, index) => (
                   <DraggableSettingCol<T>

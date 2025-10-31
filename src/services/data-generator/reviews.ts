@@ -34,6 +34,7 @@ export const generateReviews = (db: Db): Review[] => {
             const comment = Array.from({ length: sentenceCount }, () => faker.lorem.sentences()).join('\n \r')
 
             const customer = db.customers.find((c) => c.id === order.customer_id)
+            const productItem = db.products.find((c) => c.id === product.product_id)
 
             return {
               id: id++,
@@ -41,7 +42,7 @@ export const generateReviews = (db: Db): Review[] => {
               status,
               order_id: order.id,
               product_id: product.product_id,
-              product: product,
+              product: productItem,
               customer_id: order.customer_id,
               rating: faker.number.int({ min: 1, max: 5 }),
               comment,

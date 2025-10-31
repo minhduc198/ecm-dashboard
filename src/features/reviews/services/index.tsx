@@ -2,11 +2,12 @@ import { DEFAULT_PAGE } from '@/constants'
 import { DEFAULT_PER_PAGE_PRODUCT } from '@/features/products/constant'
 import { Review } from '@/services/data-generator'
 import { baseDataProvider } from '@/services/dataProvider'
-import { SORT } from '@/types'
+import { ApiResponse, SORT } from '@/types'
 import {
   CreateReviewRequest,
   DeleteReviewsRequest,
-  DeleteReviewsResponse,
+  GetReviewDetailRequest,
+  GetReviewDetailResponse,
   GetReviewListRequest,
   GetReviewsListResponse
 } from '../types'
@@ -43,19 +44,36 @@ export class ReviewService {
     }
   }
 
-  static async createReview(params: CreateReviewRequest): Promise<Review> {
+  static async createReview(params: CreateReviewRequest): Promise<ApiResponse<Review>> {
     try {
       const response = await baseDataProvider.create('reviews', {
         data: params.data
       })
 
-      return response.data as Review
+      return {
+        data: response.data
+      }
     } catch (error) {
       throw new Error(`Lỗi khi tạo review: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  static async getReviewDetail(params: GetReviewDetailRequest): Promise<GetReviewDetailResponse> {
+    try {
+      const response = await baseDataProvider.getOne('reviews', { id: params.id })
+
+      return {
+        data: response.data as Review
+      }
+    } catch (error) {
+      throw new Error(
+        `Lỗi khi lấy chi tiết review ${params.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }
 
 export const fetchReviewList = (params: GetReviewListRequest) => ReviewService.getReviewList(params)
+export const fetchReviewDetail = (params: GetReviewDetailRequest) => ReviewService.getReviewDetail(params)
 export const deleteReviews = (params: DeleteReviewsRequest) => ReviewService.deleteReviews(params)
 export const createReview = (params: CreateReviewRequest) => ReviewService.createReview(params)

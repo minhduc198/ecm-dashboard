@@ -138,14 +138,10 @@ export default function TextFieldAutocompleteVirtualized({
   const [selectedLabel, setSelectedLabel] = useState<string>('')
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (onSearch && !isDisabled && (inputValue !== selectedLabel || inputValue === '')) {
-        onSearch(inputValue)
-      }
-    }, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [inputValue, isDisabled, selectedLabel, onSearch])
+    if (onSearch && !isDisabled && (inputValue !== selectedLabel || inputValue === '')) {
+      onSearch(inputValue)
+    }
+  }, [inputValue, selectedLabel, isDisabled, onSearch])
 
   return (
     <Box sx={{ display: 'flex', gap: '2px', alignItems: 'center' }} {...wrapperProps}>

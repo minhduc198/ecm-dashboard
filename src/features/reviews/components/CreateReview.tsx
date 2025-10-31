@@ -20,6 +20,8 @@ import { path } from '@/routers/path'
 import CustomRating from '@/components/CustomRating'
 import { GetCustomerDetailRequest } from '@/features/customers/types'
 import { fetchCustomerDetail } from '@/features/customers/service'
+import { useUndoReviewStore } from '@/store/reviewStore'
+import { fetchProductDetail } from '@/features/products/services'
 
 type FormValues = InferType<typeof createReviewSchema>
 
@@ -29,6 +31,8 @@ export default function CreateReview() {
   const location = useLocation()
   const { product_id } = location.state || {}
   const navigate = useNavigate()
+
+  const { setCreateMessageSuccess } = useUndoReviewStore()
 
   const methods = useForm({
     resolver: yupResolver(createReviewSchema) as Resolver<FormValues>,
@@ -41,6 +45,7 @@ export default function CreateReview() {
   })
 
   const customer_id = useWatch({ name: 'customer_id', control: methods.control })
+  const productId = useWatch({ name: 'product_id', control: methods.control })
 
   const {
     formState: { isDirty },
@@ -49,17 +54,29 @@ export default function CreateReview() {
 
   const { mutateAsync: createReviewMutation, isPending } = useMutation({
     mutationFn: (param: CreateReviewRequest) => createReview(param),
-    onSuccess: () => {
-      navigate(`${path.products}/${product_id}/reviews`)
+    onSuccess: (review) => {
+      if (!!product_id) {
+        navigate(`${path.products}/${product_id}/reviews`)
+      } else {
+        setCreateMessageSuccess?.(`Review ${review.data.comment} created!`)
+        navigate(path.reviews)
+      }
     }
   })
 
-  const { data: detailCustomer } = useQuery({
+  const { data: detailCustomerData } = useQuery({
     queryKey: ['customer_detail'],
     queryFn: () => fetchCustomerDetail({ id: customer_id }),
     enabled: !!customer_id
   })
-  const detailCustomerData = detailCustomer?.data
+  const detailCustomer = detailCustomerData?.data
+
+  const { data: detailProductData } = useQuery({
+    queryKey: ['product_detail'],
+    queryFn: () => fetchProductDetail({ id: productId }),
+    enabled: !!productId
+  })
+  const detailProduct = detailProductData?.data
 
   const {
     customerOptions,
@@ -76,7 +93,6 @@ export default function CreateReview() {
     loadMore: loadMoreProduct,
     isLoading: isLoadingProduct
   } = useInfiniteProducts({
-    id: product_id,
     searchTerm: productSearchTerm
   })
 
@@ -92,8 +108,10 @@ export default function CreateReview() {
     createReviewMutation({
       data: {
         ...formData,
+        date: new Date(formData.date).toISOString(),
         status: REVIEW_STATUS.PENDING,
-        customer: detailCustomerData
+        customer: detailCustomer,
+        product: detailProduct
       }
     })
   }

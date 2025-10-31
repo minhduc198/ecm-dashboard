@@ -6,7 +6,7 @@ export type Category = {
 
 export const generateCategories = (): Category[] => [
   {
-    id: 0,
+    id: 13,
     name: 'animals',
     image:
       'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2F0fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=900'

@@ -33,7 +33,8 @@ export const useInfiniteProducts = ({ id, searchTerm, enabled = true }: UseInfin
     },
     enabled,
     staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    keepPreviousData: true
   })
 
   const productOptions: SelectOptionItem[] = useMemo(() => {

@@ -43,6 +43,7 @@ export default function DetailCategory() {
 
   const {
     tmpUndoData: tmpUndoDataCategory,
+    timerId: timerIdCategory,
     setAction: setActionCategory,
     setIsOpenUndo: setIsOpenUndoCategory,
     setTimerId: setTimerIdCategory,
@@ -208,60 +209,58 @@ export default function DetailCategory() {
   }
 
   const updateNameCategory = async () => {
-    if (!!param.id) {
-      const body = {
-        id: Number(param.id),
-        data: {
+    const body = {
+      id: Number(param.id),
+      data: {
+        name: nameCategory?.trim() ?? ''
+      }
+    }
+
+    if (timerIdCategory && dataPending.id) {
+      clearTimeout(timerIdCategory)
+      await updateCategoryMutation(dataPending)
+    }
+
+    const optimisticCategoriesList = tmpUndoDataCategory.map((item) => {
+      if (item.id === Number(param.id)) {
+        return {
+          ...item,
           name: nameCategory?.trim() ?? ''
         }
       }
 
-      if (timerId && dataPending.id) {
-        clearTimeout(timerId)
-        await updateCategoryMutation(dataPending)
+      if (item.id === dataPending.id) {
+        return {
+          ...item,
+          ...dataPending.data
+        }
       }
 
-      const optimisticCategoriesList = tmpUndoDataCategory.map((item) => {
-        if (item.id === Number(param.id)) {
-          return {
-            ...item,
-            name: nameCategory?.trim() ?? ''
-          }
-        }
+      return item
+    })
 
-        if (item.id === dataPending.id) {
-          return {
-            ...item,
-            ...dataPending.data
-          }
-        }
+    setDataPending(body)
+    setActionCategory('Update Category')
+    setIsOpenUndoCategory(true)
+    setTmpUndoDataCategory(optimisticCategoriesList)
 
-        return item
+    const timeOut = setTimeout(async () => {
+      setIsOpenUndoCategory(false)
+      await updateCategoryMutation(body)
+      setTimerIdCategory(null)
+      setDataPending({
+        id: null,
+        data: {}
       })
+    }, 3000)
 
-      setDataPending(body)
-      setActionCategory('Update Category')
-      setIsOpenUndoCategory(true)
-      setTmpUndoDataCategory(optimisticCategoriesList)
-
-      const timeOut = setTimeout(async () => {
-        setIsOpenUndoCategory(false)
-        await updateCategoryMutation(body)
-        setTimerIdCategory(null)
-        setDataPending({
-          id: null,
-          data: {}
-        })
-      }, 3000)
-
-      setTimerIdCategory(timeOut)
-      navigate(path.categories)
-    }
+    setTimerIdCategory(timeOut)
+    navigate(path.categories)
   }
 
   const handleRemoveCategory = () => {
-    if (timerId && dataPending.id) {
-      clearTimeout(timerId)
+    if (timerIdCategory && dataPending.id) {
+      clearTimeout(timerIdCategory)
       updateCategoryMutation(dataPending)
     }
 

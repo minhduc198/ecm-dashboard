@@ -23,12 +23,6 @@ const Categories = () => {
     queryFn: () => fetchCategoriesList(),
     refetchOnWindowFocus: false,
     keepPreviousData: true
-    // onSuccess(data) {
-    //   const newList = data?.data ?? []
-    //   if (!timerId) {
-    //     setTmpUndoData(newList)
-    //   }
-    // },
   })
 
   useEffect(() => {
