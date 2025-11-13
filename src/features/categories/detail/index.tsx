@@ -285,7 +285,7 @@ export default function DetailCategory() {
       <form onSubmit={handleSubmit(updateNameCategory)}>
         <Box
           sx={{
-            border: '1px solid rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e0e0e0',
             borderTopLeftRadius: '10px',
             borderTopRightRadius: '10px',
             padding: 2
@@ -303,18 +303,24 @@ export default function DetailCategory() {
           />
         </Box>
         <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 24px',
-            borderInline: '1px solid #e0e0e0',
-            borderBottom: '1px solid #e0e0e0',
-            borderBottomLeftRadius: '10px',
-            borderBottomRightRadius: '10px',
-            bgcolor: '#e0e0e0'
-          }}
+          sx={[
+            {
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '14px 24px',
+              borderInline: '1px solid #e0e0e0',
+              borderBottom: '1px solid #e0e0e0',
+              borderBottomLeftRadius: '10px',
+              borderBottomRightRadius: '10px',
+              bgcolor: '#e0e0e0'
+            },
+            (theme) =>
+              theme.applyStyles('dark', {
+                backgroundColor: '#424242'
+              })
+          ]}
         >
           <Button
             sx={{ borderRadius: '8px' }}

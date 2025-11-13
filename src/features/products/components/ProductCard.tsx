@@ -16,7 +16,7 @@ export default function ProductCard({ itemData }: Props) {
   const handleViewDetail = (item: Product) => {
     queryClient.setQueryData(['product_detail', item.id.toString()], { data: item })
     setHeaderData({
-      reference: item.reference
+      title: `Product "${item.reference}"`
     })
   }
 

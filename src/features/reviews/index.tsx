@@ -32,7 +32,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import StarsIcon from '@mui/icons-material/Stars'
 import { Avatar, Box, Button, InputAdornment, Snackbar, SnackbarCloseReason, Tooltip, Typography } from '@mui/material'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { cloneDeep, debounce, isEqual } from 'lodash'
+import { cloneDeep, debounce, isEqual, sortBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, Resolver, useForm, useWatch } from 'react-hook-form'
@@ -50,11 +50,15 @@ import {
   ReviewUrlQuery,
   TableColumnsReview
 } from './types'
+import { useDrawerStore } from '@/store/drawerStore'
+import TextLineClamp from '@/components/TextLineClamp'
+import { useHeaderTitleStore } from '@/store/headerStore'
 
 type FormValues = InferType<typeof filterReviewSchema>
 
 export default function Reviews() {
   const { setMany } = useSearchParam()
+  const { setHeaderData } = useHeaderTitleStore()
   const navigate = useNavigate()
   const {
     action,
@@ -62,12 +66,16 @@ export default function Reviews() {
     isOpenUndo,
     timerId,
     createMessageSuccess,
+    dataPending,
+    setDataPending,
     setTmpUndoData,
     setIsOpenUndo,
     setTimerId,
     setAction,
     setCreateMessageSuccess
   } = useUndoReviewStore()
+  const { openDrawer, setOpenDrawer, setGetById } = useDrawerStore()
+
   const reviewSettingColFromLS = getReviewSettingColumnsFromLS()
   const currentListReviewParamsLS = getReviewListParamsFormLS()
   const currentSaveQueriesLS = getReviewSaveQueries()
@@ -106,12 +114,7 @@ export default function Reviews() {
     queryKey: ['review_list', reviewListRq],
     queryFn: () => fetchReviewList(reviewListRq),
     refetchOnWindowFocus: false,
-    keepPreviousData: true,
-    onSuccess: (reviewList) => {
-      if (!timerId) {
-        setTmpUndoData(reviewList.data)
-      }
-    }
+    keepPreviousData: true
   })
   const reviewListData = reviewList?.data ?? []
 
@@ -146,7 +149,8 @@ export default function Reviews() {
         const tableColumn = {
           id: col.id,
           label: col.label,
-          sortable: true
+          sortable: true,
+          sortBy: col.id
         }
 
         switch (col.id) {
@@ -171,15 +175,35 @@ export default function Reviews() {
               ...tableColumn,
               cell: (value) => (typeof value === 'string' ? formatDate(value, 'd/M/yyyy') : null)
             }
+
           case 'customer_id':
             return {
               ...tableColumn,
+              forceClickRow: true,
               cell: (_, row) => {
                 const customer = (row.customer as Customer) || {}
                 return (
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Avatar sx={{ width: 25, height: 25 }} src={customer.avatar} alt={customer.first_name} />
-                    <Box>{`${customer.first_name} ${customer.last_name}`}</Box>
+                    {openDrawer ? (
+                      <Tooltip title={`${customer.first_name} ${customer.last_name}`}>
+                        <Typography
+                          noWrap
+                          sx={{
+                            width: '80px',
+                            fontSize: '14px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {`${customer.first_name} ${customer.last_name}`}
+                        </Typography>
+                      </Tooltip>
+                    ) : (
+                      `${customer.first_name} ${customer.last_name}`
+                    )}
                   </Box>
                 )
               }
@@ -187,22 +211,28 @@ export default function Reviews() {
 
           case 'product_id':
             return {
+              forceClickRow: true,
               ...tableColumn,
-              cell: (_, row) => row.product.reference
+              cell: (_, row) => <Box sx={{ display: 'flex', width: '130px' }}>{row.product.reference}</Box>
             }
           case 'rating':
             return {
+              forceClickRow: true,
               ...tableColumn,
               cell: (value) => {
                 const star = Number(value)
-                return Array(5)
-                  .fill(0)
-                  .map((_, idx) => {
-                    if (idx + 1 <= star) {
-                      return <StarsIcon sx={{ width: '20px', height: '20px' }} color='action' key={idx} />
-                    }
-                    return <Box key={idx}></Box>
-                  })
+                return (
+                  <Box sx={{ display: 'flex' }}>
+                    {Array(5)
+                      .fill(0)
+                      .map((_, idx) => {
+                        if (idx + 1 <= star) {
+                          return <StarsIcon sx={{ width: '20px', height: '20px' }} color='action' key={idx} />
+                        }
+                        return <Box key={idx}></Box>
+                      })}
+                  </Box>
+                )
               }
             }
 
@@ -216,6 +246,7 @@ export default function Reviews() {
                       noWrap
                       sx={{
                         width: '300px',
+                        fontSize: '14px',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -239,7 +270,7 @@ export default function Reviews() {
             return col
         }
       })
-  }, [reviewSettingCol])
+  }, [reviewSettingCol, openDrawer])
 
   const methods = useForm<FormValues>({
     mode: 'onChange',
@@ -282,6 +313,13 @@ export default function Reviews() {
     () => reviewSettingCol.filter((col) => col.isVisible).map((i) => i.id),
     [reviewSettingCol]
   )
+
+  useEffect(() => {
+    const newList = reviewList?.data ?? []
+    if (!timerId && !dataPending.id) {
+      setTmpUndoData(newList)
+    }
+  }, [reviewList?.data])
 
   useEffect(() => {
     debouncedSetQ(q ?? '')
@@ -418,6 +456,11 @@ export default function Reviews() {
   }
 
   const handleUndo = () => {
+    setDataPending({
+      id: 0,
+      data: {}
+    })
+    setGetById?.('')
     setIsOpenUndo(false)
     setTimerId(null)
     setTmpUndoData(reviewListData)
@@ -579,6 +622,14 @@ export default function Reviews() {
     setReviewSettingColumnsToLS(newColSetting as TableColumnsReview)
   }
 
+  const handleViewDetail = (row: Review) => {
+    setHeaderData({
+      title: `${row.customer.first_name} ${row.customer.last_name}`
+    })
+    setOpenDrawer(true)
+    navigate(`${path.reviews}/${row.id}`)
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <FormProvider {...methods}>
@@ -697,8 +748,8 @@ export default function Reviews() {
         handleSetRowsPerPage={handleSetRowsPerPage}
         handleDelete={handleDelete}
         handleSort={handleSort}
+        onRowClick={handleViewDetail}
         // onClearAllFilter={handleDeleteAllFilter()}
-        // onRowClick={handleViewDetail}
       />
 
       <Snackbar

@@ -18,10 +18,13 @@ import { fetchCustomerDetail } from '../service'
 import { useUndoCustomerStore } from '@/store/undoCustomerStore'
 import { useHeaderTitleStore } from '@/store/headerStore'
 
-const DetailTypography = styled(Typography)({
+const DetailTypography = styled(Typography)(({ theme }) => ({
   fontSize: '14px',
-  color: 'rgba(0,0,0, 0.6)'
-})
+  color: 'rgba(0,0,0, 0.6)',
+  ...theme.applyStyles('dark', {
+    color: 'white'
+  })
+}))
 
 export default function DetailCustomer() {
   const param = useParams()
@@ -40,7 +43,7 @@ export default function DetailCustomer() {
     onSuccess: (res) => {
       const data = res.data
       setHeaderData({
-        fullName: `${data.first_name} ${data.last_name}`,
+        title: `${data.first_name} ${data.last_name}`,
         avatar: data.avatar
       })
     }
@@ -65,7 +68,7 @@ export default function DetailCustomer() {
   const { data: reviewListData } = useQuery({
     queryKey: ['review_list', param.id, customerData?.id],
     queryFn: () =>
-      fetchReviewList({ pagination: { page: 1, perPage: 9999 }, filter: { customer_id: customerData?.id } }),
+      fetchReviewList({ pagination: { page: 1, perPage: 9999 }, filter: { customer_id: String(customerData?.id) } }),
     enabled: !!customerData?.id,
     refetchOnWindowFocus: false
   })
@@ -119,17 +122,35 @@ export default function DetailCustomer() {
         <Grid container spacing={2}>
           <FormCustomer hasStats customerData={customerData} size={9} />
           <Grid size={{ xs: 3 }} container direction={'column'}>
-            <Box sx={{ pt: 2, pr: 2, pl: 2, pb: 3, borderRadius: '10px', border: '1px solid rgba(0, 0, 0, 0.1)' }}>
+            <Box sx={{ pt: 2, pr: 2, pl: 2, pb: 3, borderRadius: '10px', border: '1px solid #e0e0e0' }}>
               <Typography sx={{ fontSize: '20px', fontWeight: 500, mb: '7px' }}>History</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
                   <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
-                    <QueryBuilderIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                    <QueryBuilderIcon
+                      sx={[
+                        { width: '20px', height: '20px' },
+                        (theme) =>
+                          theme.applyStyles('dark', {
+                            color: 'white'
+                          })
+                      ]}
+                      color='disabled'
+                    />
                     <Box sx={{ fontSize: '14px' }}>First seen {formatDate(customerData?.first_seen, 'd/M/yyyy')}</Box>
                   </Box>
                   {!!customerData?.nb_orders && (
                     <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
-                      <AttachMoneyIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                      <AttachMoneyIcon
+                        sx={[
+                          { width: '20px', height: '20px' },
+                          (theme) =>
+                            theme.applyStyles('dark', {
+                              color: 'white'
+                            })
+                        ]}
+                        color='disabled'
+                      />
                       <Box sx={{ cursor: 'pointer' }} onClick={goToOrderOfCustomer}>
                         <Link sx={{ fontSize: '14px' }}>
                           {`${customerData.nb_orders} ${customerData.nb_orders > 1 ? 'orders' : 'order'}`}
@@ -141,12 +162,30 @@ export default function DetailCustomer() {
 
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
                   <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
-                    <QueryBuilderIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                    <QueryBuilderIcon
+                      sx={[
+                        { width: '20px', height: '20px' },
+                        (theme) =>
+                          theme.applyStyles('dark', {
+                            color: 'white'
+                          })
+                      ]}
+                      color='disabled'
+                    />
                     <Box sx={{ fontSize: '14px' }}>Last seen {formatDate(customerData?.last_seen, 'd/M/yyyy')}</Box>
                   </Box>
                   {!!reviewData?.length && (
                     <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
-                      <CommentIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                      <CommentIcon
+                        sx={[
+                          { width: '20px', height: '20px' },
+                          (theme) =>
+                            theme.applyStyles('dark', {
+                              color: 'white'
+                            })
+                        ]}
+                        color='disabled'
+                      />
                       <Link href={'#'} sx={{ fontSize: '14px' }}>
                         {`${reviewData.length} ${reviewData.length > 1 ? 'reviews' : 'review'}`}
                       </Link>
@@ -160,7 +199,16 @@ export default function DetailCustomer() {
               reviewData.map((review) => (
                 <Box key={review.id} sx={{ paddingInline: 2 }}>
                   <Box sx={{ display: 'flex', paddingBlock: 1 }}>
-                    <CommentIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                    <CommentIcon
+                      sx={[
+                        { width: '20px', height: '20px' },
+                        (theme) =>
+                          theme.applyStyles('dark', {
+                            color: 'white'
+                          })
+                      ]}
+                      color='disabled'
+                    />
                     <Typography sx={{ fontSize: '14px', fontWeight: 500, ml: '4px' }}>
                       {productData?.map((product) => {
                         if (review.product_id === product.id) {
@@ -178,7 +226,7 @@ export default function DetailCustomer() {
                       pb: 3,
                       pl: '20px',
                       ml: '10px',
-                      borderLeft: '1px solid rgba(0, 0, 0, 0.2)'
+                      borderLeft: '1px solid #e0e0e0'
                     }}
                   >
                     <DetailTypography>{formatDate(review.date, 'E d, y, H:mm a')}</DetailTypography>
@@ -192,7 +240,16 @@ export default function DetailCustomer() {
               orderData.map((order, idx) => (
                 <Box key={order.id} sx={{ paddingInline: 2 }}>
                   <Box sx={{ display: 'flex', paddingBlock: 1 }}>
-                    <AttachMoneyIcon sx={{ width: '20px', height: '20px' }} color='disabled' />
+                    <AttachMoneyIcon
+                      sx={[
+                        { width: '20px', height: '20px' },
+                        (theme) =>
+                          theme.applyStyles('dark', {
+                            color: 'white'
+                          })
+                      ]}
+                      color='disabled'
+                    />
                     <Typography
                       sx={{ fontSize: '14px', fontWeight: 500 }}
                     >{`Ordered ${order.basket.length} ${order.basket.length > 1 ? 'posters' : 'poster'}`}</Typography>
@@ -206,7 +263,7 @@ export default function DetailCustomer() {
                         pb: 3,
                         pl: '20px',
                         ml: '10px',
-                        borderLeft: '1px solid rgba(0, 0, 0, 0.2)'
+                        borderLeft: '1px solid #e0e0e0'
                       },
                       orderData.length === idx + 1 && { borderLeft: 'none' }
                     ]}

@@ -103,43 +103,29 @@ export default function App() {
   const sessionContextValue = useMemo(() => ({ session, setSession }), [session, setSession])
 
   const BRANDING = useMemo(() => {
-    const path = location.pathname
-    const upperCaseFirstName = path.replace('/', '').charAt(0).toUpperCase() + path.slice(2)
+    const paths = location.pathname.split('/').filter(Boolean)
 
-    let headerTitle = {
-      title: upperCaseFirstName,
-      logo: <Box></Box>
+    if (!paths.length) {
+      return { title: '' }
     }
 
-    if (path.startsWith(`${pathConfig.orders}/`)) {
-      headerTitle = {
-        logo: <Box></Box>,
-        title: `Order ${headerData.reference}`
+    if (paths.length === 1 || paths[0] === 'reviews') {
+      const title = paths[0].charAt(0).toUpperCase() + paths[0].slice(1)
+      return {
+        title
       }
     }
 
-    if (path.startsWith(`${pathConfig.customers}/`)) {
-      headerTitle = {
+    if (headerData.avatar) {
+      return {
         logo: <Avatar sx={{ width: 32, height: 32 }} src={headerData.avatar} />,
-        title: headerData.fullName ?? ''
+        title: headerData.title ?? ''
       }
     }
 
-    if (path.startsWith(`${pathConfig.createCustomer}`)) {
-      headerTitle = {
-        logo: <Box></Box>,
-        title: 'Create Customer'
-      }
+    return {
+      title: headerData.title
     }
-
-    if (path.startsWith(`${pathConfig.products}/`)) {
-      headerTitle = {
-        logo: <Box></Box>,
-        title: headerData?.reference ? `Product "${headerData.reference}"` : ''
-      }
-    }
-
-    return headerTitle
   }, [location.pathname, headerData])
 
   return (

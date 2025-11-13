@@ -237,7 +237,15 @@ export default function TextFieldAutocompleteVirtualized({
       />
       {handleClose && (
         <IconButton onClick={handleClose} aria-label='delete'>
-          <RemoveCircleOutlineIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' }} />
+          <RemoveCircleOutlineIcon
+            sx={[
+              { color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  color: 'white'
+                })
+            ]}
+          />
         </IconButton>
       )}
     </Box>

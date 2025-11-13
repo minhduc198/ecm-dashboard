@@ -1,5 +1,5 @@
-import { Lock, LockOpen, TextFields } from '@mui/icons-material'
-import { Button, Stack, Typography } from '@mui/material'
+import { Lock, LockOpen, Opacity, TextFields } from '@mui/icons-material'
+import { Stack, Typography } from '@mui/material'
 import type { EditorOptions } from '@tiptap/core'
 import {
   LinkBubbleMenu,
@@ -10,9 +10,9 @@ import {
   type RichTextEditorRef
 } from 'mui-tiptap'
 import { useCallback, useRef, useState } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
 import EditorMenuControls from './EditorMenuControls'
 import useExtensions from './useExtensions'
-import { Controller, useForm, useFormContext } from 'react-hook-form'
 
 function fileListToImageFiles(fileList: FileList): File[] {
   return Array.from(fileList).filter((file) => {
@@ -151,13 +151,28 @@ export default function Editor({ name }: Props) {
                   </Stack>
                 )
               }}
-              sx={{
-                '& .ProseMirror': {
-                  '& h1, & h2, & h3, & h4, & h5, & h6': {
-                    scrollMarginTop: showMenuBar ? 50 : 0
+              sx={[
+                {
+                  '& .ProseMirror': {
+                    '& h1, & h2, & h3, & h4, & h5, & h6': {
+                      scrollMarginTop: showMenuBar ? 50 : 0
+                    }
+                  },
+                  '& .MuiTiptap-MenuBar-root': {
+                    backgroundColor: 'white'
                   }
-                }
-              }}
+                },
+                (theme: any) =>
+                  theme.applyStyles('dark', {
+                    '& .MuiTiptap-MenuBar-root': {
+                      backgroundColor: 'transparent'
+                    },
+                    '& p[data-placeholder]::before': {
+                      color: '#fefefe !important',
+                      opacity: 0.5
+                    }
+                  })
+              ]}
             >
               {() => (
                 <>

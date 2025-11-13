@@ -9,8 +9,8 @@ import { deleteReviews, fetchReviewList } from '@/features/reviews/services'
 import { GetReviewListRequest } from '@/features/reviews/types'
 import { path } from '@/routers/path'
 import { Customer, Review } from '@/services/data-generator'
-import { useUndoProductStore } from '@/store/undoProductStore'
 import { useUndoReviewStore } from '@/store/reviewStore'
+import { useUndoProductStore } from '@/store/undoProductStore'
 import { SORT } from '@/types'
 import { TableColumns } from '@/types/table'
 import { formatDate } from '@/utils/date'
@@ -40,10 +40,12 @@ import { categoryOptions, TabProduct } from '../constant'
 import { productDetailSchema } from '../schemas'
 import { createProduct, deleteProducts, fetchProductDetail, updateProduct } from '../services'
 import { CreateProductRequest, UpdateProductRequest } from '../types'
+import { useHeaderTitleStore } from '@/store/headerStore'
 
 type FormValues = InferType<typeof productDetailSchema>
 
 export default function ProductDetail() {
+  const { setHeaderData } = useHeaderTitleStore()
   const { timerId, tmpUndoData, dataPending, setTmpUndoData, setIsOpenUndo, setTimerId, setAction, setDataPending } =
     useUndoProductStore()
   const {
@@ -60,7 +62,7 @@ export default function ProductDetail() {
   const activeTab = param.tab || TabProduct.IMAGE
 
   const [reviewParamRq, setReviewParamRq] = useState<GetReviewListRequest>({
-    filter: { product_id: Number(param.id) },
+    filter: { product_id: param.id },
     sort: {
       field: 'id',
       order: SORT.DESC
@@ -95,7 +97,10 @@ export default function ProductDetail() {
     queryKey: ['product_detail', param.id],
     queryFn: () => fetchProductDetail({ id: Number(param.id) }),
     enabled: !!param.id && !timerId,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    onSuccess: (review) => {
+      setHeaderData({ title: `Product "${review.data.reference}"` })
+    }
   })
   const productDetail = productDetailData?.data
 
@@ -315,7 +320,6 @@ export default function ProductDetail() {
       if (newValue === TabProduct.IMAGE) {
         return navigate(`${path.createProduct}`)
       }
-
       return navigate(`${path.createProduct}/${newValue}`)
     }
   }
@@ -392,7 +396,7 @@ export default function ProductDetail() {
       <form onSubmit={handleSubmit(handleUpdateAndCreate)} noValidate>
         <Box
           sx={{
-            border: '1px solid rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e0e0e0',
             borderTopLeftRadius: '10px',
             borderTopRightRadius: '10px'
           }}
@@ -481,18 +485,24 @@ export default function ProductDetail() {
           </TabContext>
         </Box>
         <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 24px',
-            borderInline: '1px solid #e0e0e0',
-            borderBottom: '1px solid #e0e0e0',
-            borderBottomLeftRadius: '10px',
-            borderBottomRightRadius: '10px',
-            bgcolor: '#e0e0e0'
-          }}
+          sx={[
+            {
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '14px 24px',
+              borderInline: '1px solid #e0e0e0',
+              borderBottom: '1px solid #e0e0e0',
+              borderBottomLeftRadius: '10px',
+              borderBottomRightRadius: '10px',
+              bgcolor: '#e0e0e0'
+            },
+            (theme) =>
+              theme.applyStyles('dark', {
+                backgroundColor: '#424242'
+              })
+          ]}
         >
           <Button
             sx={{ borderRadius: '8px' }}
@@ -506,7 +516,14 @@ export default function ProductDetail() {
           </Button>
 
           {true && (
-            <Button sx={{ borderRadius: 1 }} color='error' startIcon={<DeleteIcon />} onClick={handleDelete}>
+            <Button
+              sx={{ borderRadius: 1 }}
+              color='error'
+              startIcon={<DeleteIcon />}
+              onClick={handleDelete}
+              loading={!!timerId}
+              disabled={!!timerId}
+            >
               DELETE
             </Button>
           )}

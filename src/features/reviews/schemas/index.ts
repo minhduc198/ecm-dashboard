@@ -31,3 +31,7 @@ export const filterReviewSchema = yup.object().shape(
   },
   [['date_gte', 'date_lte']]
 )
+
+export const reviewDetailSchema = yup.object({
+  comment: yup.string().required('Enter comment')
+})

@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   FormControlLabel,
   styled,
   TextField
@@ -172,47 +173,80 @@ export default function AddFilter<T>({
           {filterItems?.map((item, idx) => (
             <FormControlLabel
               key={item.label}
-              sx={{
-                minWidth: '215px',
-                margin: 0,
-                paddingInline: 2,
-                transition: 'all 0.2s',
-                '&:hover': {
-                  bgcolor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
+              sx={[
+                {
+                  minWidth: '215px',
+                  margin: 0,
+                  paddingInline: 2,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                },
+                (theme) =>
+                  theme.applyStyles('dark', {
+                    '&:hover': {
+                      backgroundColor: 'rgb(225, 225, 225, 0.1)'
+                    }
+                  })
+              ]}
               control={
                 <Checkbox
                   onChange={handleCheckBox(idx)}
                   checked={item.isChecked}
-                  sx={{
-                    mr: '16px',
-                    width: '20px',
-                    color: 'rgba(0, 0, 0, 0.54)',
-                    '&.Mui-checked': {
-                      color: 'rgba(0, 0, 0, 0.54)'
+                  sx={[
+                    {
+                      mr: '16px',
+                      width: '20px',
+                      color: 'rgba(0, 0, 0, 0.54)',
+                      '&.Mui-checked': {
+                        color: 'rgba(0, 0, 0, 0.54)'
+                      },
+                      '&:hover': {
+                        backgroundColor: 'transparent'
+                      }
                     },
-                    '&:hover': {
-                      backgroundColor: 'transparent'
-                    }
-                  }}
+                    (theme) =>
+                      theme.applyStyles('dark', {
+                        color: 'white',
+                        '&.Mui-checked': {
+                          color: 'white'
+                        }
+                      })
+                  ]}
                 />
               }
               label={item.label}
             />
           ))}
 
-          <Box sx={{ bgcolor: 'rgba(0, 0, 0, 0.12)', marginBlock: '8px', height: '1px', p: '0px' }}></Box>
+          <Divider sx={{ mb: 1 }} />
 
           {currentSaveQueries.map((data) =>
             isEqual(data.value, queryObject) ? (
               <CustomBox key={data.id} onClick={() => handleOpenRemoveDialog(data.id)}>
-                <BookmarkRemoveIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
+                <BookmarkRemoveIcon
+                  sx={[
+                    { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                    (theme) =>
+                      theme.applyStyles('dark', {
+                        color: 'white'
+                      })
+                  ]}
+                />
                 <Typography>{`Remove query "${data.name}"`}</Typography>
               </CustomBox>
             ) : (
               <CustomBox key={data.id} onClick={() => handleUseSaveQuery(data)}>
-                <BookmarkBorderIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
+                <BookmarkBorderIcon
+                  sx={[
+                    { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                    (theme) =>
+                      theme.applyStyles('dark', {
+                        color: 'white'
+                      })
+                  ]}
+                />
                 <Typography>{data.name}</Typography>
               </CustomBox>
             )
@@ -220,13 +254,29 @@ export default function AddFilter<T>({
 
           {!isCurrentQuery && (
             <CustomBox onClick={handleClickOpen}>
-              <BookmarkAddIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
+              <BookmarkAddIcon
+                sx={[
+                  { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                  (theme) =>
+                    theme.applyStyles('dark', {
+                      color: 'white'
+                    })
+                ]}
+              />
               <Typography>Save current query</Typography>
             </CustomBox>
           )}
 
           <CustomBox onClick={handleRemoveAll}>
-            <CloseIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
+            <CloseIcon
+              sx={[
+                { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                (theme) =>
+                  theme.applyStyles('dark', {
+                    color: 'white'
+                  })
+              ]}
+            />
             <Typography>Remove all filters</Typography>
           </CustomBox>
         </Box>

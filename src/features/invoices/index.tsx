@@ -73,14 +73,14 @@ const Invoices = () => {
 
   const handleSetQueryDetail = (row: Customer) => {
     setHeaderData({
-      fullName: `${row.first_name} ${row.last_name}`,
+      title: `${row.first_name} ${row.last_name}`,
       avatar: row.avatar
     })
   }
 
   const handleSetReference = (reference: string) => {
     setHeaderData({
-      reference
+      title: `Order ${reference}`
     })
   }
 
@@ -101,6 +101,8 @@ const Invoices = () => {
         switch (col.id) {
           case 'customer_id':
             return {
+              forceClickRow: true,
+              minWidth: 200,
               ...tableColumn,
               cell: (_, row) => (
                 <CustomLink
@@ -304,7 +306,7 @@ const Invoices = () => {
           paddingInline: 2,
           pt: 2,
           pb: 3,
-          border: '1px solid rgb(0, 0, 0, 0.1)',
+          border: '1px solid #e0e0e0',
           borderRadius: '10px'
         }}
       >

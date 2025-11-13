@@ -8,6 +8,7 @@ export interface TableColumns<T> {
   sortable?: boolean
   isVisible?: boolean
   sortBy?: string
+  forceClickRow?: boolean
   minWidth?: number
   width?: number
   cell?: (value: unknown, row: T) => ReactNode

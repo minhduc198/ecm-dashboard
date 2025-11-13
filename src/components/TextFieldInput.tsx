@@ -10,9 +10,17 @@ interface Props extends Omit<TextFieldProps, 'variant'> {
   variant?: TextFieldVariants
   sxTextFieldInput?: SxProps
   isRequired?: boolean
+  multiline?: boolean
 }
 
-export default function TextFieldInput({ name, label, sxTextFieldInput, isRequired = false, ...rest }: Props) {
+export default function TextFieldInput({
+  name,
+  label,
+  sxTextFieldInput,
+  isRequired = false,
+  multiline = false,
+  ...rest
+}: Props) {
   const {
     control,
     formState: { errors }
@@ -26,6 +34,7 @@ export default function TextFieldInput({ name, label, sxTextFieldInput, isRequir
         return (
           <TextField
             {...field}
+            multiline={multiline}
             sx={{
               width: '236px',
               '& .MuiFilledInput-root': {

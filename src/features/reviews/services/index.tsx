@@ -9,7 +9,9 @@ import {
   GetReviewDetailRequest,
   GetReviewDetailResponse,
   GetReviewListRequest,
-  GetReviewsListResponse
+  GetReviewsListResponse,
+  UpdateReviewRequest,
+  UpdateReviewResponse
 } from '../types'
 
 export class ReviewService {
@@ -71,9 +73,30 @@ export class ReviewService {
       )
     }
   }
+
+  static async updateReview(params: UpdateReviewRequest): Promise<UpdateReviewResponse> {
+    try {
+      const currentData = await baseDataProvider.getOne('reviews', { id: params.id })
+
+      const response = await baseDataProvider.update('reviews', {
+        id: params.id,
+        data: params.data,
+        previousData: currentData.data
+      })
+
+      return {
+        data: response.data as Review
+      }
+    } catch (error) {
+      throw new Error(
+        `Lỗi khi cập nhật review ${params.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
 }
 
 export const fetchReviewList = (params: GetReviewListRequest) => ReviewService.getReviewList(params)
 export const fetchReviewDetail = (params: GetReviewDetailRequest) => ReviewService.getReviewDetail(params)
 export const deleteReviews = (params: DeleteReviewsRequest) => ReviewService.deleteReviews(params)
 export const createReview = (params: CreateReviewRequest) => ReviewService.createReview(params)
+export const updateReview = (params: UpdateReviewRequest) => ReviewService.updateReview(params)

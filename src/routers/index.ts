@@ -62,7 +62,7 @@ export const router = createBrowserRouter([
           },
           {
             path: path.detailReview,
-            Component: DetailReview
+            Component: Reviews
           },
           { path: path.createReview, Component: CreateReview },
           {

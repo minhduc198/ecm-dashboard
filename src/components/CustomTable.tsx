@@ -1,5 +1,5 @@
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
-import { REVIEW_STATUS } from '@/features/reviews/types'
+import { useDrawerStore } from '@/store/drawerStore'
 import { IPagination, SORT } from '@/types'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -23,7 +23,6 @@ import TableSortLabel from '@mui/material/TableSortLabel'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
-import { first, slice } from 'lodash'
 import * as React from 'react'
 
 interface TableHeaderProps<DataType> {
@@ -234,12 +233,19 @@ export default function CustomTable<DataType, IdType>({
   const [selected, setSelected] = React.useState<IdType[]>([])
   const [collapseRows, setCollapseRows] = React.useState<Record<string, boolean>>({})
 
+  const { getById } = useDrawerStore()
+
   const hasStatusColumnStyle = columns[0]?.id === 'status-column'
   const cols = hasStatusColumnStyle ? columns.slice(1) : columns
 
   const allRowIds = dataSource.map((data) => {
     return String(data[rowId])
   })
+
+  React.useEffect(() => {
+    const newSelected = selected.filter((id) => id !== Number(getById))
+    setSelected(newSelected)
+  }, [getById])
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === SORT.ASC
@@ -299,8 +305,9 @@ export default function CustomTable<DataType, IdType>({
   }
 
   const navigateDetailPage =
-    (row: DataType, rowId?: IdType) => (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
-      if ((e.target as HTMLElement).nodeName !== 'TD') {
+    (row: DataType, rowId?: IdType, forceClickRow = false) =>
+    (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
+      if ((e.target as HTMLElement).nodeName !== 'TD' && !forceClickRow) {
         return
       }
 
@@ -404,7 +411,7 @@ export default function CustomTable<DataType, IdType>({
                               width: col.width,
                               borderBottomWidth: calcBorderBottomWidth(row)
                             }}
-                            onClick={navigateDetailPage(row, row[rowId] as IdType)}
+                            onClick={navigateDetailPage(row, row[rowId] as IdType, col.forceClickRow)}
                             key={col.id.toString()}
                             align={col.numeric ? 'right' : 'left'}
                             padding={col.disablePadding ? 'none' : 'normal'}

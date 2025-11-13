@@ -56,4 +56,11 @@ export enum REVIEW_STATUS {
   'PENDING' = 'pending'
 }
 
+export interface UpdateReviewRequest {
+  id: number
+  data: Partial<Omit<Review, 'id'>>
+}
+
+export type UpdateReviewResponse = ApiResponse<Review>
+
 export type TableColumnsReview = TableColumns<Review>[]

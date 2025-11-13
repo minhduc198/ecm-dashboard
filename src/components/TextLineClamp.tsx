@@ -1,9 +1,10 @@
-import { Typography, TypographyProps } from '@mui/material'
+import { SxProps, Typography, TypographyProps } from '@mui/material'
 
 interface Props extends TypographyProps {
   line?: number
+  sxTextLineClamp?: SxProps
 }
-export default function TextLineClamp({ line = 3, children, ...res }: Props) {
+export default function TextLineClamp({ line = 3, children, sxTextLineClamp, ...res }: Props) {
   return (
     <Typography
       {...res}
@@ -12,7 +13,8 @@ export default function TextLineClamp({ line = 3, children, ...res }: Props) {
         textOverflow: 'ellipsis',
         display: '-webkit-box',
         WebkitLineClamp: line,
-        WebkitBoxOrient: 'vertical'
+        WebkitBoxOrient: 'vertical',
+        ...sxTextLineClamp
       }}
     >
       {children}

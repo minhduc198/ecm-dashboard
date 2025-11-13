@@ -281,14 +281,23 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
   return (
     <FormProvider {...method}>
       <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          border: '1px solid rgba(0, 0, 0, 0.2)',
-          borderRadius: '8px',
-          padding: 2
-        }}
+        sx={[
+          {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            padding: 2
+          },
+          (theme) => ({
+            backgroundColor: 'transparent'
+          }),
+          (theme) =>
+            theme.applyStyles('dark', {
+              backgroundColor: '#1e1e1e'
+            })
+        ]}
       >
         <TextFieldInput
           sxTextFieldInput={{ width: '100%' }}

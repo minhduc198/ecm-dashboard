@@ -220,7 +220,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
             container
             spacing={2}
             sx={{
-              border: '1px solid rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e0e0e0',
               borderTopLeftRadius: '10px',
               borderTopRightRadius: '10px',
               paddingTop: 2,
@@ -332,19 +332,25 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
             )}
           </Grid>
           <Box
-            sx={{
-              width: '100%',
-              display: 'flex',
-              mt: -2,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '14px 24px',
-              borderInline: '1px solid #e0e0e0',
-              borderBottom: '1px solid #e0e0e0',
-              borderBottomLeftRadius: '10px',
-              borderBottomRightRadius: '10px',
-              bgcolor: '#e0e0e0'
-            }}
+            sx={[
+              {
+                width: '100%',
+                display: 'flex',
+                mt: -2,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 24px',
+                borderInline: '1px solid #e0e0e0',
+                borderBottom: '1px solid #e0e0e0',
+                borderBottomLeftRadius: '10px',
+                borderBottomRightRadius: '10px',
+                bgcolor: '#e0e0e0'
+              },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  backgroundColor: '#424242'
+                })
+            ]}
           >
             <Button
               sx={{ borderRadius: '8px' }}
@@ -358,7 +364,14 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
             </Button>
 
             {hasStats && (
-              <Button onClick={handleDeleteCustomer} sx={{ borderRadius: 1 }} color='error' startIcon={<DeleteIcon />}>
+              <Button
+                onClick={handleDeleteCustomer}
+                sx={{ borderRadius: 1 }}
+                color='error'
+                startIcon={<DeleteIcon />}
+                loading={!!timerId}
+                disabled={!!timerId}
+              >
                 DELETE
               </Button>
             )}

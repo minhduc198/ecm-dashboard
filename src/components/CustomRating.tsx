@@ -7,14 +7,41 @@ interface Props extends RatingProps {
   name: string
 }
 
-const StyledRating = styled(Rating)({
-  '& .MuiRating-iconFilled': {
-    color: 'black'
+const StyledRating = styled(Rating)(({ theme }) => [
+  {
+    '& .MuiRating-iconFilled': {
+      color: 'black'
+    },
+    '& .MuiRating-iconHover': {
+      color: '#black'
+    }
   },
-  '& .MuiRating-iconHover': {
-    color: '#black'
-  }
-})
+  theme.applyStyles('dark', {
+    '& .MuiRating-iconFilled': {
+      color: 'white'
+    },
+    '& .MuiRating-iconHover': {
+      color: '#white'
+    }
+  })
+])
+
+const MyComponent = styled('div')(({ theme }) => [
+  {
+    color: '#fff',
+    backgroundColor: theme.palette.primary.main,
+    '&:hover': {
+      boxShadow: theme.shadows[3],
+      backgroundColor: theme.palette.primary.dark
+    }
+  },
+  theme.applyStyles('dark', {
+    backgroundColor: theme.palette.secondary.main,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.dark
+    }
+  })
+])
 
 export default function CustomRating({
   name,

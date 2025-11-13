@@ -17,6 +17,7 @@ import ProductCard from './components/ProductCard'
 import { SortByEnum, sortName, sortOrder } from './constant'
 import { fetchProductsList } from './services'
 import { GetProductListRequest, ProductParam } from './types'
+import { useHeaderTitleStore } from '@/store/headerStore'
 
 const getCurrentSortName = (sortBy: string) => {
   const [sort, order] = sortBy.split('_')
@@ -24,6 +25,7 @@ const getCurrentSortName = (sortBy: string) => {
 }
 
 const Products = () => {
+  const { setHeaderData } = useHeaderTitleStore()
   const { filter, order, page, perPage, sort } = getProductListParamsFormLS()
   const productListParamFromLS = getProductListParamsFormLS()
   const { setMany } = useSearchParam()
@@ -67,7 +69,7 @@ const Products = () => {
     if (!timerId && !dataPending.id) {
       setTmpUndoData(newList)
     }
-  }, [productList?.data, timerId, dataPending.id])
+  }, [productList?.data])
 
   useEffect(() => {
     const newSortBy = [sort.toUpperCase(), order].join('_')
@@ -195,6 +197,11 @@ const Products = () => {
     }
   }
 
+  const handleViewCreateProduct = () => {
+    setHeaderData({ title: 'Create Product' })
+    navigate(path.createProduct)
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2 }}>
@@ -233,7 +240,7 @@ const Products = () => {
             ))}
           </Menu>
         </Box>
-        <Button onClick={() => navigate(path.createProduct)} startIcon={<AddIcon />} variant='text'>
+        <Button onClick={handleViewCreateProduct} startIcon={<AddIcon />} variant='text'>
           CREATE
         </Button>
         <Button onClick={handleExport} startIcon={<FileDownloadIcon />} variant='text'>

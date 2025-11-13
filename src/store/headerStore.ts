@@ -3,8 +3,7 @@ import { persist } from 'zustand/middleware'
 
 type IHeaderData = {
   avatar?: string
-  fullName?: string
-  reference?: string
+  title: string
 }
 
 type HeaderTitleStore = {
@@ -17,8 +16,7 @@ export const useHeaderTitleStore = create<HeaderTitleStore>()(
     (set) => ({
       headerData: {
         avatar: '',
-        fullName: '',
-        reference: ''
+        title: ''
       },
 
       setHeaderData: (data) =>

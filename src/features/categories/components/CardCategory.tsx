@@ -6,12 +6,14 @@ import EditIcon from '@mui/icons-material/Edit'
 import { useNavigate } from 'react-router'
 import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
 import { path } from '@/routers/path'
+import { useHeaderTitleStore } from '@/store/headerStore'
 
 interface Props {
   category: Category
 }
 
 export default function CardCategory({ category }: Props) {
+  const { setHeaderData } = useHeaderTitleStore()
   const navigate = useNavigate()
   const customerParamFromLS = getProductListParamsFormLS()
 
@@ -27,6 +29,7 @@ export default function CardCategory({ category }: Props) {
   }
 
   const handleNavigateDetailCategory = (category_id: number) => {
+    setHeaderData({ title: `Category ${category.name}` })
     navigate(`${path.categories}/${category_id}`)
   }
 
@@ -34,7 +37,7 @@ export default function CardCategory({ category }: Props) {
     <Box
       sx={{
         height: '246px',
-        border: '1px solid rgb(0, 0, 0, 0.1)',
+        border: '1px solid #e0e0e0',
         borderRadius: '10px',
         overflow: 'hidden'
       }}

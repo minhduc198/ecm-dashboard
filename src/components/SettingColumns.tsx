@@ -23,7 +23,7 @@ function DraggableSettingCol<T>({ item, index, handleChange }: PropsDraggableSet
           {...provided.dragHandleProps}
           sx={[
             { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-            { position: 'relative', zIndex: 1, bgcolor: 'white' },
+            { position: 'relative', zIndex: 1, bgcolor: 'rgb(0,0,0, 0.01)' },
             snapshot.isDragging && {
               zIndex: 2,
               boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.2)'

@@ -172,9 +172,8 @@ export default function DetailOrder() {
 
   const handleSetHeaderDetail = () => {
     setHeaderData({
-      fullName: `${customerData?.first_name} ${customerData?.last_name}`,
-      avatar: customerData?.avatar,
-      reference: orderDetail.reference
+      title: `${customerData?.first_name} ${customerData?.last_name}`,
+      avatar: customerData?.avatar
     })
   }
 
@@ -308,18 +307,24 @@ export default function DetailOrder() {
           </Box>
 
           <Box
-            sx={{
-              width: '798px',
-              padding: '14px 24px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderInline: '1px solid #e0e0e0',
-              borderBottom: '1px solid #e0e0e0',
-              borderBottomLeftRadius: '10px',
-              borderBottomRightRadius: '10px',
-              bgcolor: '#e0e0e0'
-            }}
+            sx={[
+              {
+                width: '798px',
+                padding: '14px 24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderInline: '1px solid #e0e0e0',
+                borderBottom: '1px solid #e0e0e0',
+                borderBottomLeftRadius: '10px',
+                borderBottomRightRadius: '10px',
+                bgcolor: '#e0e0e0'
+              },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  backgroundColor: '#424242'
+                })
+            ]}
           >
             <Button
               sx={{ borderRadius: '8px' }}

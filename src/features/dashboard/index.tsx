@@ -1,3 +1,5 @@
+import { ORDER_STATUS } from '@/constants'
+import { SORT } from '@/types'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import CodeIcon from '@mui/icons-material/Code'
 import CommentIcon from '@mui/icons-material/Comment'
@@ -7,10 +9,13 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Box, Button, Grid, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { fetchOrdersList } from '../orders/services'
+import { fetchReviewList } from '../reviews/services'
+import { REVIEW_STATUS } from '../reviews/types'
 import DashboardCard from './components/DashboardCard'
 import LineChartDashboard from './components/LineChartDashboard'
 import RevenueHistory from './components/RevenueHistory'
-import { userData } from '@/data/dashboard/mockUserData'
 
 const BannerDashBoard = styled('div')({
   marginBlock: 16,
@@ -23,6 +28,44 @@ const BannerDashBoard = styled('div')({
 })
 
 const Dashboard = () => {
+  const { data: reviewListData } = useQuery({
+    queryKey: ['review_list'],
+    queryFn: () => fetchReviewList({ pagination: { page: 1, perPage: 999 } }),
+    refetchOnWindowFocus: false
+  })
+  const reviewList = reviewListData?.data || []
+  const reviewPendingList = reviewList.filter((item) => item.status === REVIEW_STATUS.PENDING)
+
+  const { data: orderListData } = useQuery({
+    queryKey: ['order_list'],
+    queryFn: () => fetchOrdersList({ pagination: { page: 1, perPage: 999 }, sort: { field: 'date', order: SORT.ASC } }),
+    refetchOnWindowFocus: false
+  })
+  const orderList = orderListData?.data || []
+  const orderPendingList = orderList.filter((item) => item.status === ORDER_STATUS.ORDERED)
+
+  const newCustomerList = useMemo(() => {
+    const now = new Date()
+    const fifteenDaysAgo = new Date()
+    fifteenDaysAgo.setDate(now.getDate() - 15)
+
+    return reviewPendingList.filter((item) => {
+      const itemDate = new Date(item.date)
+      return itemDate >= fifteenDaysAgo && itemDate <= now
+    })
+  }, [reviewPendingList])
+
+  const newOrderList = useMemo(() => {
+    const now = new Date()
+    const fifteenDaysAgo = new Date()
+    fifteenDaysAgo.setDate(now.getDate() - 15)
+
+    return orderPendingList.filter((item) => {
+      const itemDate = new Date(item.date)
+      return itemDate >= fifteenDaysAgo && itemDate <= now
+    })
+  }, [reviewPendingList])
+
   return (
     <Box>
       <BannerDashBoard sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -69,34 +112,36 @@ const Dashboard = () => {
       </BannerDashBoard>
 
       <Grid container spacing={2}>
-        <Grid container size={{ xs: 6 }}>
-          <Grid size={{ xs: 6 }}>
-            <DashboardCard
-              icon={
-                <AttachMoneyIcon
-                  sx={{
-                    width: '35px',
-                    height: '35px',
-                    color: 'rgb(40, 53, 147)'
-                  }}
-                />
-              }
-              title='Monthly Revenue'
-              value='5.474US$'
-            />
-          </Grid>
-          <Grid size={{ xs: 6 }}>
-            <DashboardCard
-              icon={<ShoppingCartIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-              title='New Orders'
-              value='25'
-            />
+        <Grid sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} container size={{ xs: 6 }}>
+          <Grid container size={{ xs: 12 }}>
+            <Grid size={{ xs: 6 }}>
+              <DashboardCard
+                icon={
+                  <AttachMoneyIcon
+                    sx={{
+                      width: '35px',
+                      height: '35px',
+                      color: 'rgb(40, 53, 147)'
+                    }}
+                  />
+                }
+                title='Monthly Revenue'
+                value='5.474US$'
+              />
+            </Grid>
+            <Grid size={{ xs: 6 }}>
+              <DashboardCard
+                icon={<ShoppingCartIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
+                title='New Orders'
+                value={newOrderList?.length ?? 0}
+              />
+            </Grid>
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <LineChartDashboard />
+            <LineChartDashboard orderData={orderList ?? []} />
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <RevenueHistory />
+            <RevenueHistory userData={orderPendingList ?? []} />
           </Grid>
         </Grid>
         <Grid size={{ xs: 3 }}>
@@ -104,16 +149,16 @@ const Dashboard = () => {
             isReview
             icon={<CommentIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
             title='Pending Reviews'
-            value='54'
-            data={userData}
+            value={reviewPendingList?.length ?? 0}
+            data={reviewPendingList}
           />
         </Grid>
         <Grid size={{ xs: 3 }}>
           <DashboardCard
             icon={<PersonAddIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
             title='New Customers'
-            value='12'
-            data={userData}
+            value={newCustomerList?.length ?? 0}
+            data={newCustomerList}
           />
         </Grid>
       </Grid>
