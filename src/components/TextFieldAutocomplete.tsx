@@ -2,6 +2,7 @@ import { SelectOptionItem } from '@/types'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { Autocomplete, Box, BoxProps, IconButton, SxProps, TextField } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   label: string
@@ -22,6 +23,7 @@ export default function TextFieldAutoComplete({
   sxAutocomplete,
   handleClose
 }: Props) {
+  const { t } = useTranslation('common')
   const {
     control,
     formState: { errors }
@@ -73,7 +75,7 @@ export default function TextFieldAutoComplete({
                   variant='filled'
                   label={label}
                   error={!!errors[name]}
-                  helperText={(errors[name]?.message as string) || ''}
+                  helperText={t(errors[name]?.message as string) || ''}
                   inputRef={ref}
                 />
               )}

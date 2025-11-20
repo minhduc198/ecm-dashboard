@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router'
 import { FilterContext } from '../context/FilterContext'
 import { deleteOrders } from '../services'
 import { Order, OrderParams } from '../types'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   data: Order[]

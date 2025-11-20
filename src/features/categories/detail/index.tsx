@@ -22,18 +22,18 @@ import { path } from '@/routers/path'
 import { useUndoCategoryStore } from '@/store/undoCategoryStore'
 import { useUndoProductCategoryStore } from '@/store/undoProductCategoryStore'
 import { SORT } from '@/types'
+import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
+import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { deleteCategory, fetchCategoryDetail, updateCategory } from '../services'
 import { UpdateCategoryRequest } from '../types'
-import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
 
 const categoryDetailSchema = yup.object({
-  nameCategory: yup.string().required('Required').max(30, 'Maximum length 30 characters').trim()
+  nameCategory: yup.string().required('Required').max(30, 'maximumLengthRule').trim()
 })
 
-type FormValues = yup.InferType<typeof categoryDetailSchema>
-
 export default function DetailCategory() {
+  const { t } = useTranslation(['common', 'product', 'category'])
   const param = useParams()
   const navigate = useNavigate()
   const productListParamFromLS = getProductListParamsFormLS()
@@ -123,7 +123,7 @@ export default function DetailCategory() {
     return initialProductColumns.map((col) => {
       const tableColumns: TableColumns<Product> = {
         id: col.id,
-        label: col.label
+        label: t(`category:${col.id}`)
       }
 
       switch (col.id) {
@@ -153,7 +153,7 @@ export default function DetailCategory() {
             ...tableColumns,
             cell: (_, value) => (
               <Link to={`${path.products}/${value.id}`}>
-                <Button startIcon={<EditIcon />}>Edit</Button>
+                <Button startIcon={<EditIcon />}>{t('category:edit')}</Button>
               </Link>
             )
           }
@@ -161,12 +161,12 @@ export default function DetailCategory() {
           return tableColumns
       }
     })
-  }, [initialProductColumns])
+  }, [initialProductColumns, t])
 
   useEffect(() => {
     const category = categoryDetail?.data
     if (category?.name) {
-      methods.reset({ nameCategory: category.name })
+      methods.reset({ nameCategory: t(`product:${category.name}`) })
     }
   }, [categoryDetail?.data])
 
@@ -291,8 +291,10 @@ export default function DetailCategory() {
             padding: 2
           }}
         >
-          <TextFieldInput sxTextFieldInput={{ width: '100%' }} label='Name' name='nameCategory' />
-          <Typography sx={{ mt: '20px', fontSize: '12px', color: 'rgb(0,0,0, 0.6)' }}>Products</Typography>
+          <TextFieldInput sxTextFieldInput={{ width: '100%' }} label={t('category:name')} name='nameCategory' />
+          <Typography sx={{ mt: '20px', fontSize: '12px', color: 'rgb(0,0,0, 0.6)' }}>
+            {t('category:product')}
+          </Typography>
           <CustomTable<Product, number>
             rowId={'id'}
             dataSource={tmpUndoData}
@@ -330,12 +332,12 @@ export default function DetailCategory() {
             loading={isPending}
             startIcon={<SaveIcon />}
           >
-            SAVE
+            {t('common:save')}
           </Button>
 
           {true && (
             <Button sx={{ borderRadius: 1 }} color='error' startIcon={<DeleteIcon />} onClick={handleRemoveCategory}>
-              DELETE
+              {t('common:delete')}
             </Button>
           )}
         </Box>
@@ -347,7 +349,7 @@ export default function DetailCategory() {
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {t('common:undo')}
           </Button>
         }
       />

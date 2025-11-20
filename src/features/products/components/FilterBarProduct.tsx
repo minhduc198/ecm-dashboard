@@ -44,6 +44,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { GetProductListRequest, ProductUrlQuery } from '../types'
+import { useTranslation } from 'react-i18next'
 
 type FormValues = InferType<typeof filterProductSchema>
 
@@ -53,6 +54,8 @@ interface Props {
 }
 
 export default function FilterBarProduct({ productListRq, setProductListRq }: Props) {
+  const { t: tc } = useTranslation('common')
+  const { t, i18n } = useTranslation('product')
   const [openDialog, setOpenDialog] = useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
   const [saveQueryName, setSaveQueryName] = useState('')
@@ -90,14 +93,32 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
   })
   const categoriesListData = categoriesList?.data || []
 
-  const categoryOptions = useMemo<SelectOptionItem[]>(() => {
+  const i18nStockOptions = useMemo<SelectOptionItem[]>(() => {
+    return stockOptions.map((item) => {
+      return {
+        ...item,
+        label: t(item.label)
+      }
+    }) as SelectOptionItem[]
+  }, [t])
+
+  const i18nSalesOptions = useMemo<SelectOptionItem[]>(() => {
+    return salesOptions.map((item) => {
+      return {
+        ...item,
+        label: t(item.label)
+      }
+    }) as SelectOptionItem[]
+  }, [t])
+
+  const i18nCategoryOptions = useMemo<SelectOptionItem[]>(() => {
     return categoriesListData.map((category) => {
       return {
-        label: category.name,
+        label: t(category.name),
         value: category.id.toString()
       }
     })
-  }, [categoriesListData])
+  }, [categoriesListData, t])
 
   const hasParams = useMemo(() => {
     return (
@@ -302,7 +323,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         <TextFieldInput
           sxTextFieldInput={{ width: '100%' }}
           name='q'
-          label='Search'
+          label={t('product:search')}
           slotProps={{
             input: {
               endAdornment: (
@@ -317,7 +338,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <BookmarkBorderIcon sx={{ width: '24px', height: '24px' }} />
-            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>SAVED QUERIES</Typography>
+            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>{t('save_queries').toUpperCase()}</Typography>
           </Box>
           {hasParams ? (
             isEqual(currentQuery?.value, productListRq) ? (
@@ -362,55 +383,54 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         </Box>
         <SelectFilter
           name='sales'
-          filterLabel='SALES'
+          filterLabel={t('sales').toUpperCase()}
           IconFilter={<AttachMoneySharpIcon color='action' />}
-          options={salesOptions}
+          options={i18nSalesOptions}
         />
 
         <SelectFilter
           name='stock'
-          filterLabel='STOCK'
+          filterLabel={t('stock').toUpperCase()}
           IconFilter={<BarChartOutlinedIcon color='action' />}
-          options={stockOptions}
+          options={i18nStockOptions}
         />
 
         <SelectFilter
           name='category_id'
-          filterLabel='CATEGORIES'
+          filterLabel={t('categories').toUpperCase()}
           IconFilter={<SellOutlinedIcon color='action' />}
-          options={categoryOptions}
+          options={i18nCategoryOptions}
         />
       </Box>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Save current query as</DialogTitle>
+        <DialogTitle>{tc('saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
+            sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label='Query name'
+            label={tc('queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>CANCEL</Button>
+          <Button onClick={handleCloseDialog}>{tc('cancel')}</Button>
           <Button onClick={handleSaveQueries} autoFocus>
-            SAVE
+            {tc('save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{'Remove saved query?'}</DialogTitle>
+        <DialogTitle>{tc('removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>
-            Are you sure you want to remove that item from your list of saved queries?
-          </DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{tc('removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>CANCEL</Button>
-          <Button onClick={handleConfirmRemoveDialog}>CONFIRM</Button>
+          <Button onClick={handleCloseRemoveDialog}>{tc('cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{tc('confirm')}</Button>
         </DialogActions>
       </Dialog>
     </FormProvider>

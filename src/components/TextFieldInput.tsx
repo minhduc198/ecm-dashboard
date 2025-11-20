@@ -3,6 +3,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import { Box, InputAdornment, SxProps, TextField, Typography } from '@mui/material'
 import type { TextFieldProps, TextFieldVariants } from '@mui/material/TextField'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props extends Omit<TextFieldProps, 'variant'> {
   name: string
@@ -21,6 +22,7 @@ export default function TextFieldInput({
   multiline = false,
   ...rest
 }: Props) {
+  const { t } = useTranslation('common')
   const {
     control,
     formState: { errors }
@@ -57,7 +59,7 @@ export default function TextFieldInput({
             error={!!errors[name]?.message}
             required={isRequired}
             {...rest}
-            helperText={errors[name]?.message as string}
+            helperText={t(errors[name]?.message as string)}
           />
         )
       }}

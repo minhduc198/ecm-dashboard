@@ -7,14 +7,14 @@ export const filterInvoicesSchema = yup.object().shape(
       .nullable()
       .when('date_lte', {
         is: (val: any) => val != null,
-        then: (schema) => schema.max(yup.ref('date_lte'), 'Ngày bắt đầu phải trước ngày kết thúc')
+        then: (schema) => schema.max(yup.ref('date_lte'), 'start_date_before_end_date')
       }),
     date_lte: yup
       .date()
       .nullable()
       .when('date_gte', {
         is: (val: any) => val != null,
-        then: (schema) => schema.min(yup.ref('date_gte'), 'Ngày kết thúc phải sau ngày bắt đầu')
+        then: (schema) => schema.min(yup.ref('date_gte'), 'end_date_after_start_date')
       }),
     customer_id: yup.string(),
     order_id: yup.string()

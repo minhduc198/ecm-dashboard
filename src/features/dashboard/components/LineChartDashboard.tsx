@@ -2,6 +2,7 @@ import { Order } from '@/services/data-generator'
 import { formatDate } from '@/utils/date'
 import { Box, Typography } from '@mui/material'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 
 interface Props {
@@ -15,6 +16,7 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
 })
 
 export default function LineChartDashboard({ orderData }: Props) {
+  const { t } = useTranslation('dashboard')
   const lineData = useMemo(() => {
     const now = new Date()
     const oneMonthAgo = new Date()
@@ -41,7 +43,7 @@ export default function LineChartDashboard({ orderData }: Props) {
         border: '1px solid rgb(224, 224, 227)'
       }}
     >
-      <Typography sx={{ fontSize: '24px', marginBottom: '32px' }}>30 Day Revenue History</Typography>
+      <Typography sx={{ fontSize: '24px', marginBottom: '32px' }}>{t('revenueHistory30')}</Typography>
       <AreaChart width={532} height={300} data={lineData}>
         <CartesianGrid strokeDasharray='3 3' />
         <XAxis dataKey='date' />

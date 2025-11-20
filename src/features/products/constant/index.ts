@@ -4,54 +4,54 @@ import { Product } from '../types'
 
 export const salesOptions: SelectFilterItem[] = [
   {
-    label: 'Best sellers',
+    label: 'best_sellers',
     value: {
       sales_gt: 25
     }
   },
   {
-    label: 'Average',
+    label: 'average',
     value: {
       sales_gt: 10,
       sales_lte: 25
     }
   },
   {
-    label: 'Low',
+    label: 'low',
     value: {
       sales_gt: 0,
       sales_lte: 10
     }
   },
   {
-    label: 'Never sold',
+    label: 'never_sold',
     value: { sales: 0 }
   }
 ]
 
 export const stockOptions: SelectFilterItem[] = [
   {
-    label: 'Out of stock',
+    label: 'out_of_stock',
     value: {
       stock: 0
     }
   },
   {
-    label: '1 - 9 items',
+    label: 'items_1_9',
     value: {
       stock_lt: 10,
       stock_gt: 0
     }
   },
   {
-    label: '10 - 49 items',
+    label: 'items_10_49',
     value: {
       stock_lt: 50,
       stock_gt: 9
     }
   },
   {
-    label: '50 items & more',
+    label: 'items_50_more',
     value: {
       stock_gt: 49
     }

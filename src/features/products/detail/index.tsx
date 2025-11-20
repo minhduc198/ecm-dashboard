@@ -41,10 +41,12 @@ import { productDetailSchema } from '../schemas'
 import { createProduct, deleteProducts, fetchProductDetail, updateProduct } from '../services'
 import { CreateProductRequest, UpdateProductRequest } from '../types'
 import { useHeaderTitleStore } from '@/store/headerStore'
+import { useTranslation } from 'react-i18next'
 
 type FormValues = InferType<typeof productDetailSchema>
 
 export default function ProductDetail() {
+  const { t } = useTranslation(['common', 'product'])
   const { setHeaderData } = useHeaderTitleStore()
   const { timerId, tmpUndoData, dataPending, setTmpUndoData, setIsOpenUndo, setTimerId, setAction, setDataPending } =
     useUndoProductStore()
@@ -137,12 +139,12 @@ export default function ProductDetail() {
 
   const initialReviewCol: TableColumns<Review>[] = [
     {
-      label: 'Date',
+      label: t('product:date'),
       id: 'date',
       cell: (value) => (typeof value === 'string' ? formatDate(value, 'd/M/yyyy') : null)
     },
     {
-      label: 'Customer',
+      label: t('product:customer'),
       id: 'customer',
       cell: (value) => {
         const customer = (value as Customer) || {}
@@ -157,7 +159,7 @@ export default function ProductDetail() {
       }
     },
     {
-      label: 'Rating',
+      label: t('product:rating'),
       id: 'rating',
       cell: (value) => {
         const star = Number(value)
@@ -172,7 +174,7 @@ export default function ProductDetail() {
       }
     },
     {
-      label: 'Comment',
+      label: t('product:comment'),
       id: 'comment',
       cell: (value) => (
         <Tooltip title={String(value)}>
@@ -192,13 +194,14 @@ export default function ProductDetail() {
       )
     },
     {
-      label: 'Status',
-      id: 'status'
+      label: t('product:status'),
+      id: 'status',
+      cell: (value) => <Box>{t(`product:${value}`)}</Box>
     },
     {
       label: '',
       id: 'id',
-      cell: (value) => <Button startIcon={<EditIcon />}>Edit</Button>
+      cell: (value) => <Button startIcon={<EditIcon />}>{t('product:edit')}</Button>
     }
   ]
 
@@ -218,6 +221,15 @@ export default function ProductDetail() {
       })
     }
   }, [productDetail])
+
+  const i18nCategoryOptions = useMemo(() => {
+    return categoryOptions.map((item) => {
+      return {
+        ...item,
+        label: t(`product:${item.label.toLowerCase()}`)
+      }
+    })
+  }, [t])
 
   const handleDelete = () => {
     const deletedId = productDetail?.id
@@ -388,7 +400,11 @@ export default function ProductDetail() {
   } = methods
 
   const labelReview = useMemo(() => {
-    return <div>REVIEWS ({reviewList?.total ?? <CircularProgress size={14} color='primary' />})</div>
+    return (
+      <div>
+        {t('product:reviews').toUpperCase()} ({reviewList?.total ?? <CircularProgress size={14} color='primary' />})
+      </div>
+    )
   }, [reviewList?.total])
 
   return (
@@ -404,9 +420,24 @@ export default function ProductDetail() {
           <TabContext value={activeTab}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <TabList onChange={handleChangeTab} aria-label='lab API tabs example'>
-                <Tab label='IMAGE' value={TabProduct.IMAGE} icon={<CameraAltIcon />} iconPosition='start' />
-                <Tab label='DETAILS' value={TabProduct.DETAILS} icon={<AspectRatioIcon />} iconPosition='start' />
-                <Tab label='DESCRIPTION' value={TabProduct.DESCRIPTION} icon={<EditNoteIcon />} iconPosition='start' />
+                <Tab
+                  label={t('product:image')}
+                  value={TabProduct.IMAGE}
+                  icon={<CameraAltIcon />}
+                  iconPosition='start'
+                />
+                <Tab
+                  label={t('product:details')}
+                  value={TabProduct.DETAILS}
+                  icon={<AspectRatioIcon />}
+                  iconPosition='start'
+                />
+                <Tab
+                  label={t('product:description')}
+                  value={TabProduct.DESCRIPTION}
+                  icon={<EditNoteIcon />}
+                  iconPosition='start'
+                />
                 {!!param.id && (
                   <Tab label={labelReview} value={TabProduct.REVIEWS} icon={<CommentIcon />} iconPosition='start' />
                 )}
@@ -422,11 +453,17 @@ export default function ProductDetail() {
                       <img src={productDetail?.image} />
                     </Box>
                   )}
-                  <TextFieldInput sxTextFieldInput={{ width: '640px', mt: 1 }} name='image' label='Image*' />
+                  <TextFieldInput
+                    sxTextFieldInput={{ width: '640px', mt: 1 }}
+                    isRequired
+                    name='image'
+                    label={t('product:image')}
+                  />
                   <TextFieldInput
                     sxTextFieldInput={{ width: '640px', mt: '30px', mb: '20px' }}
+                    isRequired
                     name='thumbnail'
-                    label='Thumbnail*'
+                    label={t('product:thumbnail')}
                   />
                 </>
               )}
@@ -437,24 +474,54 @@ export default function ProductDetail() {
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '30px', mb: '20px' }}>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
-                    <TextFieldInput sxTextFieldInput={{ width: '420px' }} name='reference' label='Reference*' />
+                    <TextFieldInput
+                      sxTextFieldInput={{ width: '420px' }}
+                      isRequired
+                      name='reference'
+                      label={t('product:reference')}
+                    />
                     <TextFieldAutoComplete
                       sxAutocomplete={{ width: '203px' }}
                       name='category_id'
-                      label='Category*'
-                      options={categoryOptions}
+                      label={`${t('product:category')}*`}
+                      options={i18nCategoryOptions}
                     />
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'start', gap: 2 }}>
-                    <TextFieldNumber sxTextFiled={{ width: '203px' }} name='width' label='Width*' />
-                    <TextFieldNumber sxTextFiled={{ width: '203px' }} name='height' label='Height*' />
+                    <TextFieldNumber
+                      sxTextFiled={{ width: '203px' }}
+                      isRequired
+                      name='width'
+                      label={t('product:width')}
+                    />
+                    <TextFieldNumber
+                      sxTextFiled={{ width: '203px' }}
+                      isRequired
+                      name='height'
+                      label={t('product:height')}
+                    />
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'start', gap: 2 }}>
-                    <TextFieldNumber sxTextFiled={{ width: '203px' }} name='price' label='Price*' />
-                    <TextFieldNumber sxTextFiled={{ width: '203px' }} name='stock' label='Stock*' />
-                    <TextFieldNumber sxTextFiled={{ width: '203px' }} name='sales' label='Sales*' />
+                    <TextFieldNumber
+                      sxTextFiled={{ width: '203px' }}
+                      isRequired
+                      name='price'
+                      label={t('product:price')}
+                    />
+                    <TextFieldNumber
+                      sxTextFiled={{ width: '203px' }}
+                      isRequired
+                      name='stock'
+                      label={t('product:stock')}
+                    />
+                    <TextFieldNumber
+                      sxTextFiled={{ width: '203px' }}
+                      isRequired
+                      name='sales'
+                      label={t('product:sales')}
+                    />
                   </Box>
                 </Box>
               )}
@@ -476,10 +543,10 @@ export default function ProductDetail() {
                   perPage: reviewParamRq.pagination.perPage
                 }}
                 totalItems={reviewList?.total}
-                emptyText='No Reviews Found'
+                emptyText={t('product:noReviewFound')}
               />
               <Button onClick={handleCreateReview} startIcon={<AddIcon />}>
-                CREATE
+                {t('common:create')}
               </Button>
             </TabPanel>
           </TabContext>
@@ -512,7 +579,7 @@ export default function ProductDetail() {
             startIcon={<SaveIcon />}
             loading={isPending || isCreatePending}
           >
-            SAVE
+            {t('common:save')}
           </Button>
 
           {true && (
@@ -524,7 +591,7 @@ export default function ProductDetail() {
               loading={!!timerId}
               disabled={!!timerId}
             >
-              DELETE
+              {t('common:delete')}
             </Button>
           )}
         </Box>
@@ -537,7 +604,7 @@ export default function ProductDetail() {
         message={actionReview}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {t('common:undo')}
           </Button>
         }
       />

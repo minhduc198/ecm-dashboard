@@ -22,10 +22,12 @@ import { GetCustomerDetailRequest } from '@/features/customers/types'
 import { fetchCustomerDetail } from '@/features/customers/service'
 import { useUndoReviewStore } from '@/store/reviewStore'
 import { fetchProductDetail } from '@/features/products/services'
+import { useTranslation } from 'react-i18next'
 
 type FormValues = InferType<typeof createReviewSchema>
 
 export default function CreateReview() {
+  const { t } = useTranslation(['common', 'review'])
   const [customerSearchTerm, setCustomerSearchTerm] = useState('')
   const [productSearchTerm, setProductSearchTerm] = useState('')
   const location = useLocation()
@@ -133,7 +135,7 @@ export default function CreateReview() {
         >
           <TextFieldAutocompleteVirtualized
             isRequired
-            label='Customer'
+            label={t('review:customer')}
             name='customer_id'
             sxAutocomplete={{ width: '40%' }}
             options={customerOptions}
@@ -145,7 +147,7 @@ export default function CreateReview() {
           <TextFieldAutocompleteVirtualized
             isRequired
             name='product_id'
-            label='Product'
+            label={t('review:product')}
             isDisabled={!!product_id}
             sxAutocomplete={{ width: '40%' }}
             options={productOptions}
@@ -155,14 +157,14 @@ export default function CreateReview() {
             loadMore={loadMoreProduct}
           />
 
-          <CustomDatePicker isRequired name='date' datePickerLabel='Date' sxDatePicker={{ width: '40%' }} />
+          <CustomDatePicker isRequired name='date' datePickerLabel={t('review:date')} sxDatePicker={{ width: '40%' }} />
 
           <Box>
-            <Typography>Rating</Typography>
+            <Typography>{t('review:rating')}</Typography>
             <CustomRating name='rating' />
           </Box>
 
-          <TextFieldInput isRequired name='comment' label='Comment' sxTextFieldInput={{ width: '40%' }} />
+          <TextFieldInput isRequired name='comment' label={t('review:comment')} sxTextFieldInput={{ width: '40%' }} />
         </Box>
         <Box
           sx={[
@@ -192,7 +194,7 @@ export default function CreateReview() {
             loading={isPending}
             startIcon={<SaveIcon />}
           >
-            SAVE
+            {t('common:save')}
           </Button>
         </Box>
       </form>

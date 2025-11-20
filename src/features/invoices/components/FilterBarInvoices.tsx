@@ -27,6 +27,8 @@ import { InferType } from 'yup'
 import { initFilterInvoiceItems } from '../constant'
 import { filterInvoicesSchema } from '../schemas'
 import { GetInvoicesListRequest, InvoiceFilterItem, InvoiceParam, InvoiceUrlQuery, TableColumnsInvoice } from '../types'
+import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n'
 
 type FormValues = InferType<typeof filterInvoicesSchema>
 
@@ -45,6 +47,8 @@ export default function FilterBarInvoices({
   setInvoiceSettingCol,
   handleExport
 }: Props) {
+  const { t: tc } = useTranslation('common')
+  const { t } = useTranslation('invoice')
   const { setMany } = useSearchParam()
   const [isFirstRender, setIsFirstRender] = useState(true)
 
@@ -59,6 +63,7 @@ export default function FilterBarInvoices({
       }
     })
   )
+
   const [customerSearchTerm, setCustomerSearchTerm] = useState('')
   const [orderSearchTerm, setOrderSearchTerm] = useState('')
 
@@ -103,6 +108,18 @@ export default function FilterBarInvoices({
     searchTerm: orderSearchTerm,
     enabled: !!filterItems[1]?.isChecked
   })
+
+  useEffect(() => {
+    setFilterItems(
+      initFilterInvoiceItems.map((item) => {
+        return {
+          ...item,
+          isChecked: !!currentListParamsLS.displayedFilters?.[item.key],
+          label: t(item.key)
+        }
+      })
+    )
+  }, [i18n.language])
 
   useEffect(() => {
     saveQueriesInvoice(currentSaveQueries)
@@ -311,7 +328,7 @@ export default function FilterBarInvoices({
           />
           <SettingColumns columns={invoiceSettingCol} onDragEnd={onDragEnd} handleChangeColumn={handleChangeColumn} />
           <Button startIcon={<FileDownloadIcon />} onClick={handleExport} variant='text'>
-            EXPORT
+            {tc('export')}
           </Button>
         </Box>
       </Box>

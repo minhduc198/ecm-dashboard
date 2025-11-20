@@ -3,6 +3,7 @@ import { IconButton, SxProps, TextField } from '@mui/material'
 import { Box, BoxProps } from '@mui/system'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   name: string
@@ -24,6 +25,7 @@ export default function CustomDatePicker({
   isRequired = false,
   handleClose
 }: Props) {
+  const { t } = useTranslation('common')
   const {
     control,
     getValues,
@@ -86,7 +88,7 @@ export default function CustomDatePicker({
                     }
                   },
                   error: !!errors[name],
-                  helperText: (errors[name]?.message as string) || ''
+                  helperText: t(errors[name]?.message as string) || ''
                 }
               }}
             />

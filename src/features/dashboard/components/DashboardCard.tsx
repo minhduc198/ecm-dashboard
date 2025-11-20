@@ -4,6 +4,7 @@ import { Review } from '@/services/data-generator'
 import StarsIcon from '@mui/icons-material/Stars'
 import { Box, styled, Typography } from '@mui/material'
 import { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 interface Props {
@@ -28,6 +29,7 @@ const DashBoardCardHeader = styled('div')(({ theme }) => ({
 
 export default function DashboardCard({ icon, title, value, data, isReview = false }: Props) {
   const navigate = useNavigate()
+  const { t } = useTranslation('dashboard')
 
   const ratingStar = (star: number) => {
     return Array(5)
@@ -134,7 +136,7 @@ export default function DashboardCard({ icon, title, value, data, isReview = fal
               transition: '0.2s all ease'
             }}
           >
-            {isReview ? 'SEE ALL REVIEWS' : 'SEE ALL CUSTOMERS'}
+            {isReview ? t('seeAllReviews') : t('seeAllCustomers')}
           </Box>
         </Box>
       )}

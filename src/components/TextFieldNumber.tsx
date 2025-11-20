@@ -2,16 +2,26 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { Box, BoxProps, IconButton, SxProps, TextField } from '@mui/material'
 
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   label: string
   handleClose?: () => void
   wrapperProps?: BoxProps
   sxTextFiled: SxProps
+  isRequired?: boolean
   name: string
 }
 
-export default function TextFieldNumber({ label, handleClose, wrapperProps, sxTextFiled, name }: Props) {
+export default function TextFieldNumber({
+  label,
+  handleClose,
+  wrapperProps,
+  isRequired = false,
+  sxTextFiled,
+  name
+}: Props) {
+  const { t } = useTranslation('common')
   const {
     control,
     formState: { errors }
@@ -45,8 +55,9 @@ export default function TextFieldNumber({ label, handleClose, wrapperProps, sxTe
             size='small'
             type='number'
             variant='filled'
+            required={isRequired}
             error={!!errors[name]}
-            helperText={(errors[name]?.message as string) || ''}
+            helperText={t(errors[name]?.message as string) || ''}
           />
         )}
       />

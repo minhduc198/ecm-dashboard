@@ -2,12 +2,36 @@ import DetailReview from '@/features/reviews/detail'
 import { path as pathConfig } from '@/routers/path'
 import { useDrawerStore } from '@/store/drawerStore'
 import { useHeaderTitleStore } from '@/store/headerStore'
-import { Drawer } from '@mui/material'
-import { useActivePage } from '@toolpad/core'
+import { Box, Drawer, MenuItem, Select, SelectChangeEvent } from '@mui/material'
 import { DashboardLayout } from '@toolpad/core/DashboardLayout'
 import { PageContainer } from '@toolpad/core/PageContainer'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useParams } from 'react-router'
+import LanguageIcon from '@mui/icons-material/Language'
+
+function Language() {
+  const { i18n } = useTranslation('dashboard')
+  const handleChange = (event: SelectChangeEvent) => {
+    i18n.changeLanguage(event.target.value)
+  }
+  return (
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <LanguageIcon />
+      <Select
+        variant='standard'
+        value={i18n.language || 'en'}
+        onChange={handleChange}
+        size='small'
+        sx={{ minWidth: 120 }}
+      >
+        <MenuItem value='en'>English</MenuItem>
+        <MenuItem value='vi'>Vietnamese</MenuItem>
+        <MenuItem value='fr'>French</MenuItem>
+      </Select>
+    </Box>
+  )
+}
 
 export default function Layout() {
   // const { session } = useSession()
@@ -64,7 +88,11 @@ export default function Layout() {
   }, [pathName, openDrawer])
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      slots={{
+        toolbarAccount: Language
+      }}
+    >
       <PageContainer
         sx={{
           maxWidth: `${isOpenDrawer ? 'calc(100% - 400px) !important' : '100% !important'} `,

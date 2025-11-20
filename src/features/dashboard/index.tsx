@@ -6,7 +6,7 @@ import CommentIcon from '@mui/icons-material/Comment'
 import HomeIcon from '@mui/icons-material/Home'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-import { Box, Button, Grid, Typography } from '@mui/material'
+import { Box, Button, Grid, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
@@ -16,6 +16,7 @@ import { REVIEW_STATUS } from '../reviews/types'
 import DashboardCard from './components/DashboardCard'
 import LineChartDashboard from './components/LineChartDashboard'
 import RevenueHistory from './components/RevenueHistory'
+import { useTranslation } from 'react-i18next'
 
 const BannerDashBoard = styled('div')({
   marginBlock: 16,
@@ -66,15 +67,14 @@ const Dashboard = () => {
     })
   }, [reviewPendingList])
 
+  const { t } = useTranslation('dashboard')
+
   return (
     <Box>
       <BannerDashBoard sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography sx={{ fontSize: 24, mb: 1 }}>Welcome to the react-admin e-commerce demo</Typography>
-          <Typography sx={{ maxWidth: 640, mb: 2 }}>
-            This is the admin of an imaginary poster shop. Feel free to explore and modify the data - it's local to your
-            computer, and will reset each time you reload.
-          </Typography>
+          <Typography sx={{ fontSize: 24, mb: 1 }}>{t('welcome')}</Typography>
+          <Typography sx={{ maxWidth: 640, mb: 2 }}>{t('introText')}</Typography>
           <Box sx={{ display: 'flex', gap: 2, mt: 2, fontWeight: 500, fontSize: 14 }}>
             <Button
               startIcon={<HomeIcon />}
@@ -85,7 +85,7 @@ const Dashboard = () => {
                 backgroundColor: '#4f3cc9'
               }}
             >
-              REACT-ADMIN SITE
+              {t('reactSite')}
             </Button>
             <Button
               startIcon={<CodeIcon />}
@@ -96,7 +96,7 @@ const Dashboard = () => {
                 backgroundColor: '#4f3cc9'
               }}
             >
-              SOURCE FOR THIS DEMO
+              {t('demoSource')}
             </Button>
           </Box>
         </Box>
@@ -125,14 +125,14 @@ const Dashboard = () => {
                     }}
                   />
                 }
-                title='Monthly Revenue'
+                title={t('monthlyRevenue')}
                 value='5.474US$'
               />
             </Grid>
             <Grid size={{ xs: 6 }}>
               <DashboardCard
                 icon={<ShoppingCartIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-                title='New Orders'
+                title={t('newOrders')}
                 value={newOrderList?.length ?? 0}
               />
             </Grid>
@@ -148,7 +148,7 @@ const Dashboard = () => {
           <DashboardCard
             isReview
             icon={<CommentIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-            title='Pending Reviews'
+            title={t('pendingReviews')}
             value={reviewPendingList?.length ?? 0}
             data={reviewPendingList}
           />
@@ -156,7 +156,7 @@ const Dashboard = () => {
         <Grid size={{ xs: 3 }}>
           <DashboardCard
             icon={<PersonAddIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-            title='New Customers'
+            title={t('newCustomers')}
             value={newCustomerList?.length ?? 0}
             data={newCustomerList}
           />

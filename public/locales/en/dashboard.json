@@ -1,0 +1,17 @@
+{
+  "introText": "This is the admin of an imaginary poster shop. Feel free to explore and modify the data - it's local to your computer, and will reset each time you reload.",
+  "welcome": "Welcome to the react-admin e-commerce demo",
+  "reactSite": "REACT SITE",
+  "demoSource": "SOURCE FOR THIS DEMO",
+  "monthlyRevenue": "Monthly Revenue",
+  "newOrders": "New Orders",
+  "pendingReviews": "Pending Reviews",
+  "newCustomers": "New Customers",
+  "revenueHistory30": "30 Day Revenue History",
+  "pendingOrders": "Pending Orders",
+  "by": "by",
+  "item": "item",
+  "items": "items",
+  "seeAllReviews": "SEE ALL REVIEWS",
+  "seeAllCustomers": "SEE ALL CUSTOMERS"
+}

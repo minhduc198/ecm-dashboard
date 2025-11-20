@@ -9,7 +9,7 @@ import AddIcon from '@mui/icons-material/Add'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import { Box, Button, Grid, Menu, MenuItem, Snackbar, TablePagination } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { utils, writeFileXLSX } from 'xlsx'
 import FilterBarProduct from './components/FilterBarProduct'
@@ -18,13 +18,10 @@ import { SortByEnum, sortName, sortOrder } from './constant'
 import { fetchProductsList } from './services'
 import { GetProductListRequest, ProductParam } from './types'
 import { useHeaderTitleStore } from '@/store/headerStore'
-
-const getCurrentSortName = (sortBy: string) => {
-  const [sort, order] = sortBy.split('_')
-  return `${sortName[sort as keyof typeof sortName]} ${sortOrder[order as keyof typeof sortOrder]}`
-}
+import { useTranslation } from 'react-i18next'
 
 const Products = () => {
+  const { t } = useTranslation(['common', 'product'])
   const { setHeaderData } = useHeaderTitleStore()
   const { filter, order, page, perPage, sort } = getProductListParamsFormLS()
   const productListParamFromLS = getProductListParamsFormLS()
@@ -63,6 +60,14 @@ const Products = () => {
     refetchOnWindowFocus: false,
     keepPreviousData: true
   })
+
+  const getCurrentSortName = useCallback(
+    (sortBy: string) => {
+      const [sort, order] = sortBy.split('_')
+      return `${t(`product:${sortName[sort as keyof typeof sortName].toLowerCase()}`).toUpperCase()} ${t(`product:${sortOrder[order as keyof typeof sortOrder].toLowerCase()}`).toUpperCase()}`
+    },
+    [t]
+  )
 
   useEffect(() => {
     const newList = productList?.data ?? []
@@ -216,7 +221,7 @@ const Products = () => {
             }}
             onClick={handleClick}
           >
-            Sort by {getCurrentSortName(sortBy)}
+            {t('product:sort_by')} {getCurrentSortName(sortBy)}
           </Button>
           <Menu
             id='positioned-menu'
@@ -241,10 +246,10 @@ const Products = () => {
           </Menu>
         </Box>
         <Button onClick={handleViewCreateProduct} startIcon={<AddIcon />} variant='text'>
-          CREATE
+          {t('common:create')}
         </Button>
         <Button onClick={handleExport} startIcon={<FileDownloadIcon />} variant='text'>
-          EXPORT
+          {t('common:export')}
         </Button>
       </Box>
       <Grid container spacing={2}>
@@ -263,6 +268,7 @@ const Products = () => {
               onPageChange={handleChangePage}
               rowsPerPage={perPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              labelRowsPerPage={t('common:rowsPerPage')}
             />
           </Box>
         </Grid>
@@ -274,7 +280,7 @@ const Products = () => {
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {t('common:undo')}
           </Button>
         }
       />

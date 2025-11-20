@@ -24,6 +24,7 @@ import { formCustomerSchema } from '../schemas'
 import { createCustomer, deleteCustomers, updateCustomer } from '../service'
 import { CreateCustomerRequest, UpdateCustomerRequest } from '../types'
 import { useHeaderTitleStore } from '@/store/headerStore'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   customerData?: Customer
@@ -34,6 +35,7 @@ interface Props {
 type FormValues = InferType<typeof formCustomerSchema>
 
 export default function FormCustomer({ customerData, hasStats, size }: Props) {
+  const { t } = useTranslation(['common', 'customer'])
   const [displayPassword, setDisplayPassword] = useState(false)
   const [displayConfirmPassword, setDisplayConfirmPassword] = useState(false)
   const { tmpUndoData, dataPending, timerId, setIsOpenUndo, setTimerId, setAction, setTmpUndoData, setDataPending } =
@@ -231,42 +233,75 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
           >
             <Grid size={{ xs: 8 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Identity</Typography>
+                <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('customer:identity')}</Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
                     <TextFieldInput
                       name='first_name'
-                      label='First name*'
+                      label={t('customer:firstName')}
+                      required
                       sxTextFieldInput={{ width: '100%', mt: -2 }}
                     />
                   </Grid>
                   <Grid size={{ xs: 6 }}>
-                    <TextFieldInput name='last_name' label='Last name*' sxTextFieldInput={{ width: '100%', mt: -2 }} />
+                    <TextFieldInput
+                      name='last_name'
+                      label={t('customer:lastName')}
+                      required
+                      sxTextFieldInput={{ width: '100%', mt: -2 }}
+                    />
                   </Grid>
                 </Grid>
-                <TextFieldInput name='email' label='Email*' sxTextFieldInput={{ width: '100%' }} />
-                <CustomDatePicker name='birthday' datePickerLabel='Birthday' sxDatePicker={{ width: '196px' }} />
+                <TextFieldInput
+                  name='email'
+                  label={t('customer:email')}
+                  required
+                  sxTextFieldInput={{ width: '100%' }}
+                />
+                <CustomDatePicker
+                  name='birthday'
+                  datePickerLabel={t('customer:birthday')}
+                  sxDatePicker={{ width: '196px' }}
+                />
 
-                <Typography sx={{ fontSize: '20px', fontWeight: 500, mt: -2 }}>Address</Typography>
-                <TextFieldInput name='address' label='Address' sxTextFieldInput={{ width: '100%', mt: -2 }} />
+                <Typography sx={{ fontSize: '20px', fontWeight: 500, mt: -2 }}>{t('customer:address')}</Typography>
+                <TextFieldInput
+                  name='address'
+                  label={t('customer:address')}
+                  sxTextFieldInput={{ width: '100%', mt: -2 }}
+                />
                 <Grid container spacing={1}>
                   <Grid size={{ xs: 5 }}>
-                    <TextFieldInput name='city' label='City' sxTextFieldInput={{ width: '100%', mt: -3 }} />
+                    <TextFieldInput
+                      name='city'
+                      label={t('customer:city')}
+                      sxTextFieldInput={{ width: '100%', mt: -3 }}
+                    />
                   </Grid>
                   <Grid size={{ xs: 2 }}>
-                    <TextFieldInput name='state' label='State' sxTextFieldInput={{ width: '100%', mt: -3 }} />
+                    <TextFieldInput
+                      name='state'
+                      label={t('customer:state')}
+                      sxTextFieldInput={{ width: '100%', mt: -3 }}
+                    />
                   </Grid>
                   <Grid size={{ xs: 5 }}>
-                    <TextFieldInput name='zip_code' label='Zipcode' sxTextFieldInput={{ width: '100%', mt: -3 }} />
+                    <TextFieldInput
+                      name='zip_code'
+                      label={t('customer:zipcode')}
+                      sxTextFieldInput={{ width: '100%', mt: -3 }}
+                    />
                   </Grid>
                 </Grid>
 
-                <Typography sx={{ fontSize: '20px', fontWeight: 500, mt: -2 }}>Change Password</Typography>
+                <Typography sx={{ fontSize: '20px', fontWeight: 500, mt: -2 }}>
+                  {t('customer:changePassword')}
+                </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
                     <TextFieldInput
                       name='password'
-                      label='Password'
+                      label={t('customer:password')}
                       sxTextFieldInput={{ width: '100%', mt: -2 }}
                       slotProps={{
                         input: {
@@ -285,7 +320,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
                   <Grid size={{ xs: 6 }}>
                     <TextFieldInput
                       name='confirm_password'
-                      label='Confirm password'
+                      label={t('customer:confirmPassword')}
                       sxTextFieldInput={{ width: '100%', mt: -2 }}
                       slotProps={{
                         input: {
@@ -307,24 +342,24 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
             {hasStats && (
               <Grid size={{ xs: 4 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Stats</Typography>
+                  <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('customer:stats')}</Typography>
                   <TextFieldAutoComplete
                     multiple
                     name='segments'
-                    label='Segments'
+                    label={t('customer:segments')}
                     options={segmentsOptions}
                     sxAutocomplete={{ width: '100%', mt: -2 }}
                   />
                   <TextFieldSelect
                     sxTextFiled={{ width: '100%' }}
                     name='news_letter'
-                    textFieldLabel='Has newsletter'
+                    textFieldLabel={t('customer:hasNewsletter')}
                     options={[
                       {
-                        label: 'Yes',
+                        label: t('customer:yes'),
                         value: NEWSLETTER.Y
                       },
-                      { label: 'No', value: NEWSLETTER.N }
+                      { label: t('customer:no'), value: NEWSLETTER.N }
                     ]}
                   />
                 </Box>
@@ -360,7 +395,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
               startIcon={<SaveIcon />}
               loading={isPending}
             >
-              SAVE
+              {t('common:save')}
             </Button>
 
             {hasStats && (
@@ -372,7 +407,7 @@ export default function FormCustomer({ customerData, hasStats, size }: Props) {
                 loading={!!timerId}
                 disabled={!!timerId}
               >
-                DELETE
+                {t('common:delete')}
               </Button>
             )}
           </Box>

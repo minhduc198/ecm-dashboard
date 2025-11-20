@@ -4,8 +4,10 @@ import { useQuery } from '@tanstack/react-query'
 import CardCategory from './components/CardCategory'
 import { fetchCategoriesList } from './services'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const Categories = () => {
+  const { t } = useTranslation(['common', 'product', 'category'])
   const {
     action,
     timerId,
@@ -49,7 +51,7 @@ const Categories = () => {
     <Grid container spacing={2}>
       {tmpUndoData.map((category) => (
         <Grid key={category.id} size={{ xs: 3 }}>
-          <CardCategory category={category} />
+          <CardCategory category={category} t={t} />
         </Grid>
       ))}
 
@@ -59,7 +61,7 @@ const Categories = () => {
         message={action}
         action={
           <Button onClick={handleUndo} size='small'>
-            UNDO
+            {t('undo')}
           </Button>
         }
       />

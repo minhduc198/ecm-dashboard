@@ -24,6 +24,7 @@ import Typography from '@mui/material/Typography'
 import { cloneDeep } from 'lodash'
 import isEqual from 'lodash/isEqual'
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface Props<T> {
   queryObject: UrlQuery<T>
@@ -58,6 +59,9 @@ export default function AddFilter<T>({
   handleRemoveSaveQuery,
   handleUseQueryFromLS
 }: Props<T>) {
+  const { t: tc } = useTranslation('common')
+  const { t } = useTranslation('order')
+
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const [openDialog, setOpenDialog] = React.useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = React.useState(false)
@@ -151,7 +155,7 @@ export default function AddFilter<T>({
   return (
     <div>
       <Button startIcon={<FilterListIcon />} variant='text' onClick={handleClick}>
-        ADD FILTERS
+        {tc('addFilters')}
       </Button>
       <Popover
         open={open}
@@ -263,7 +267,7 @@ export default function AddFilter<T>({
                     })
                 ]}
               />
-              <Typography>Save current query</Typography>
+              <Typography>{t('saveQuery')}</Typography>
             </CustomBox>
           )}
 
@@ -277,41 +281,40 @@ export default function AddFilter<T>({
                   })
               ]}
             />
-            <Typography>Remove all filters</Typography>
+            <Typography>{t('removeAllFilters')}</Typography>
           </CustomBox>
         </Box>
       </Popover>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Save current query as</DialogTitle>
+        <DialogTitle>{tc('saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
+            sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label='Query name'
+            label={tc('queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>CANCEL</Button>
+          <Button onClick={handleCloseDialog}>{tc('cancel')}</Button>
           <Button disabled={!saveQueryName} onClick={handleSave} autoFocus>
-            SAVE
+            {tc('save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{'Remove saved query?'}</DialogTitle>
+        <DialogTitle>{tc('removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>
-            Are you sure you want to remove that item from your list of saved queries?
-          </DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{tc('removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>CANCEL</Button>
-          <Button onClick={handleConfirmRemoveDialog}>CONFIRM</Button>
+          <Button onClick={handleCloseRemoveDialog}>{tc('cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{tc('confirm')}</Button>
         </DialogActions>
       </Dialog>
     </div>

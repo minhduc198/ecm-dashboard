@@ -53,10 +53,12 @@ import {
 import { useDrawerStore } from '@/store/drawerStore'
 import TextLineClamp from '@/components/TextLineClamp'
 import { useHeaderTitleStore } from '@/store/headerStore'
+import { useTranslation } from 'react-i18next'
 
 type FormValues = InferType<typeof filterReviewSchema>
 
 export default function Reviews() {
+  const { t } = useTranslation(['common', 'review'])
   const { setMany } = useSearchParam()
   const { setHeaderData } = useHeaderTitleStore()
   const navigate = useNavigate()
@@ -110,6 +112,18 @@ export default function Reviews() {
     })
   )
 
+  useEffect(() => {
+    setFilterItems(
+      initFilterReviewItems.map((item) => {
+        return {
+          ...item,
+          label: t(`review:${item.label}`),
+          isChecked: !!currentListReviewParamsLS.displayedFilters?.[item.key]
+        }
+      })
+    )
+  }, [t])
+
   const { data: reviewList } = useQuery({
     queryKey: ['review_list', reviewListRq],
     queryFn: () => fetchReviewList(reviewListRq),
@@ -134,6 +148,24 @@ export default function Reviews() {
     perPage: currentListReviewParamsLS.perPage.toString(),
     sort: currentListReviewParamsLS.sort
   }
+
+  useEffect(() => {
+    setReviewSettingCol(
+      reviewSettingColFromLS.length
+        ? reviewSettingColFromLS.map((item) => {
+            return {
+              ...item,
+              label: t(`review:${item.label}`)
+            }
+          })
+        : initialReviewColumns.map((item) => {
+            return {
+              ...item,
+              label: t(`review:${item.label}`)
+            }
+          })
+    )
+  }, [t])
 
   const columns: TableColumns<Review>[] = useMemo(() => {
     return [
@@ -183,7 +215,7 @@ export default function Reviews() {
               cell: (_, row) => {
                 const customer = (row.customer as Customer) || {}
                 return (
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', width: '160px' }}>
                     <Avatar sx={{ width: 25, height: 25 }} src={customer.avatar} alt={customer.first_name} />
                     {openDrawer ? (
                       <Tooltip title={`${customer.first_name} ${customer.last_name}`}>
@@ -213,7 +245,7 @@ export default function Reviews() {
             return {
               forceClickRow: true,
               ...tableColumn,
-              cell: (_, row) => <Box sx={{ display: 'flex', width: '130px' }}>{row.product.reference}</Box>
+              cell: (_, row) => <Box sx={{ display: 'flex', width: '160px' }}>{row.product.reference}</Box>
             }
           case 'rating':
             return {
@@ -263,7 +295,9 @@ export default function Reviews() {
 
           case 'status':
             return {
-              ...tableColumn
+              forceClickRow: true,
+              ...tableColumn,
+              cell: (value) => <Box sx={{ minWidth: '140px' }}>{t(`review:${value}`)}</Box>
             }
 
           default:
@@ -588,14 +622,14 @@ export default function Reviews() {
   const handleExport = () => {
     const exportData = tmpUndoData.map((data) => {
       const obj = {
-        ['Date']: reviewSettingNameCols.includes('date') ? formatDate(data.date, 'HH:mm:ss d/M/yyyy') : '',
-        ['Customer']: reviewSettingNameCols.includes('customer_id')
+        [t('review:date')]: reviewSettingNameCols.includes('date') ? formatDate(data.date, 'HH:mm:ss d/M/yyyy') : '',
+        [t('review:customer')]: reviewSettingNameCols.includes('customer_id')
           ? `${data.customer.first_name} ${data.customer.last_name}`
           : '',
-        ['Rating']: reviewSettingNameCols.includes('rating') ? data.rating : '',
-        ['Product']: reviewSettingNameCols.includes('product_id') ? data.product.reference : '',
-        ['Comment']: reviewSettingNameCols.includes('comment') ? data.comment : '',
-        ['Status']: reviewSettingNameCols.includes('status') ? data.status : ''
+        [t('review:rating')]: reviewSettingNameCols.includes('rating') ? data.rating : '',
+        [t('review:product')]: reviewSettingNameCols.includes('product_id') ? data.product.reference : '',
+        [t('review:comment')]: reviewSettingNameCols.includes('comment') ? data.comment : '',
+        [t('review:status')]: reviewSettingNameCols.includes('status') ? t(`review:${data.status}`) : ''
       }
 
       return cleanObject(obj)
@@ -644,7 +678,7 @@ export default function Reviews() {
             }}
           >
             <TextFieldInput
-              label='Search'
+              label={t('review:search')}
               name='q'
               slotProps={{
                 input: {
@@ -658,7 +692,7 @@ export default function Reviews() {
             />
             {currentListReviewParamsLS.displayedFilters?.status && (
               <TextFieldSelect
-                textFieldLabel='Status'
+                textFieldLabel={t('review:status')}
                 name='status'
                 sxTextFiled={{ width: '164px' }}
                 options={optionStatus}
@@ -668,7 +702,7 @@ export default function Reviews() {
             {currentListReviewParamsLS.displayedFilters?.customer_id && (
               <TextFieldAutocompleteVirtualized
                 name='customer_id'
-                label='Customer'
+                label={t('review:customer')}
                 sxAutocomplete={{ width: '205px' }}
                 options={customerOptions}
                 onSearch={handleCustomerSearch}
@@ -681,7 +715,7 @@ export default function Reviews() {
             {currentListReviewParamsLS.displayedFilters?.product_id && (
               <TextFieldAutocompleteVirtualized
                 name='product_id'
-                label='Product'
+                label={t('review:product')}
                 sxAutocomplete={{ width: '164px' }}
                 options={productOptions}
                 hasNextPage={hasNextPageProduct}
@@ -695,7 +729,7 @@ export default function Reviews() {
               <CustomDatePicker
                 name='date_gte'
                 triggerFiled='date_lte'
-                datePickerLabel='Posted since'
+                datePickerLabel={t('review:posted_since')}
                 sxDatePicker={{ width: '170px' }}
                 handleClose={handleRemoveFilterItem('date_gte')}
               />
@@ -704,7 +738,7 @@ export default function Reviews() {
               <CustomDatePicker
                 name='date_lte'
                 triggerFiled='date_gte'
-                datePickerLabel='Posted before'
+                datePickerLabel={t('review:posted_before')}
                 sxDatePicker={{ width: '170px' }}
                 handleClose={handleRemoveFilterItem('date_lte')}
               />
@@ -723,7 +757,7 @@ export default function Reviews() {
               handleRemoveSaveQuery={handleRemoveCurrentSaveQuery}
             />
             <Button startIcon={<AddIcon />} variant='text' onClick={handleCreateReview}>
-              CREATE
+              {t('common:create')}
             </Button>
             <SettingColumns<Review>
               columns={reviewSettingCol}
@@ -731,7 +765,7 @@ export default function Reviews() {
               onDragEnd={onDragEnd}
             />
             <Button startIcon={<FileDownloadIcon />} variant='text' onClick={handleExport}>
-              EXPORT
+              {t('common:export')}
             </Button>
           </Box>
         </Box>
@@ -758,7 +792,7 @@ export default function Reviews() {
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {t('common:undo')}
           </Button>
         }
       />

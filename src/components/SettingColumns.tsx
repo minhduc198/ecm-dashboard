@@ -5,6 +5,7 @@ import { Box, Button, Popover, Switch, Typography } from '@mui/material'
 import cloneDeep from 'lodash/cloneDeep'
 import React from 'react'
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd'
+import { useTranslation } from 'react-i18next'
 
 type PropsDraggableSettingCol<T> = {
   item: TableColumns<T>
@@ -50,6 +51,7 @@ interface Props<T> {
 }
 
 export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColumn }: Props<T>) {
+  const { t } = useTranslation('common')
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -71,7 +73,7 @@ export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColu
   return (
     <div>
       <Button startIcon={<ViewWeekIcon />} variant='text' onClick={handleClick}>
-        COLUMNS
+        {t('columns')}
       </Button>
       <Popover
         open={open}

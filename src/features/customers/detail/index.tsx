@@ -17,6 +17,7 @@ import FormCustomer from '../components/FormCustomer'
 import { fetchCustomerDetail } from '../service'
 import { useUndoCustomerStore } from '@/store/undoCustomerStore'
 import { useHeaderTitleStore } from '@/store/headerStore'
+import { useTranslation } from 'react-i18next'
 
 const DetailTypography = styled(Typography)(({ theme }) => ({
   fontSize: '14px',
@@ -27,6 +28,7 @@ const DetailTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export default function DetailCustomer() {
+  const { t } = useTranslation(['common', 'customer'])
   const param = useParams()
   const navigate = useNavigate()
   const currentListParamsLS = getListParamsFormLS()
@@ -123,7 +125,7 @@ export default function DetailCustomer() {
           <FormCustomer hasStats customerData={customerData} size={9} />
           <Grid size={{ xs: 3 }} container direction={'column'}>
             <Box sx={{ pt: 2, pr: 2, pl: 2, pb: 3, borderRadius: '10px', border: '1px solid #e0e0e0' }}>
-              <Typography sx={{ fontSize: '20px', fontWeight: 500, mb: '7px' }}>History</Typography>
+              <Typography sx={{ fontSize: '20px', fontWeight: 500, mb: '7px' }}>{t('customer:history')}</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'start' }}>
                   <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
@@ -137,7 +139,9 @@ export default function DetailCustomer() {
                       ]}
                       color='disabled'
                     />
-                    <Box sx={{ fontSize: '14px' }}>First seen {formatDate(customerData?.first_seen, 'd/M/yyyy')}</Box>
+                    <Box sx={{ fontSize: '14px' }}>
+                      {t('customer:firstSeen')} {formatDate(customerData?.first_seen, 'd/M/yyyy')}
+                    </Box>
                   </Box>
                   {!!customerData?.nb_orders && (
                     <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
@@ -153,7 +157,7 @@ export default function DetailCustomer() {
                       />
                       <Box sx={{ cursor: 'pointer' }} onClick={goToOrderOfCustomer}>
                         <Link sx={{ fontSize: '14px' }}>
-                          {`${customerData.nb_orders} ${customerData.nb_orders > 1 ? 'orders' : 'order'}`}
+                          {`${customerData.nb_orders} ${customerData.nb_orders > 1 ? t('customer:orders') : t('customer:order')}`}
                         </Link>
                       </Box>
                     </Box>
@@ -172,7 +176,9 @@ export default function DetailCustomer() {
                       ]}
                       color='disabled'
                     />
-                    <Box sx={{ fontSize: '14px' }}>Last seen {formatDate(customerData?.last_seen, 'd/M/yyyy')}</Box>
+                    <Box sx={{ fontSize: '14px' }}>
+                      {t('customer:lastSeen')} {formatDate(customerData?.last_seen, 'd/M/yyyy')}
+                    </Box>
                   </Box>
                   {!!reviewData?.length && (
                     <Box sx={{ display: 'flex', width: '50%', gap: 1, alignItems: 'start' }}>
@@ -187,7 +193,7 @@ export default function DetailCustomer() {
                         color='disabled'
                       />
                       <Link href={'#'} sx={{ fontSize: '14px' }}>
-                        {`${reviewData.length} ${reviewData.length > 1 ? 'reviews' : 'review'}`}
+                        {`${reviewData.length} ${reviewData.length > 1 ? t('customer:reviews') : t('customer:review')}`}
                       </Link>
                     </Box>
                   )}
@@ -212,7 +218,7 @@ export default function DetailCustomer() {
                     <Typography sx={{ fontSize: '14px', fontWeight: 500, ml: '4px' }}>
                       {productData?.map((product) => {
                         if (review.product_id === product.id) {
-                          return `Posted review on "${product.reference}"`
+                          return `${t('customer:postedReviewOn')} "${product.reference}"`
                         }
                         return
                       })}
@@ -252,7 +258,7 @@ export default function DetailCustomer() {
                     />
                     <Typography
                       sx={{ fontSize: '14px', fontWeight: 500 }}
-                    >{`Ordered ${order.basket.length} ${order.basket.length > 1 ? 'posters' : 'poster'}`}</Typography>
+                    >{`${t('customer:ordered')} ${order.basket.length} ${order.basket.length > 1 ? t('customer:posters') : t('customer:poster')}`}</Typography>
                   </Box>
                   <Box
                     sx={[
@@ -270,7 +276,7 @@ export default function DetailCustomer() {
                   >
                     <DetailTypography>{formatDate(order.date, 'E d, y, H:mm a')}</DetailTypography>
                     <DetailTypography>
-                      Reference #{order.reference} - {order.status}
+                      {t('customer:reference')} #{order.reference} - {order.status}
                     </DetailTypography>
                     <DetailTypography>{formatCurrency(order.total)}</DetailTypography>
                   </Box>

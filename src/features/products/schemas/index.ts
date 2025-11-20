@@ -18,39 +18,39 @@ export const filterProductSchema = yup.object({
 export const productDetailSchema = yup.object({
   image: yup
     .string()
-    .required('Image is required')
-    .matches(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg|bmp|ico))$/i, { message: 'Sai định dạng URL' }),
+    .required('image_required')
+    .matches(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg|bmp|ico))$/i, { message: 'invalid_url_format' }),
   thumbnail: yup
     .string()
-    .required('Thumbnail is required')
-    .matches(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg|bmp|ico))$/i, { message: 'Sai định dạng URL' }),
+    .required('thumbnail_required')
+    .matches(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg|bmp|ico))$/i, { message: 'invalid_url_format' }),
   description: yup
     .string()
-    .required('Description is required')
+    .required('description_required')
     .transform((value, originalValue) => (originalValue === '<p></p>' ? null : value)),
   price: yup
     .number()
-    .required('Price is required')
+    .required('price_required')
     .transform((value, originalValue) => (originalValue === '' ? null : value)),
   stock: yup
     .number()
-    .required('Stock is required')
+    .required('stock_required')
     .transform((value, originalValue) => (originalValue === '' ? null : value)),
   sales: yup
     .number()
-    .required('Sales is required')
+    .required('sales_required')
     .transform((value, originalValue) => (originalValue === '' ? null : value)),
   width: yup
     .number()
-    .required('Width is required')
+    .required('width_required')
     .transform((value, originalValue) => (originalValue === '' ? null : value)),
   height: yup
     .number()
-    .required('Height is required')
+    .required('height_required')
     .transform((value, originalValue) => (originalValue === '' ? null : value)),
-  reference: yup.string().required('Reference is required'),
+  reference: yup.string().required('reference_required'),
   category_id: yup
     .number()
-    .required('Category is required')
+    .required('category_required')
     .transform((value, originalValue) => (originalValue === '' ? null : value))
 })

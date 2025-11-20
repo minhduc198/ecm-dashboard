@@ -21,8 +21,10 @@ import { path } from '@/routers/path'
 import { DeleteReviewsRequest, REVIEW_STATUS, UpdateReviewRequest } from '../types'
 import { useUndoReviewStore } from '@/store/reviewStore'
 import { queryClient } from '@/App'
+import { useTranslation } from 'react-i18next'
 
 export default function DetailReview() {
+  const { t } = useTranslation(['common', 'review'])
   const { setOpenDrawer, setGetById } = useDrawerStore()
   const { tmpUndoData, dataPending, timerId, setDataPending, setIsOpenUndo, setTimerId, setAction, setTmpUndoData } =
     useUndoReviewStore()
@@ -196,7 +198,7 @@ export default function DetailReview() {
         <FormProvider {...methods}>
           <Box sx={{ height: '100vh', width: '100%', mt: '64px', padding: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Review detail</Typography>
+              <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('review:review_detail')}</Typography>
               <Box
                 sx={{
                   width: '28px',
@@ -222,7 +224,7 @@ export default function DetailReview() {
               }}
             >
               <Box sx={{ width: '150px' }}>
-                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>Customer</Typography>
+                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>{t('review:customer')}</Typography>
                 <CustomLink to={`${path.customers}/${reviewDetail?.customer.id}`}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Avatar sx={{ width: 25, height: 25 }} src={reviewDetail?.customer.avatar} alt={''} />
@@ -234,7 +236,7 @@ export default function DetailReview() {
               </Box>
 
               <Box>
-                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>Product</Typography>
+                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>{t('review:product')}</Typography>
                 <CustomLink to={`${path.products}/${reviewDetail?.product.id}`}>
                   <Box sx={{ fontSize: '14px' }}>{reviewDetail?.product.reference}</Box>
                 </CustomLink>
@@ -250,12 +252,12 @@ export default function DetailReview() {
               }}
             >
               <Box sx={{ width: '150px' }}>
-                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>Date</Typography>
+                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>{t('review:date')}</Typography>
                 <Typography sx={{ fontSize: '14px' }}>{formatDate(reviewDetail?.date, 'd/M/yyyy')}</Typography>
               </Box>
 
               <Box>
-                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>Rating</Typography>
+                <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>{t('review:rating')}</Typography>
                 {ratingStar}
               </Box>
             </Box>
@@ -293,7 +295,7 @@ export default function DetailReview() {
                   }}
                   onClick={() => handleUpdateReview('accept')}
                 >
-                  ACCEPT
+                  {t('review:accept')}
                 </Button>
               ) : (
                 <Button
@@ -305,7 +307,7 @@ export default function DetailReview() {
                   loading={isPending || isDeletePending}
                   onClick={() => handleUpdateReview('update')}
                 >
-                  SAVE
+                  {t('common:save')}
                 </Button>
               )}
 
@@ -326,7 +328,7 @@ export default function DetailReview() {
                   }}
                   onClick={() => handleUpdateReview('rejected')}
                 >
-                  REJECT
+                  {t('review:reject').toUpperCase()}
                 </Button>
               ) : (
                 <Button
@@ -338,7 +340,7 @@ export default function DetailReview() {
                   loading={isDeletePending || !!timerId}
                   onClick={handleDeleteReview}
                 >
-                  DELETE
+                  {t('common:delete')}
                 </Button>
               )}
             </Box>

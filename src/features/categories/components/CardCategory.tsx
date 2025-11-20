@@ -1,19 +1,22 @@
+import { path } from '@/routers/path'
 import { Category } from '@/services/data-generator'
-import { Box, Button } from '@mui/material'
-import React from 'react'
+import { useHeaderTitleStore } from '@/store/headerStore'
+import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
 import CollectionsIcon from '@mui/icons-material/Collections'
 import EditIcon from '@mui/icons-material/Edit'
+import { Box, Button } from '@mui/material'
+import { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
-import { path } from '@/routers/path'
-import { useHeaderTitleStore } from '@/store/headerStore'
 
 interface Props {
+  t: TFunction<readonly ['common', 'product', 'category'], undefined>
   category: Category
 }
 
-export default function CardCategory({ category }: Props) {
+export default function CardCategory({ t, category }: Props) {
   const { setHeaderData } = useHeaderTitleStore()
+
   const navigate = useNavigate()
   const customerParamFromLS = getProductListParamsFormLS()
 
@@ -48,7 +51,7 @@ export default function CardCategory({ category }: Props) {
       <Box sx={{ fontSize: '24px', mt: 2, textAlign: 'center' }}>
         {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
       </Box>
-      <Box sx={{ mt: '20px', mb: '12px', ml: '16px', display: 'flex', gap: 1 }}>
+      <Box sx={{ mt: '20px', mb: '12px', ml: '16px', display: 'flex', gap: 2 }}>
         <Button
           sx={{
             fontWeight: 500,
@@ -61,7 +64,7 @@ export default function CardCategory({ category }: Props) {
           startIcon={<CollectionsIcon />}
           onClick={() => handleFilterCategories(String(category.id))}
         >
-          PRODUCTS
+          {t('category:product')}
         </Button>
 
         <Button
@@ -76,7 +79,7 @@ export default function CardCategory({ category }: Props) {
           startIcon={<EditIcon />}
           onClick={() => handleNavigateDetailCategory(category.id)}
         >
-          EDIT
+          {t('category:edit')}
         </Button>
       </Box>
     </Box>

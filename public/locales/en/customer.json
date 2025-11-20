@@ -1,0 +1,65 @@
+{
+  "identity": "Identity",
+  "stats": "Stats",
+  "history": "History",
+
+  "firstName": "First name",
+  "lastName": "Last name",
+  "email": "Email",
+  "birthday": "Birthday",
+  "address": "Address",
+  "city": "City",
+  "state": "State",
+  "zipcode": "Zipcode",
+  "customer": "Customer",
+  "name": "Name",
+  "segments": "Segments",
+  "hasNewsletter": "Has newsletter",
+
+  "firstSeen": "First seen",
+  "lastSeen": "Last seen",
+
+  "order": "order",
+  "orders": "orders",
+  "ordered": "Ordered",
+  "review": "review",
+  "reviews": "reviews",
+  "poster": "Poster",
+  "posters": "Poster",
+  "reference": "Reference",
+
+  "postedReviewOn": "Posted review on",
+
+  "changePassword": "Change Password",
+  "password": "Password",
+  "confirmPassword": "Confirm password",
+
+  "yes": "Yes",
+  "no": "No",
+
+  "search": "Search",
+  "first_name": "Name",
+  "nb_orders": "Orders",
+  "last_seen": "Last seen",
+  "total_spent": "Total spent",
+  "latest_purchase": "Latest purchase",
+  "has_newsletter": "News",
+  "groups": "Segments",
+
+  "lastVisited": "Last Visited",
+  "today": "Today",
+  "thisWeek": "This Week",
+  "lastWeek": "Last Week",
+  "thisMonth": "This Month",
+  "lastMonth": "Last Month",
+  "earlier": "Earlier",
+
+  "hasOrdered": "Has Ordered",
+
+  "compulsive": "Compulsive",
+  "collector": "Collector",
+  "ordered_once": "Ordered Once",
+  "regular": "Regular",
+  "returns": "Returns",
+  "reviewer": "Reviewer"
+}

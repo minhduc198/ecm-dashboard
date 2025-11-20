@@ -31,6 +31,7 @@ import { DropResult } from 'react-beautiful-dnd'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { schema } from '../schemas'
 import { Order, OrderFilterItem, OrderParams, OrderSettingColumn, OrderUrlQuery } from '../types'
+import { useTranslation } from 'react-i18next'
 
 const optionReturned: SelectOptionItem[] = [
   {
@@ -50,6 +51,7 @@ const FilterBarWrapper = styled('div')({
 })
 
 const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
+  const { t } = useTranslation(['common', 'order'])
   const { filterItems, columnSetting, activeTab, orderListRq, setFilterItems, setColumnSetting, setOrderListRq } =
     useContext(FilterContext)
   const { setMany } = useSearchParam()
@@ -273,7 +275,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
         <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'start' }}>
           <TextFieldInput
             name='q'
-            label='Search'
+            label={t('order:search')}
             slotProps={{
               input: {
                 endAdornment: (
@@ -287,7 +289,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
 
           {filterItems[0].isChecked && (
             <TextFieldAutocompleteVirtualized
-              label='Customer'
+              label={t('order:customer')}
               name='customer_id'
               options={customerOptions}
               handleClose={handleRemoveFilterItem('customer_id')}
@@ -302,7 +304,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
             <CustomDatePicker
               name='date_gte'
               triggerFiled='date_lte'
-              datePickerLabel='Passed Since'
+              datePickerLabel={t('order:date_gte')}
               sxDatePicker={{ width: '169px' }}
               handleClose={handleRemoveFilterItem('date_gte')}
             />
@@ -311,14 +313,14 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
             <CustomDatePicker
               name='date_lte'
               triggerFiled='date_gte'
-              datePickerLabel='Passed Before'
+              datePickerLabel={t('order:date_lte')}
               sxDatePicker={{ width: '169px' }}
               handleClose={handleRemoveFilterItem('date_lte')}
             />
           )}
           {filterItems[3].isChecked && (
             <TextFieldNumber
-              label='Min amount'
+              label={t('order:total_gte')}
               name='total_gte'
               sxTextFiled={{ width: '194px' }}
               handleClose={handleRemoveFilterItem('total_gte')}
@@ -328,7 +330,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
             <TextFieldSelect
               options={optionReturned}
               name='returned'
-              textFieldLabel='Returned'
+              textFieldLabel={t('order:returned')}
               handleClose={handleRemoveFilterItem('returned')}
               sxTextFiled={{ width: '164px' }}
             />
@@ -353,7 +355,7 @@ const FilterBar = ({ handleExport }: { handleExport: () => void }) => {
           onDragEnd={onDragEnd}
         />
         <Button startIcon={<FileDownloadIcon />} variant='text' onClick={handleExport}>
-          EXPORT
+          {t('common:export')}
         </Button>
       </Box>
     </FilterBarWrapper>

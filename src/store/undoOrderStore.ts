@@ -11,5 +11,7 @@ export const useUndoOrderStore = create<UndoStore<Order>>((set) => ({
   setTimerId: (timer) =>
     set({
       timerId: timer
-    })
+    }),
+  action: '',
+  setAction: (mess) => set({ action: mess })
 }))

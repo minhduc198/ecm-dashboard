@@ -6,7 +6,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard'
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks'
 import PeopleIcon from '@mui/icons-material/People'
 import LabelIcon from '@mui/icons-material/Label'
-import { Avatar, Box, createTheme } from '@mui/material'
+import { Avatar, Box, createTheme, MenuItem, Select, SelectChangeEvent } from '@mui/material'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -17,6 +17,8 @@ import { Outlet, useLocation, useNavigate } from 'react-router'
 import { useHeaderTitleStore } from './store/headerStore'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { path as pathConfig } from './routers/path'
+import { useTranslation } from 'react-i18next'
+import { title } from 'process'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -25,71 +27,72 @@ export const queryClient = new QueryClient({
   }
 })
 
-const NAVIGATION: Navigation = [
-  {
-    kind: 'header',
-    title: 'Menu items'
-  },
-  {
-    title: 'Dashboard',
-    icon: <DashboardIcon />
-  },
-  {
-    segment: '',
-    title: 'Sales',
-    icon: <AttachMoneyIcon />,
-    children: [
-      {
-        segment: 'orders',
-        title: 'Orders',
-        icon: <AttachMoneyIcon />
-      },
-      {
-        segment: 'invoices',
-        title: 'Invoices',
-        icon: <LibraryBooksIcon />
-      }
-    ]
-  },
-  {
-    segment: '',
-    title: 'Catalog',
-    icon: <CollectionsIcon />,
-    children: [
-      {
-        segment: 'products',
-        title: 'Posters',
-        icon: <CollectionsIcon />
-      },
-
-      {
-        segment: 'categories',
-        title: 'Categories',
-        icon: <BookmarkIcon />
-      }
-    ]
-  },
-  {
-    segment: '',
-    title: 'Customers',
-    icon: <PeopleIcon />,
-    children: [
-      { segment: 'customers', title: 'Customers', icon: <PeopleIcon /> },
-      { segment: 'segments', title: 'Segments', icon: <LabelIcon /> }
-    ]
-  },
-  {
-    segment: 'reviews',
-    title: 'Reviews',
-    icon: <CommentIcon />
-  }
-]
-
 export default function App() {
+  const { t } = useTranslation('sidebar')
   const [session, setSession] = useState<Session | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
   const { headerData } = useHeaderTitleStore()
+
+  const NAVIGATION: Navigation = [
+    {
+      kind: 'header',
+      title: t('menu_items')
+    },
+    {
+      title: t('dashboard'),
+      icon: <DashboardIcon />
+    },
+    {
+      segment: '',
+      title: t('sales'),
+      icon: <AttachMoneyIcon />,
+      children: [
+        {
+          segment: 'orders',
+          title: t('orders'),
+          icon: <AttachMoneyIcon />
+        },
+        {
+          segment: 'invoices',
+          title: t('invoices'),
+          icon: <LibraryBooksIcon />
+        }
+      ]
+    },
+    {
+      segment: '',
+      title: t('catalog'),
+      icon: <CollectionsIcon />,
+      children: [
+        {
+          segment: 'products',
+          title: t('posters'),
+          icon: <CollectionsIcon />
+        },
+
+        {
+          segment: 'categories',
+          title: t('categories'),
+          icon: <BookmarkIcon />
+        }
+      ]
+    },
+    {
+      segment: '',
+      title: t('customers'),
+      icon: <PeopleIcon />,
+      children: [
+        { segment: 'customers', title: t('customers'), icon: <PeopleIcon /> },
+        { segment: 'segments', title: t('segments'), icon: <LabelIcon /> }
+      ]
+    },
+    {
+      segment: 'reviews',
+      title: t('reviews'),
+      icon: <CommentIcon />
+    }
+  ]
 
   const signIn = useCallback(() => {
     navigate('/sign-in')
@@ -110,9 +113,14 @@ export default function App() {
     }
 
     if (paths.length === 1 || paths[0] === 'reviews') {
-      const title = paths[0].charAt(0).toUpperCase() + paths[0].slice(1)
       return {
-        title
+        title: t(paths[0])
+      }
+    }
+
+    if (paths.length === 1 && paths[0] === 'products') {
+      return {
+        title: t('products')
       }
     }
 
@@ -123,10 +131,11 @@ export default function App() {
       }
     }
 
+    const [a, ...b] = headerData.title.split(' ')
     return {
-      title: headerData.title
+      title: `${t(a.toLowerCase())} ${[...b].join(' ')}`
     }
-  }, [location.pathname, headerData])
+  }, [location.pathname, headerData, t])
 
   return (
     <SessionContext.Provider value={sessionContextValue}>

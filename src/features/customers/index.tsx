@@ -24,7 +24,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import { Avatar, Box, Button, Grid, Snackbar, Tooltip } from '@mui/material'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import cloneDeep from 'lodash/cloneDeep'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DropResult } from 'react-beautiful-dnd'
 import { useNavigate } from 'react-router'
 import { utils, writeFileXLSX } from 'xlsx'
@@ -32,8 +32,10 @@ import FilterBarCustomer from './components/FilterBarCustomer'
 import { DEFAULT_PAGE_CUSTOMER, initialCustomerColumns } from './constant'
 import { deleteCustomers, fetchCustomersList } from './service'
 import { CustomerParam, GetCustomersListRequest, TableColumnsCustomer } from './types'
+import { useTranslation } from 'react-i18next'
 
 export default function Customers() {
+  const { t } = useTranslation(['common', 'customer'])
   const navigate = useNavigate()
   const { setMany } = useSearchParam()
   const customerSettingColFromLS = getCustomerSettingColumnsFromLS()
@@ -83,6 +85,21 @@ export default function Customers() {
     () => customerSettingCol.filter((col) => col.isVisible).map((i) => i.id),
     [customerSettingCol]
   )
+
+  useEffect(() => {
+    setCustomerSettingCol(
+      customerSettingColFromLS.length
+        ? customerSettingColFromLS.map((item) => {
+            return { ...item, label: t(`customer:${item.id}`) }
+          })
+        : initialCustomerColumns.map((item) => {
+            return {
+              ...item,
+              label: t(`customer:${item.id}`)
+            }
+          })
+    )
+  }, [t])
 
   const handleSetQueryDetail = (row: Customer) => {
     queryClient.setQueryData(['customer_detail', row.id.toString()], { data: row })
@@ -145,11 +162,11 @@ export default function Customers() {
               ...tableColumns,
               cell: (value) =>
                 value ? (
-                  <Tooltip title='Yes' placement='bottom'>
+                  <Tooltip title={t('customer:yes')} placement='bottom'>
                     <CheckIcon />
                   </Tooltip>
                 ) : (
-                  <Tooltip title='No' placement='bottom'>
+                  <Tooltip title={t('customer:no')} placement='bottom'>
                     <ClearIcon />
                   </Tooltip>
                 )
@@ -172,7 +189,7 @@ export default function Customers() {
                           fontSize: '13px'
                         }}
                       >
-                        {`${seg.charAt(0).toUpperCase()}${seg.slice(1)}`}
+                        {t(`customer:${seg}`)}
                       </Box>
                     )
                   })}
@@ -281,18 +298,30 @@ export default function Customers() {
   const handleExport = () => {
     const exportData = tmpUndoData.map((data) => {
       const obj = {
-        ['Name']: customerSettingNameCols.includes('first_name') ? `${data.first_name} ${data.last_name}` : '',
-        ['Last seen']: customerSettingNameCols.includes('has_newsletter')
+        [t('customer:name')]: customerSettingNameCols.includes('first_name')
+          ? `${data.first_name} ${data.last_name}`
+          : '',
+        [t('customer:lastSeen')]: customerSettingNameCols.includes('has_newsletter')
           ? formatDate(data.last_seen, 'HH:mm:ss d/M/yyyy')
           : '',
-        ['Orders']: customerSettingNameCols.includes('nb_orders') ? data.nb_orders : '',
-        ['Total spent']: customerSettingNameCols.includes('total_spent') ? formatCurrency(data.total_spent ?? 0) : '',
-        ['Latest purchase']: customerSettingNameCols.includes('latest_purchase')
-          ? formatDate(data.last_seen, 'HH:mm:ss d/M/yyyy')
+        [t('customer:orders')]: customerSettingNameCols.includes('nb_orders') ? data.nb_orders : '',
+        [t('customer:total_spent')]: customerSettingNameCols.includes('total_spent')
+          ? formatCurrency(data.total_spent ?? 0)
           : '',
-        ['News']: customerSettingNameCols.includes('has_newsletter') ? (data.has_newsletter ? 'Yes' : 'No') : '',
-        ['Segments']: customerSettingNameCols.includes('groups') ? data?.groups?.join(',').replace(',', ' ') : '',
-        ['Birthday']: customerSettingNameCols.includes('birthday') ? formatDate(data.last_seen, 'd/M/yyyy') : ''
+        [t('customer:latest_purchase')]: customerSettingNameCols.includes('latest_purchase')
+          ? formatDate(data.latest_purchase ?? '', 'HH:mm:ss d/M/yyyy')
+          : '',
+        [t('customer:has_newsletter')]: customerSettingNameCols.includes('has_newsletter')
+          ? data.has_newsletter
+            ? 'Yes'
+            : 'No'
+          : '',
+        [t('customer:groups')]: customerSettingNameCols.includes('groups')
+          ? data?.groups?.join(',').replace(',', ' ')
+          : '',
+        [t('customer:birthday')]: customerSettingNameCols.includes('birthday')
+          ? formatDate(data.last_seen, 'd/M/yyyy')
+          : ''
       }
 
       return cleanObject(obj)
@@ -331,11 +360,11 @@ export default function Customers() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2 }}>
         <Button onClick={handleCreateCustomer} startIcon={<AddIcon />} variant='text'>
-          CREATE
+          {t('common:create')}
         </Button>
         <SettingColumns columns={customerSettingCol} onDragEnd={onDragEnd} handleChangeColumn={handleChangeColumn} />
         <Button onClick={handleExport} startIcon={<FileDownloadIcon />} variant='text'>
-          EXPORT
+          {t('common:export')}
         </Button>
       </Box>
       <Grid container spacing={2}>
@@ -368,7 +397,7 @@ export default function Customers() {
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {t('common:undo')}
           </Button>
         }
       />

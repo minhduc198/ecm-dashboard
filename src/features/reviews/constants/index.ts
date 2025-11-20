@@ -5,7 +5,7 @@ import { REVIEW_STATUS, ReviewFilterItem } from '../types'
 
 export const initialReviewColumns: TableColumns<Review>[] = [
   {
-    label: 'Date',
+    label: 'date',
     id: 'date',
     isVisible: true,
     numeric: false,
@@ -13,7 +13,7 @@ export const initialReviewColumns: TableColumns<Review>[] = [
     sortable: true
   },
   {
-    label: 'Customer',
+    label: 'customer',
     id: 'customer_id',
     isVisible: true,
     numeric: false,
@@ -21,7 +21,7 @@ export const initialReviewColumns: TableColumns<Review>[] = [
     sortable: true
   },
   {
-    label: 'Rating',
+    label: 'rating',
     id: 'rating',
     isVisible: true,
     numeric: false,
@@ -29,7 +29,7 @@ export const initialReviewColumns: TableColumns<Review>[] = [
     sortable: true
   },
   {
-    label: 'Product',
+    label: 'product',
     id: 'product_id',
     isVisible: true,
     numeric: false,
@@ -38,7 +38,7 @@ export const initialReviewColumns: TableColumns<Review>[] = [
   },
 
   {
-    label: 'Comment',
+    label: 'comment',
     id: 'comment',
     isVisible: true,
     numeric: false,
@@ -46,7 +46,7 @@ export const initialReviewColumns: TableColumns<Review>[] = [
     sortable: true
   },
   {
-    label: 'Status',
+    label: 'status',
     id: 'status',
     isVisible: true,
     numeric: false,
@@ -56,24 +56,24 @@ export const initialReviewColumns: TableColumns<Review>[] = [
 ]
 
 export const initFilterReviewItems: ReviewFilterItem[] = [
-  { label: 'Status', key: 'status', isChecked: false },
+  { label: 'status', key: 'status', isChecked: false },
   {
-    label: 'Customer',
+    label: 'customer',
     key: 'customer_id',
     isChecked: false
   },
   {
-    label: 'Product',
+    label: 'product',
     key: 'product_id',
     isChecked: false
   },
   {
-    label: 'Posted since',
+    label: 'posted_since',
     key: 'date_lte',
     isChecked: false
   },
   {
-    label: 'Posted before',
+    label: 'posted_before',
     key: 'date_gte',
     isChecked: false
   }

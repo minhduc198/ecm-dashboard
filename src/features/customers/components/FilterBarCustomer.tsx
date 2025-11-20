@@ -47,6 +47,7 @@ import {
 import { filterCustomerSchema } from '../schemas'
 import { CustomerUrlQuery, GetCustomersListRequest } from '../types'
 import SelectFilter from './SelectFilter'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   setCustomerListRq: React.Dispatch<React.SetStateAction<GetCustomersListRequest>>
@@ -56,6 +57,7 @@ interface Props {
 type FormValues = InferType<typeof filterCustomerSchema>
 
 export default function FilterBarCustomer({ setCustomerListRq, customerListRq }: Props) {
+  const { t } = useTranslation(['common', 'product'])
   const customerParamFromLS = getCustomerListParamsFormLS()
   const { setMany, deleteMany, replaceParams, getAll } = useSearchParam()
   const [searchName, setSearchName] = useState(customerParamFromLS.filter.q)
@@ -260,7 +262,7 @@ export default function FilterBarCustomer({ setCustomerListRq, customerListRq }:
         <TextFieldInput
           sxTextFieldInput={{ width: '100%' }}
           name='q'
-          label='Search'
+          label={t('customer:search')}
           slotProps={{
             input: {
               endAdornment: (
@@ -275,7 +277,7 @@ export default function FilterBarCustomer({ setCustomerListRq, customerListRq }:
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <BookmarkBorderIcon sx={{ width: '24px', height: '24px' }} />
-            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>SAVED QUERIES</Typography>
+            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>{t('common:saveQueries').toUpperCase()}</Typography>
           </Box>
           {hasParams ? (
             isEqual(currentQuery?.value, customerListRq) ? (
@@ -324,62 +326,69 @@ export default function FilterBarCustomer({ setCustomerListRq, customerListRq }:
             last_seen_gte: '',
             last_seen_lte: ''
           }}
-          filterLabel='LAST VISITED'
+          filterLabel={t('customer:lastVisited').toUpperCase()}
           IconFilter={<AccessTimeIcon color='action' />}
-          options={lastSeenGteOptions}
+          options={lastSeenGteOptions.map((item) => {
+            return { ...item, label: t(`customer:${item.label}`) }
+          })}
         />
 
         <SelectFilter
           name='nb_orders_gte'
-          filterLabel='HAS ORDERED'
+          filterLabel={t('customer:hasOrdered').toUpperCase()}
           IconFilter={<MonetizationOnOutlinedIcon color='action' />}
-          options={hasOrderedOptions}
+          options={hasOrderedOptions.map((item) => {
+            return { ...item, label: t(`customer:${item.label}`) }
+          })}
         />
 
         <SelectFilter
           name='has_newsletter'
-          filterLabel='HAS NEWSLETTER'
+          filterLabel={t('customer:hasNewsletter').toUpperCase()}
           IconFilter={<MailOutlineIcon color='action' />}
-          options={hasNewsletterOptions}
+          options={hasNewsletterOptions.map((item) => {
+            return { ...item, label: t(`customer:${item.label}`) }
+          })}
         />
 
         <SelectFilter
           name='groups'
-          filterLabel='SEGMENTS'
+          filterLabel={t('customer:segments').toUpperCase()}
           IconFilter={<LocalOfferOutlinedIcon color='action' />}
-          options={segmentsOptions}
+          options={segmentsOptions.map((item) => {
+            return { ...item, label: t(`customer:${item.label}`) }
+          })}
         />
       </Box>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Save current query as</DialogTitle>
+        <DialogTitle>{t('common:saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
+            sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label='Query name'
+            label={t('common:queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>CANCEL</Button>
+          <Button onClick={handleCloseDialog}>{t('common:cancel')}</Button>
           <Button onClick={handleSaveQueries} autoFocus>
-            SAVE
+            {t('common:save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{'Remove saved query?'}</DialogTitle>
+        <DialogTitle>{t('common:removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>
-            Are you sure you want to remove that item from your list of saved queries?
-          </DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{t('common:removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>CANCEL</Button>
-          <Button onClick={handleConfirmRemoveDialog}>CONFIRM</Button>
+          <Button onClick={handleCloseRemoveDialog}>{t('common:cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{t('common:confirm')}</Button>
         </DialogActions>
       </Dialog>
     </FormProvider>

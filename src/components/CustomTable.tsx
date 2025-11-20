@@ -24,6 +24,7 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface TableHeaderProps<DataType> {
   columns: TableColumns<DataType>[]
@@ -228,6 +229,7 @@ export default function CustomTable<DataType, IdType>({
   handleSort,
   collapsibleContent
 }: CustomTableProps<DataType, IdType>) {
+  const { t } = useTranslation('common')
   const [order, setOrder] = React.useState<SORT>(sortColFromLS?.order ?? SORT.ASC)
   const [orderBy, setOrderBy] = React.useState<string>(sortColFromLS?.field ?? '')
   const [selected, setSelected] = React.useState<IdType[]>([])
@@ -466,7 +468,7 @@ export default function CustomTable<DataType, IdType>({
                 <>
                   <Typography>{`${emptyText} using the current filters.`}</Typography>
                   <Button variant='text' size='small' onClick={onClearAllFilter}>
-                    CLEAR FILTERS
+                    {t('clearFilters')}
                   </Button>
                 </>
               ) : (
@@ -484,6 +486,7 @@ export default function CustomTable<DataType, IdType>({
             page={pagination.page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage={t('rowsPerPage')}
           />
         )}
       </Paper>
