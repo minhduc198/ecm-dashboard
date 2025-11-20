@@ -27,8 +27,13 @@ import { initialInvoiceColumns } from './constant'
 import { deleteInvoices, fetchInvoicesList } from './services'
 import { GetInvoicesListRequest, InvoiceParam, TableColumnsInvoice } from './types'
 import { utils, writeFileXLSX } from 'xlsx'
+import { useTranslation } from 'react-i18next'
+import { cleanObject } from '@/utils'
 
 const Invoices = () => {
+  const { t: tc } = useTranslation('common')
+  const { t } = useTranslation('invoice')
+
   const { setMany } = useSearchParam()
   const { setHeaderData } = useHeaderTitleStore()
   const { action, tmpUndoData, isOpenUndo, timerId, setTmpUndoData, setIsOpenUndo, setTimerId, setAction } =
@@ -36,9 +41,7 @@ const Invoices = () => {
   const { filter, sort, page, order, perPage } = getInvoiceListParamsFormLS()
   const invoiceSettingColFromLS = getInvoicesSettingColumnsFromLS()
   const currentListParamsLS = getInvoiceListParamsFormLS()
-  const [invoiceSettingCol, setInvoiceSettingCol] = useState<TableColumnsInvoice>(
-    invoiceSettingColFromLS.length ? invoiceSettingColFromLS : initialInvoiceColumns
-  )
+  const [invoiceSettingCol, setInvoiceSettingCol] = useState<TableColumnsInvoice>([])
 
   const [invoiceListRq, setInvoiceListRq] = useState<GetInvoicesListRequest>({
     filter,
@@ -73,14 +76,14 @@ const Invoices = () => {
 
   const handleSetQueryDetail = (row: Customer) => {
     setHeaderData({
-      fullName: `${row.first_name} ${row.last_name}`,
+      title: `${row.first_name} ${row.last_name}`,
       avatar: row.avatar
     })
   }
 
   const handleSetReference = (reference: string) => {
     setHeaderData({
-      reference
+      title: `Order ${reference}`
     })
   }
 
@@ -101,6 +104,8 @@ const Invoices = () => {
         switch (col.id) {
           case 'customer_id':
             return {
+              forceClickRow: true,
+              minWidth: 200,
               ...tableColumn,
               cell: (_, row) => (
                 <CustomLink
@@ -175,18 +180,18 @@ const Invoices = () => {
   const columnProductItems: TableColumns<OrderDetailProduct>[] = [
     {
       id: 'reference',
-      label: 'Reference',
+      label: t('reference'),
       cell: (value) => <CustomLink to={'#'}>{value?.toString()}</CustomLink>
     },
 
-    { id: 'price', label: 'Unit price', numeric: true, cell: (value) => formatCurrency(Number(value)) },
+    { id: 'price', label: t('unitPrice'), numeric: true, cell: (value) => formatCurrency(Number(value)) },
     {
       id: 'quantity',
-      label: 'Quantity',
+      label: t('quantity'),
       numeric: true,
       cell: (value) => Number(value)
     },
-    { id: 'total', label: 'Total', numeric: true, cell: (value) => formatCurrency(Number(value)) }
+    { id: 'total', label: t('total'), numeric: true, cell: (value) => formatCurrency(Number(value)) }
   ]
 
   const productItemsDataSource = (productList: Product[]) => {
@@ -202,6 +207,31 @@ const Invoices = () => {
     })
   }
 
+  const invoiceSettingNameCols = useMemo(
+    () => invoiceSettingCol.filter((col) => col.isVisible).map((i) => i.id),
+    [invoiceSettingCol]
+  )
+
+  useEffect(() => {
+    const i18nInvoiceSettingCol = initialInvoiceColumns.map((item) => {
+      return {
+        ...item,
+        label: t(item.id)
+      }
+    })
+
+    setInvoiceSettingCol(
+      invoiceSettingColFromLS.length
+        ? invoiceSettingColFromLS.map((item) => {
+            return {
+              ...item,
+              label: t(item.id)
+            }
+          })
+        : i18nInvoiceSettingCol
+    )
+  }, [t])
+
   useEffect(() => {
     if (!timerId) {
       setTmpUndoData(invoicesData?.data ?? [])
@@ -209,9 +239,7 @@ const Invoices = () => {
   }, [invoicesData?.data])
 
   const handleDeleteInvoices = (ids: number[]) => {
-    if (setAction) {
-      setAction('Delete Invoices')
-    }
+    setAction('Delete Invoices')
     const softDeleteOrder = invoicesData?.data.filter((data) => !ids.includes(data.id))
     setTmpUndoData(softDeleteOrder ?? [])
     setIsOpenUndo(true)
@@ -273,7 +301,7 @@ const Invoices = () => {
     })
   }
 
-  const handleSort = (field: string, order: SORT) => {
+  const handleSort = (field: string, invoice: SORT) => {
     const sort = {
       field,
       order
@@ -306,7 +334,7 @@ const Invoices = () => {
           paddingInline: 2,
           pt: 2,
           pb: 3,
-          border: '1px solid rgb(0, 0, 0, 0.1)',
+          border: '1px solid #e0e0e0',
           borderRadius: '10px'
         }}
       >
@@ -324,12 +352,12 @@ const Invoices = () => {
         <Box>{row.customer_detail.address}</Box>
         <Box sx={{ mt: '20px', mb: '20px', display: 'flex', justifyContent: 'space-around' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Date</Typography>
+            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('date')}</Typography>
             <Typography>{formatDate(row.date, 'd/M/yyyy')}</Typography>
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>Order</Typography>
+            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('order')}</Typography>
             <Typography>{row.reference}</Typography>
           </Box>
         </Box>
@@ -345,36 +373,28 @@ const Invoices = () => {
   }
 
   const handleExport = () => {
-    const ids = invoiceSettingCol
-      .filter((col) => col.isVisible)
-      .map((col) => {
-        if (col.id === 'customer_detail') {
-          return 'address'
-        }
-        return col.id
-      })
-
-    const exportData = tmpUndoData.map((item) => {
+    const exportData = tmpUndoData.map((data) => {
       const obj = {
-        id: item.id,
-        date: formatDate(item.date, 'HH:mm:ss d/M/yyyy'),
-        order_id: item.order_id,
-        address: item.customer_detail.address,
-        customer_id: item.customer_id,
-        total_ex_taxes: formatCurrency(item.total_ex_taxes ?? 0),
-        delivery_fees: formatCurrency(item.delivery_fees ?? 0),
-        tax_rate: formatCurrency(item.tax_rate ?? 0),
-        taxes: formatCurrency(item.taxes ?? 0),
-        total: formatCurrency(item.total ?? 0)
+        [t('invoice:id')]: invoiceSettingNameCols.includes('id') ? data.id : '',
+        [t('invoice:date')]: invoiceSettingNameCols.includes('date') ? formatDate(data.date, 'd/M/yyyy') : '',
+        [t('invoice:customer_id')]: invoiceSettingNameCols.includes('customer_id')
+          ? `${data.customer_detail.first_name} ${data.customer_detail.last_name}`
+          : '',
+        [t('invoice:customer_detail')]: invoiceSettingNameCols.includes('customer_detail')
+          ? data.customer_detail.address
+          : '',
+        [t('invoice:reference')]: invoiceSettingNameCols.includes('reference') ? data.reference : '',
+        [t('invoice:total_ex_taxes')]: invoiceSettingNameCols.includes('total_ex_taxes')
+          ? formatCurrency(data.total_ex_taxes ?? 0)
+          : '',
+        [t('invoice:delivery_fees')]: invoiceSettingNameCols.includes('delivery_fees')
+          ? formatCurrency(data.delivery_fees ?? 0)
+          : '',
+        [t('invoice:taxes')]: invoiceSettingNameCols.includes('taxes') ? formatCurrency(data.taxes ?? 0) : '',
+        [t('invoice:total')]: invoiceSettingNameCols.includes('total') ? formatCurrency(data.total ?? 0) : ''
       }
 
-      Object.keys(cloneDeep(obj)).forEach((key: string) => {
-        if (!ids.includes(key as keyof (Invoice | 'address'))) {
-          delete obj[key as keyof typeof obj]
-        }
-      })
-
-      return obj
+      return cleanObject(obj)
     })
 
     const ws = utils.json_to_sheet(exportData)
@@ -415,7 +435,7 @@ const Invoices = () => {
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {tc('undo')}
           </Button>
         }
       />

@@ -1,0 +1,20 @@
+{
+  "menu_items": "Mục menu",
+  "dashboard": "Bảng điều khiển",
+
+  "sales": "Bán hàng",
+  "orders": "Đơn hàng",
+  "invoices": "Hoá đơn",
+
+  "catalog": "Danh mục",
+  "posters": "Áp phích",
+  "categories": "Danh mục sản phẩm",
+
+  "customers": "Khách hàng",
+  "segments": "Phân khúc",
+
+  "reviews": "Đánh giá",
+  "products": "Sản phẩm",
+  "product": "Sản phẩm",
+  "order": "Đơn hàng"
+}

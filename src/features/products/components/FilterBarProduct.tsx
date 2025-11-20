@@ -27,12 +27,13 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { debounce, isEqual } from 'lodash'
 import { FormProvider, Resolver, useForm, useWatch } from 'react-hook-form'
 import { InferType } from 'yup'
-import { categoryOptions, DEFAULT_PER_PAGE_PRODUCT, salesOptions, stockOptions } from '../constant'
+import { DEFAULT_PER_PAGE_PRODUCT, salesOptions, stockOptions } from '../constant'
 import { filterProductSchema } from '../schemas'
 
 import { DEFAULT_PAGE } from '@/constants'
+import { fetchCategoriesList } from '@/features/categories/services'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { QuerySaveType } from '@/types'
+import { QuerySaveType, SelectOptionItem } from '@/types'
 import { cleanObject } from '@/utils'
 import {
   getProductListParamsFormLS,
@@ -40,8 +41,10 @@ import {
   saveProductListParamsToLS,
   saveQueriesProduct
 } from '@/utils/products'
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { GetProductListRequest, ProductUrlQuery } from '../types'
+import { useTranslation } from 'react-i18next'
 
 type FormValues = InferType<typeof filterProductSchema>
 
@@ -51,6 +54,8 @@ interface Props {
 }
 
 export default function FilterBarProduct({ productListRq, setProductListRq }: Props) {
+  const { t: tc } = useTranslation('common')
+  const { t, i18n } = useTranslation('product')
   const [openDialog, setOpenDialog] = useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
   const [saveQueryName, setSaveQueryName] = useState('')
@@ -82,7 +87,47 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
   const category_id = useWatch({ name: 'category_id', control: method.control })
   const stockValue = useWatch({ name: 'stock', control: method.control })
 
-  const hasParams = !!q || !!salesValue || !!category_id || !!stockValue
+  const { data: categoriesList } = useQuery({
+    queryKey: ['categories_list'],
+    queryFn: () => fetchCategoriesList()
+  })
+  const categoriesListData = categoriesList?.data || []
+
+  const i18nStockOptions = useMemo<SelectOptionItem[]>(() => {
+    return stockOptions.map((item) => {
+      return {
+        ...item,
+        label: t(item.label)
+      }
+    }) as SelectOptionItem[]
+  }, [t])
+
+  const i18nSalesOptions = useMemo<SelectOptionItem[]>(() => {
+    return salesOptions.map((item) => {
+      return {
+        ...item,
+        label: t(item.label)
+      }
+    }) as SelectOptionItem[]
+  }, [t])
+
+  const i18nCategoryOptions = useMemo<SelectOptionItem[]>(() => {
+    return categoriesListData.map((category) => {
+      return {
+        label: t(category.name),
+        value: category.id.toString()
+      }
+    })
+  }, [categoriesListData, t])
+
+  const hasParams = useMemo(() => {
+    return (
+      !!q ||
+      !!Object.keys(cleanObject(salesValue)).length ||
+      !!category_id ||
+      !!Object.keys(cleanObject(stockValue)).length
+    )
+  }, [q, category_id, stockValue, salesValue])
 
   const onDebounceSearch = useMemo(() => debounce((value?: string) => setSearchName(value), 300), [])
 
@@ -121,7 +166,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         }
       })
     }
-  }, [])
+  }, [JSON.stringify(productParamFromLS)])
 
   useEffect(() => {
     saveQueriesProduct(saveQueries)
@@ -257,19 +302,28 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
   return (
     <FormProvider {...method}>
       <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          border: '1px solid rgba(0, 0, 0, 0.2)',
-          borderRadius: '8px',
-          padding: 2
-        }}
+        sx={[
+          {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            padding: 2
+          },
+          (theme) => ({
+            backgroundColor: 'transparent'
+          }),
+          (theme) =>
+            theme.applyStyles('dark', {
+              backgroundColor: '#1e1e1e'
+            })
+        ]}
       >
         <TextFieldInput
           sxTextFieldInput={{ width: '100%' }}
           name='q'
-          label='Search'
+          label={t('product:search')}
           slotProps={{
             input: {
               endAdornment: (
@@ -284,7 +338,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <BookmarkBorderIcon sx={{ width: '24px', height: '24px' }} />
-            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>SAVED QUERIES</Typography>
+            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>{t('save_queries').toUpperCase()}</Typography>
           </Box>
           {hasParams ? (
             isEqual(currentQuery?.value, productListRq) ? (
@@ -329,55 +383,54 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         </Box>
         <SelectFilter
           name='sales'
-          filterLabel='SALES'
+          filterLabel={t('sales').toUpperCase()}
           IconFilter={<AttachMoneySharpIcon color='action' />}
-          options={salesOptions}
+          options={i18nSalesOptions}
         />
 
         <SelectFilter
           name='stock'
-          filterLabel='STOCK'
+          filterLabel={t('stock').toUpperCase()}
           IconFilter={<BarChartOutlinedIcon color='action' />}
-          options={stockOptions}
+          options={i18nStockOptions}
         />
 
         <SelectFilter
           name='category_id'
-          filterLabel='CATEGORIES'
+          filterLabel={t('categories').toUpperCase()}
           IconFilter={<SellOutlinedIcon color='action' />}
-          options={categoryOptions}
+          options={i18nCategoryOptions}
         />
       </Box>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Save current query as</DialogTitle>
+        <DialogTitle>{tc('saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
+            sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label='Query name'
+            label={tc('queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>CANCEL</Button>
+          <Button onClick={handleCloseDialog}>{tc('cancel')}</Button>
           <Button onClick={handleSaveQueries} autoFocus>
-            SAVE
+            {tc('save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{'Remove saved query?'}</DialogTitle>
+        <DialogTitle>{tc('removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>
-            Are you sure you want to remove that item from your list of saved queries?
-          </DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{tc('removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>CANCEL</Button>
-          <Button onClick={handleConfirmRemoveDialog}>CONFIRM</Button>
+          <Button onClick={handleCloseRemoveDialog}>{tc('cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{tc('confirm')}</Button>
         </DialogActions>
       </Dialog>
     </FormProvider>

@@ -3,6 +3,7 @@ import { IconButton, SxProps, TextField } from '@mui/material'
 import { Box, BoxProps } from '@mui/system'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   name: string
@@ -10,6 +11,7 @@ interface Props {
   datePickerLabel: string
   sxDatePicker?: SxProps
   wrapperProps?: BoxProps
+  isRequired?: boolean
   handleClose?: () => void
   triggerValidate?: () => void
 }
@@ -20,8 +22,10 @@ export default function CustomDatePicker({
   sxDatePicker,
   wrapperProps,
   triggerFiled = '',
+  isRequired = false,
   handleClose
 }: Props) {
+  const { t } = useTranslation('common')
   const {
     control,
     getValues,
@@ -68,6 +72,7 @@ export default function CustomDatePicker({
                   fullWidth: true,
                   variant: 'filled',
                   size: 'small',
+                  required: isRequired,
                   sx: {
                     '& .MuiFilledInput-root:after': {
                       color: errors[name]?.message ? 'red' : '#4F3CC9'
@@ -83,7 +88,7 @@ export default function CustomDatePicker({
                     }
                   },
                   error: !!errors[name],
-                  helperText: (errors[name]?.message as string) || ''
+                  helperText: t(errors[name]?.message as string) || ''
                 }
               }}
             />
@@ -92,7 +97,15 @@ export default function CustomDatePicker({
       />
       {handleClose && (
         <IconButton onClick={handleClose} aria-label='delete'>
-          <RemoveCircleOutlineIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' }} />
+          <RemoveCircleOutlineIcon
+            sx={[
+              { color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  color: 'white'
+                })
+            ]}
+          />
         </IconButton>
       )}
     </Box>

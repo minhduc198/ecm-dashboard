@@ -3,6 +3,7 @@ import { SelectOptionItem } from '@/types'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import { Box, BoxProps, IconButton, MenuItem, SxProps, TextField } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   name: string
@@ -23,7 +24,11 @@ export default function TextFieldSelect({
   name,
   hasAllItem = true
 }: Props) {
-  const { control } = useFormContext()
+  const { t } = useTranslation('common')
+  const {
+    control,
+    formState: { errors }
+  } = useFormContext()
 
   return (
     <Box sx={{ display: 'flex', gap: '2px', alignItems: 'center' }} {...wrapperProps}>
@@ -53,6 +58,8 @@ export default function TextFieldSelect({
             size='small'
             label={textFieldLabel}
             variant='filled'
+            error={!!errors[name]}
+            helperText={t(errors[name]?.message as string) || ''}
           >
             {hasAllItem && (
               <MenuItem key='' value={RETURNED.ALL}>
@@ -69,7 +76,15 @@ export default function TextFieldSelect({
       />
       {handleClose && (
         <IconButton onClick={handleClose} aria-label='delete'>
-          <RemoveCircleOutlineIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' }} />
+          <RemoveCircleOutlineIcon
+            sx={[
+              { color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  color: 'white'
+                })
+            ]}
+          />
         </IconButton>
       )}
     </Box>

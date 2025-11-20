@@ -4,14 +4,16 @@ import { segmentsOptions } from '../customers/constant'
 import { getCustomerListParamsFormLS, saveCustomerListParamsToLS } from '@/utils/customers'
 import { useNavigate } from 'react-router'
 import { path } from '@/routers/path'
+import { useTranslation } from 'react-i18next'
 
 const SegmentBox = styled(Box)({
-  border: '1px solid rgba(0,0,0, 0.1)',
+  border: '1px solid #e0e0e0',
   borderRadius: '10px',
   paddingBlock: '6px'
 })
 
 const Segments = () => {
+  const { t } = useTranslation('customer')
   const navigate = useNavigate()
   const customerParamFromLS = getCustomerListParamsFormLS()
   const handleFilterSegments = (nameFilter: string) => {
@@ -33,10 +35,10 @@ const Segments = () => {
           fontSize: '14px',
           pb: '6px',
           pl: '16px',
-          borderBottom: '1px solid rgba(0,0,0, 0.1)'
+          borderBottom: '1px solid #e0e0e0'
         }}
       >
-        Name
+        {t('name')}
       </Box>
       {segmentsOptions.map((opt, idx) => (
         <Box
@@ -47,7 +49,7 @@ const Segments = () => {
             pt: '16px',
             pb: `${idx === segmentsOptions.length - 1 ? '6px' : '16px'}`,
             pl: '16px',
-            borderBottom: `${idx === segmentsOptions.length - 1 ? '' : '1px solid rgba(0,0,0, 0.1)'}`
+            borderBottom: `${idx === segmentsOptions.length - 1 ? '' : '1px solid #e0e0e0'}`
           }}
         >
           <Box
@@ -56,7 +58,7 @@ const Segments = () => {
               fontSize: '14px'
             }}
           >
-            {opt.label}
+            {t(opt.label)}
           </Box>
           <Button
             onClick={() => handleFilterSegments(String(opt.value))}
@@ -64,7 +66,7 @@ const Segments = () => {
             startIcon={<PeopleIcon sx={{ width: 14, height: 14 }} color='primary' />}
             sx={{ marginInline: 'auto', fontSize: 14, fontWeight: 500 }}
           >
-            CUSTOMER
+            {t('customer').toUpperCase()}
           </Button>
         </Box>
       ))}

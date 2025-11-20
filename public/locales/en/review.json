@@ -1,0 +1,19 @@
+{
+  "date": "Date",
+  "customer": "Customer",
+  "rating": "Rating",
+  "product": "Product",
+  "comment": "Comment",
+  "status": "Status",
+
+  "search": "Search",
+  "posted_since": "Posted since",
+  "posted_before": "Posted before",
+  "review_detail": "Review detail",
+
+  "pending": "Pending",
+  "accepted": "Accepted",
+  "accept": "Accept",
+  "rejected": "Rejected",
+  "reject": "Reject"
+}

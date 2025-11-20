@@ -1,0 +1,63 @@
+{
+  "identity": "Identité",
+  "stats": "Statistiques",
+  "history": "Historique",
+
+  "firstName": "Prénom",
+  "lastName": "Nom",
+  "email": "Email",
+  "birthday": "Date de naissance",
+  "address": "Adresse",
+  "city": "Ville",
+  "state": "État",
+  "zipcode": "Code postal",
+
+  "segments": "Segments",
+  "hasNewsletter": "Abonné à la newsletter",
+
+  "firstSeen": "Première visite",
+  "lastSeen": "Dernière visite",
+  "customer": "Client",
+  "name": "Nom",
+  "order": "commande",
+  "orders": "commandes",
+  "ordered": "Commandé",
+  "review": "avi",
+  "reviews": "avis",
+  "poster": "Auteur",
+  "posters": "Auteurs",
+  "reference": "Référence",
+  "postedReviewOn": "Avis publié sur",
+
+  "changePassword": "Changer le mot de passe",
+  "password": "Mot de passe",
+  "confirmPassword": "Confirmez le mot de passe",
+
+  "yes": "Oui",
+  "no": "Non",
+
+  "search": "Rechercher",
+  "first_name": "Nom",
+  "nb_orders": "commandes",
+  "last_seen": "Dernière visite",
+  "total_spent": "Total dépensé",
+  "latest_purchase": "Dernier achat",
+  "has_newsletter": "Nouvelles",
+  "groups": "Segments",
+
+  "lastVisited": "Dernière visite",
+  "today": "Aujourd'hui",
+  "thisWeek": "Cette semaine",
+  "lastWeek": "Semaine dernière",
+  "thisMonth": "Ce mois-ci",
+  "lastMonth": "Mois dernier",
+  "earlier": "Plus tôt",
+
+  "hasOrdered": "A commandé",
+  "compulsive": "Compulsif",
+  "collector": "Collectionneur",
+  "ordered_once": "Commandé une fois",
+  "regular": "Régulier",
+  "returns": "Retours",
+  "reviewer": "Critique"
+}

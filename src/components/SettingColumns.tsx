@@ -2,10 +2,10 @@ import { TableColumns } from '@/types/table'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import ViewWeekIcon from '@mui/icons-material/ViewWeek'
 import { Box, Button, Popover, Switch, Typography } from '@mui/material'
-import clsx from 'clsx'
 import cloneDeep from 'lodash/cloneDeep'
-import React, { FC } from 'react'
+import React from 'react'
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from 'react-beautiful-dnd'
+import { useTranslation } from 'react-i18next'
 
 type PropsDraggableSettingCol<T> = {
   item: TableColumns<T>
@@ -24,7 +24,7 @@ function DraggableSettingCol<T>({ item, index, handleChange }: PropsDraggableSet
           {...provided.dragHandleProps}
           sx={[
             { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-            { position: 'relative', zIndex: 1, bgcolor: 'white' },
+            { position: 'relative', zIndex: 1, bgcolor: 'rgb(0,0,0, 0.01)' },
             snapshot.isDragging && {
               zIndex: 2,
               boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.2)'
@@ -51,6 +51,7 @@ interface Props<T> {
 }
 
 export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColumn }: Props<T>) {
+  const { t } = useTranslation('common')
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -72,7 +73,7 @@ export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColu
   return (
     <div>
       <Button startIcon={<ViewWeekIcon />} variant='text' onClick={handleClick}>
-        COLUMNS
+        {t('columns')}
       </Button>
       <Popover
         open={open}
@@ -96,7 +97,13 @@ export default function SettingColumns<T>({ columns, onDragEnd, handleChangeColu
               <Box
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                sx={{ paddingBlock: '8px', paddingRight: '6px', minWidth: '165px', minHeight: '240px' }}
+                sx={{
+                  paddingBlock: '8px',
+                  paddingRight: '6px',
+                  minWidth: '165px',
+                  maxHeight: '250px',
+                  minHeight: `${24 * columns.length + 20}px`
+                }}
               >
                 {columns.map((item, index) => (
                   <DraggableSettingCol<T>

@@ -1,16 +1,28 @@
+import { fa } from '@faker-js/faker'
 import SearchIcon from '@mui/icons-material/Search'
 import { Box, InputAdornment, SxProps, TextField, Typography } from '@mui/material'
 import type { TextFieldProps, TextFieldVariants } from '@mui/material/TextField'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 interface Props extends Omit<TextFieldProps, 'variant'> {
   name: string
   label: string
   variant?: TextFieldVariants
   sxTextFieldInput?: SxProps
+  isRequired?: boolean
+  multiline?: boolean
 }
 
-export default function TextFieldInput({ name, label, sxTextFieldInput, ...rest }: Props) {
+export default function TextFieldInput({
+  name,
+  label,
+  sxTextFieldInput,
+  isRequired = false,
+  multiline = false,
+  ...rest
+}: Props) {
+  const { t } = useTranslation('common')
   const {
     control,
     formState: { errors }
@@ -24,6 +36,7 @@ export default function TextFieldInput({ name, label, sxTextFieldInput, ...rest 
         return (
           <TextField
             {...field}
+            multiline={multiline}
             sx={{
               width: '236px',
               '& .MuiFilledInput-root': {
@@ -44,8 +57,9 @@ export default function TextFieldInput({ name, label, sxTextFieldInput, ...rest 
             label={label}
             variant='filled'
             error={!!errors[name]?.message}
+            required={isRequired}
             {...rest}
-            helperText={errors[name]?.message as string}
+            helperText={t(errors[name]?.message as string)}
           />
         )
       }}

@@ -1,16 +1,22 @@
+import { ORDER_STATUS } from '@/constants'
+import { SORT } from '@/types'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import CodeIcon from '@mui/icons-material/Code'
 import CommentIcon from '@mui/icons-material/Comment'
 import HomeIcon from '@mui/icons-material/Home'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-import { Box, Button, Grid, Typography } from '@mui/material'
+import { Box, Button, Grid, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { fetchOrdersList } from '../orders/services'
+import { fetchReviewList } from '../reviews/services'
+import { REVIEW_STATUS } from '../reviews/types'
 import DashboardCard from './components/DashboardCard'
 import LineChartDashboard from './components/LineChartDashboard'
 import RevenueHistory from './components/RevenueHistory'
-import { userData } from '@/data/dashboard/mockUserData'
+import { useTranslation } from 'react-i18next'
 
 const BannerDashBoard = styled('div')({
   marginBlock: 16,
@@ -23,15 +29,52 @@ const BannerDashBoard = styled('div')({
 })
 
 const Dashboard = () => {
+  const { data: reviewListData } = useQuery({
+    queryKey: ['review_list'],
+    queryFn: () => fetchReviewList({ pagination: { page: 1, perPage: 999 } }),
+    refetchOnWindowFocus: false
+  })
+  const reviewList = reviewListData?.data || []
+  const reviewPendingList = reviewList.filter((item) => item.status === REVIEW_STATUS.PENDING)
+
+  const { data: orderListData } = useQuery({
+    queryKey: ['order_list'],
+    queryFn: () => fetchOrdersList({ pagination: { page: 1, perPage: 999 }, sort: { field: 'date', order: SORT.ASC } }),
+    refetchOnWindowFocus: false
+  })
+  const orderList = orderListData?.data || []
+  const orderPendingList = orderList.filter((item) => item.status === ORDER_STATUS.ORDERED)
+
+  const newCustomerList = useMemo(() => {
+    const now = new Date()
+    const fifteenDaysAgo = new Date()
+    fifteenDaysAgo.setDate(now.getDate() - 15)
+
+    return reviewPendingList.filter((item) => {
+      const itemDate = new Date(item.date)
+      return itemDate >= fifteenDaysAgo && itemDate <= now
+    })
+  }, [reviewPendingList])
+
+  const newOrderList = useMemo(() => {
+    const now = new Date()
+    const fifteenDaysAgo = new Date()
+    fifteenDaysAgo.setDate(now.getDate() - 15)
+
+    return orderPendingList.filter((item) => {
+      const itemDate = new Date(item.date)
+      return itemDate >= fifteenDaysAgo && itemDate <= now
+    })
+  }, [reviewPendingList])
+
+  const { t } = useTranslation('dashboard')
+
   return (
     <Box>
       <BannerDashBoard sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography sx={{ fontSize: 24, mb: 1 }}>Welcome to the react-admin e-commerce demo</Typography>
-          <Typography sx={{ maxWidth: 640, mb: 2 }}>
-            This is the admin of an imaginary poster shop. Feel free to explore and modify the data - it's local to your
-            computer, and will reset each time you reload.
-          </Typography>
+          <Typography sx={{ fontSize: 24, mb: 1 }}>{t('welcome')}</Typography>
+          <Typography sx={{ maxWidth: 640, mb: 2 }}>{t('introText')}</Typography>
           <Box sx={{ display: 'flex', gap: 2, mt: 2, fontWeight: 500, fontSize: 14 }}>
             <Button
               startIcon={<HomeIcon />}
@@ -42,7 +85,7 @@ const Dashboard = () => {
                 backgroundColor: '#4f3cc9'
               }}
             >
-              REACT-ADMIN SITE
+              {t('reactSite')}
             </Button>
             <Button
               startIcon={<CodeIcon />}
@@ -53,7 +96,7 @@ const Dashboard = () => {
                 backgroundColor: '#4f3cc9'
               }}
             >
-              SOURCE FOR THIS DEMO
+              {t('demoSource')}
             </Button>
           </Box>
         </Box>
@@ -69,51 +112,53 @@ const Dashboard = () => {
       </BannerDashBoard>
 
       <Grid container spacing={2}>
-        <Grid container size={{ xs: 6 }}>
-          <Grid size={{ xs: 6 }}>
-            <DashboardCard
-              icon={
-                <AttachMoneyIcon
-                  sx={{
-                    width: '35px',
-                    height: '35px',
-                    color: 'rgb(40, 53, 147)'
-                  }}
-                />
-              }
-              title='Monthly Revenue'
-              value='5.474US$'
-            />
-          </Grid>
-          <Grid size={{ xs: 6 }}>
-            <DashboardCard
-              icon={<ShoppingCartIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-              title='New Orders'
-              value='25'
-            />
+        <Grid sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} container size={{ xs: 6 }}>
+          <Grid container size={{ xs: 12 }}>
+            <Grid size={{ xs: 6 }}>
+              <DashboardCard
+                icon={
+                  <AttachMoneyIcon
+                    sx={{
+                      width: '35px',
+                      height: '35px',
+                      color: 'rgb(40, 53, 147)'
+                    }}
+                  />
+                }
+                title={t('monthlyRevenue')}
+                value='5.474US$'
+              />
+            </Grid>
+            <Grid size={{ xs: 6 }}>
+              <DashboardCard
+                icon={<ShoppingCartIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
+                title={t('newOrders')}
+                value={newOrderList?.length ?? 0}
+              />
+            </Grid>
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <LineChartDashboard />
+            <LineChartDashboard orderData={orderList ?? []} />
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <RevenueHistory />
+            <RevenueHistory userData={orderPendingList ?? []} />
           </Grid>
         </Grid>
         <Grid size={{ xs: 3 }}>
           <DashboardCard
             isReview
             icon={<CommentIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-            title='Pending Reviews'
-            value='54'
-            data={userData}
+            title={t('pendingReviews')}
+            value={reviewPendingList?.length ?? 0}
+            data={reviewPendingList}
           />
         </Grid>
         <Grid size={{ xs: 3 }}>
           <DashboardCard
             icon={<PersonAddIcon sx={{ width: '35px', height: '35px', color: 'rgb(40, 53, 147)' }} />}
-            title='New Customers'
-            value='12'
-            data={userData}
+            title={t('newCustomers')}
+            value={newCustomerList?.length ?? 0}
+            data={newCustomerList}
           />
         </Grid>
       </Grid>

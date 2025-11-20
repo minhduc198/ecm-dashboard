@@ -1,0 +1,12 @@
+{
+  "product": "Sản phẩm",
+  "edit": "Chỉnh sửa",
+  "name": "Tên",
+  "reference": "Mã tham chiếu",
+  "price": "Giá",
+  "width": "Chiều rộng",
+  "height": "Chiều cao",
+  "stock": "Tồn kho",
+  "sales": "Doanh số",
+  "category_id": ""
+}

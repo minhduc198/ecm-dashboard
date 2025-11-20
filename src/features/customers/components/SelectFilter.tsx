@@ -46,20 +46,34 @@ export default function SelectFilter({ name, defaultValue = '', filterLabel, Ico
                   <Box
                     key={opt.label}
                     onClick={() => field.onChange(opt.value)}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingLeft: '32px',
-                      paddingRight: '4px',
-                      paddingBlock: '4px',
-                      cursor: 'pointer',
-                      bgcolor: isSelected ? 'rgba(0,0,0,0.1)' : 'transparent',
-                      '&:hover': { bgcolor: isSelected ? 'rgba(0,0,0,0.1)' : 'grey.100' },
-                      transition: '0.2s'
-                    }}
+                    sx={[
+                      {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingLeft: '32px',
+                        paddingRight: '4px',
+                        paddingBlock: '4px',
+                        cursor: 'pointer',
+                        '&:hover': { bgcolor: isSelected ? 'rgba(0,0,0,0.1)' : 'grey.100' },
+                        transition: '0.2s'
+                      },
+                      (theme) => ({
+                        backgroundColor: isSelected ? 'rgba(0,0,0,0.1)' : 'transparent',
+                        '&:hover': {
+                          backgroundColor: isSelected ? 'rgba(0,0,0,0.1)' : 'grey.100'
+                        }
+                      }),
+                      (theme) =>
+                        theme.applyStyles('dark', {
+                          backgroundColor: isSelected ? '#303942' : 'transparent',
+                          '&:hover': {
+                            backgroundColor: 'rgb(225, 225, 225, 0.2)'
+                          }
+                        })
+                    ]}
                   >
-                    <Typography sx={{ fontSize: '14px' }}>{opt.label}</Typography>
+                    <Typography sx={{ fontSize: '14px', textTransform: 'capitalize' }}>{opt.label}</Typography>
                     {isSelected && (
                       <IconButton sx={{ width: '24px', height: '24px' }} size='small' onClick={handleClear}>
                         <HighlightOffIcon color='action' />

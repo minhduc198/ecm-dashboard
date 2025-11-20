@@ -1,18 +1,17 @@
 import { Customer } from '@/services/data-generator'
 import { baseDataProvider } from '@/services/dataProvider'
 import { SORT } from '@/types'
+import { DEFAULT_PAGE_CUSTOMER, DEFAULT_PER_PAGE_CUSTOMER } from '../constant'
 import {
   CreateCustomerRequest,
   CustomerListResponse,
   DeleteCustomersRequest,
-  DeleteCustomersResponse,
   GetCustomerDetailRequest,
   GetCustomerDetailResponse,
   GetCustomersListRequest,
   UpdateCustomerRequest,
   UpdateCustomerResponse
 } from '../types'
-import { DEFAULT_PAGE_CUSTOMER, DEFAULT_PER_PAGE_CUSTOMER } from '../constant'
 
 export class CustomerService {
   static async getCustomerList(params: GetCustomersListRequest): Promise<CustomerListResponse> {
@@ -49,18 +48,13 @@ export class CustomerService {
     }
   }
 
-  static async deleteCustomers(params: DeleteCustomersRequest): Promise<DeleteCustomersResponse> {
+  static async deleteCustomers(params: DeleteCustomersRequest): Promise<null> {
     try {
-      const currentData = await baseDataProvider.getOne('customers', { id: params.ids })
-
-      const response = await baseDataProvider.delete('customers', {
-        id: params.ids,
-        previousData: currentData.data
+      const response = await baseDataProvider.deleteMany('customers', {
+        ids: params.ids
       })
 
-      return {
-        data: response.data as Customer
-      }
+      return null
     } catch (error) {
       throw new Error(`Lỗi khi xóa customer ${params.ids}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }

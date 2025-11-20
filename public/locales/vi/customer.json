@@ -1,0 +1,64 @@
+{
+  "identity": "Thông tin",
+  "stats": "Thống kê",
+  "history": "Lịch sử",
+
+  "firstName": "Tên",
+  "lastName": "Họ",
+  "email": "Email",
+  "birthday": "Ngày sinh",
+  "address": "Địa chỉ",
+  "city": "Thành phố",
+  "state": "Bang / Tỉnh",
+  "zipcode": "Mã bưu điện",
+  "customer": "Khách hàng",
+  "name": "Tên",
+  "segments": "Phân loại",
+  "hasNewsletter": "Nhận bản tin",
+
+  "firstSeen": "Lần đầu xem",
+  "lastSeen": "Lần cuối xem",
+
+  "order": "đơn hàng",
+  "orders": "đơn hàng",
+  "ordered": "Đã đặt",
+  "review": "đánh giá",
+  "reviews": "đánh giá",
+  "poster": "Người đăng",
+  "posters": "Người đăng",
+  "reference": "Mã tham chiếu",
+
+  "postedReviewOn": "Đã đánh giá về",
+
+  "changePassword": "Đổi mật khẩu",
+  "password": "Mật khẩu",
+  "confirmPassword": "Xác nhận mật khẩu",
+
+  "yes": "Có",
+  "no": "Không",
+
+  "search": "Tìm kiếm",
+  "first_name": "Tên",
+  "nb_orders": "Đơn hàng",
+  "last_seen": "Lần cuối thấy",
+  "total_spent": "Tổng chi",
+  "latest_purchase": "Lần mua gần nhất",
+  "has_newsletter": "Tin mới",
+  "groups": "Phân nhóm",
+
+  "lastVisited": "Lần truy cập",
+  "today": "Hôm nay",
+  "thisWeek": "Tuần này",
+  "lastWeek": "Tuần trước",
+  "thisMonth": "Tháng này",
+  "lastMonth": "Tháng trước",
+  "earlier": "Trước đó",
+
+  "hasOrdered": "Đã đặt hàng",
+  "compulsive": "Mua bốc đồng",
+  "collector": "Người sưu tầm",
+  "ordered_once": "Mua một lần",
+  "regular": "Khách thường",
+  "returns": "Trả hàng",
+  "reviewer": "Người đánh giá"
+}

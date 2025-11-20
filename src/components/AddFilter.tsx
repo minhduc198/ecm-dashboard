@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   FormControlLabel,
   styled,
   TextField
@@ -23,6 +24,7 @@ import Typography from '@mui/material/Typography'
 import { cloneDeep } from 'lodash'
 import isEqual from 'lodash/isEqual'
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface Props<T> {
   queryObject: UrlQuery<T>
@@ -57,6 +59,9 @@ export default function AddFilter<T>({
   handleRemoveSaveQuery,
   handleUseQueryFromLS
 }: Props<T>) {
+  const { t: tc } = useTranslation('common')
+  const { t } = useTranslation('order')
+
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const [openDialog, setOpenDialog] = React.useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = React.useState(false)
@@ -150,7 +155,7 @@ export default function AddFilter<T>({
   return (
     <div>
       <Button startIcon={<FilterListIcon />} variant='text' onClick={handleClick}>
-        ADD FILTERS
+        {tc('addFilters')}
       </Button>
       <Popover
         open={open}
@@ -172,47 +177,80 @@ export default function AddFilter<T>({
           {filterItems?.map((item, idx) => (
             <FormControlLabel
               key={item.label}
-              sx={{
-                minWidth: '215px',
-                margin: 0,
-                paddingInline: 2,
-                transition: 'all 0.2s',
-                '&:hover': {
-                  bgcolor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
+              sx={[
+                {
+                  minWidth: '215px',
+                  margin: 0,
+                  paddingInline: 2,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                },
+                (theme) =>
+                  theme.applyStyles('dark', {
+                    '&:hover': {
+                      backgroundColor: 'rgb(225, 225, 225, 0.1)'
+                    }
+                  })
+              ]}
               control={
                 <Checkbox
                   onChange={handleCheckBox(idx)}
                   checked={item.isChecked}
-                  sx={{
-                    mr: '16px',
-                    width: '20px',
-                    color: 'rgba(0, 0, 0, 0.54)',
-                    '&.Mui-checked': {
-                      color: 'rgba(0, 0, 0, 0.54)'
+                  sx={[
+                    {
+                      mr: '16px',
+                      width: '20px',
+                      color: 'rgba(0, 0, 0, 0.54)',
+                      '&.Mui-checked': {
+                        color: 'rgba(0, 0, 0, 0.54)'
+                      },
+                      '&:hover': {
+                        backgroundColor: 'transparent'
+                      }
                     },
-                    '&:hover': {
-                      backgroundColor: 'transparent'
-                    }
-                  }}
+                    (theme) =>
+                      theme.applyStyles('dark', {
+                        color: 'white',
+                        '&.Mui-checked': {
+                          color: 'white'
+                        }
+                      })
+                  ]}
                 />
               }
               label={item.label}
             />
           ))}
 
-          <Box sx={{ bgcolor: 'rgba(0, 0, 0, 0.12)', marginBlock: '8px', height: '1px', p: '0px' }}></Box>
+          <Divider sx={{ mb: 1 }} />
 
           {currentSaveQueries.map((data) =>
             isEqual(data.value, queryObject) ? (
               <CustomBox key={data.id} onClick={() => handleOpenRemoveDialog(data.id)}>
-                <BookmarkRemoveIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
+                <BookmarkRemoveIcon
+                  sx={[
+                    { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                    (theme) =>
+                      theme.applyStyles('dark', {
+                        color: 'white'
+                      })
+                  ]}
+                />
                 <Typography>{`Remove query "${data.name}"`}</Typography>
               </CustomBox>
             ) : (
               <CustomBox key={data.id} onClick={() => handleUseSaveQuery(data)}>
-                <BookmarkBorderIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
+                <BookmarkBorderIcon
+                  sx={[
+                    { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                    (theme) =>
+                      theme.applyStyles('dark', {
+                        color: 'white'
+                      })
+                  ]}
+                />
                 <Typography>{data.name}</Typography>
               </CustomBox>
             )
@@ -220,48 +258,63 @@ export default function AddFilter<T>({
 
           {!isCurrentQuery && (
             <CustomBox onClick={handleClickOpen}>
-              <BookmarkAddIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
-              <Typography>Save current query</Typography>
+              <BookmarkAddIcon
+                sx={[
+                  { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                  (theme) =>
+                    theme.applyStyles('dark', {
+                      color: 'white'
+                    })
+                ]}
+              />
+              <Typography>{t('saveQuery')}</Typography>
             </CustomBox>
           )}
 
           <CustomBox onClick={handleRemoveAll}>
-            <CloseIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', width: '20px' }} />
-            <Typography>Remove all filters</Typography>
+            <CloseIcon
+              sx={[
+                { color: 'rgba(0, 0, 0, 0.54)', width: '20px' },
+                (theme) =>
+                  theme.applyStyles('dark', {
+                    color: 'white'
+                  })
+              ]}
+            />
+            <Typography>{t('removeAllFilters')}</Typography>
           </CustomBox>
         </Box>
       </Popover>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Save current query as</DialogTitle>
+        <DialogTitle>{tc('saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
+            sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label='Query name'
+            label={tc('queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>CANCEL</Button>
+          <Button onClick={handleCloseDialog}>{tc('cancel')}</Button>
           <Button disabled={!saveQueryName} onClick={handleSave} autoFocus>
-            SAVE
+            {tc('save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{'Remove saved query?'}</DialogTitle>
+        <DialogTitle>{tc('removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>
-            Are you sure you want to remove that item from your list of saved queries?
-          </DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{tc('removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>CANCEL</Button>
-          <Button onClick={handleConfirmRemoveDialog}>CONFIRM</Button>
+          <Button onClick={handleCloseRemoveDialog}>{tc('cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{tc('confirm')}</Button>
         </DialogActions>
       </Dialog>
     </div>

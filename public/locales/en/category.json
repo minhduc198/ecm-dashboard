@@ -1,0 +1,12 @@
+{
+  "product": "Product",
+  "edit": "Edit",
+  "name": "Name",
+  "reference": "Reference",
+  "price": "Price",
+  "width": "Width",
+  "height": "Height",
+  "stock": "Stock",
+  "sales": "Sales",
+  "category_id": ""
+}

@@ -1,16 +1,18 @@
 import TextLineClamp from '@/components/TextLineClamp'
 import { path } from '@/routers/path'
-import { UserData } from '@/types'
+import { Review } from '@/services/data-generator'
+import StarsIcon from '@mui/icons-material/Stars'
 import { Box, styled, Typography } from '@mui/material'
 import { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 interface Props {
   icon: ReactNode
   title: string
-  value: string
+  value: number | string
   isReview?: boolean
-  data?: UserData[]
+  data?: Review[]
 }
 
 const DashBoardCardHeader = styled('div')(({ theme }) => ({
@@ -27,6 +29,18 @@ const DashBoardCardHeader = styled('div')(({ theme }) => ({
 
 export default function DashboardCard({ icon, title, value, data, isReview = false }: Props) {
   const navigate = useNavigate()
+  const { t } = useTranslation('dashboard')
+
+  const ratingStar = (star: number) => {
+    return Array(5)
+      .fill(0)
+      .map((_, idx) => {
+        if (idx + 1 <= star) {
+          return <StarsIcon sx={{ width: '20px', height: '20px' }} color='action' key={idx} />
+        }
+        return <Box key={idx}></Box>
+      })
+  }
 
   return (
     <Box>
@@ -50,7 +64,7 @@ export default function DashboardCard({ icon, title, value, data, isReview = fal
         <Box>{icon}</Box>
 
         <Box>
-          <Typography sx={{ color: 'rgba(0, 0, 0, 0.6)' }}>{title}</Typography>
+          <Typography sx={{ opacity: 0.7 }}>{title}</Typography>
           <Typography sx={{ fontSize: 24, textAlign: 'end' }}>{value}</Typography>
         </Box>
       </DashBoardCardHeader>
@@ -90,15 +104,18 @@ export default function DashboardCard({ icon, title, value, data, isReview = fal
                   flexShrink: '0'
                 }}
               >
-                <img src={item.avatar} alt='' />
+                <img src={item.customer.avatar} alt='' />
               </Box>
 
               {isReview ? (
-                <Box sx={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '14px' }}>
-                  <TextLineClamp>{item.review}</TextLineClamp>
+                <Box>
+                  {ratingStar(item.rating)}
+                  <TextLineClamp sxTextLineClamp={{ opacity: 0.7, fontSize: '14px' }} line={2}>
+                    {item.comment}
+                  </TextLineClamp>
                 </Box>
               ) : (
-                <Box>{item.name}</Box>
+                <Box>{`${item.customer.first_name} ${item.customer.last_name}`}</Box>
               )}
             </Box>
           ))}
@@ -119,7 +136,7 @@ export default function DashboardCard({ icon, title, value, data, isReview = fal
               transition: '0.2s all ease'
             }}
           >
-            {isReview ? 'SEE ALL REVIEWS' : 'SEE ALL CUSTOMERS'}
+            {isReview ? t('seeAllReviews') : t('seeAllCustomers')}
           </Box>
         </Box>
       )}

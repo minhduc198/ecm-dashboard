@@ -10,21 +10,21 @@ export const schema = yup.object().shape(
       .number()
       .nullable()
       .transform((value, originalValue) => (originalValue === '' ? null : value))
-      .min(0, 'Số tiền tối thiểu phải lớn hơn hoặc bằng 0'),
+      .min(0, 'minAmountRule'),
     returned: yup.string(),
     date_gte: yup
       .date()
       .nullable()
       .when('date_lte', {
         is: (val: any) => !!val,
-        then: (schema) => schema.max(yup.ref('date_lte'), 'Ngày bắt đầu phải trước ngày kết thúc')
+        then: (schema) => schema.max(yup.ref('date_lte'), 'startDateRule')
       }),
     date_lte: yup
       .date()
       .nullable()
       .when('date_gte', {
         is: (val: any) => !!val,
-        then: (schema) => schema.min(yup.ref('date_gte'), 'Ngày kết thúc phải sau ngày bắt đầu')
+        then: (schema) => schema.min(yup.ref('date_gte'), 'endDateRule')
       }),
     q: yup.string()
   },

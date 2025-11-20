@@ -4,19 +4,19 @@ export const formCustomerSchema = yup.object({
   first_name: yup
     .string()
     .trim()
-    .required('Require')
-    .matches(/^(?!.*\s{2,})[\p{L}]+(?:[ '-][\p{L}]+)*$/u, { message: 'Invalid first name' }),
+    .required('require')
+    .matches(/^(?!.*\s{2,})[\p{L}]+(?:[ '-][\p{L}]+)*$/u, { message: 'invalid_first_name' }),
   last_name: yup
     .string()
     .trim()
-    .required('Require')
-    .matches(/^(?!.*\s{2,})[\p{L}]+(?:[ '-][\p{L}]+)*$/u, { message: 'Invalid last name' }),
+    .required('require')
+    .matches(/^(?!.*\s{2,})[\p{L}]+(?:[ '-][\p{L}]+)*$/u, { message: 'invalid_last_name' }),
   email: yup
     .string()
     .trim()
-    .required('Require')
-    .matches(/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/, { message: 'Invalid email' }),
-  birthday: yup.date().nullable().optional().max(new Date(), 'Incorrect birthday'),
+    .required('require')
+    .matches(/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/, { message: 'invalid_email' }),
+  birthday: yup.date().nullable().optional().max(new Date(), 'incorrect_birthday'),
   segments: yup.array().of(yup.string().defined()).nullable(),
   news_letter: yup.string().nullable(),
   address: yup.string(),

@@ -1,20 +1,13 @@
+import { Order } from '@/services/data-generator'
+import { formatDate } from '@/utils/date'
 import { Box, Typography } from '@mui/material'
-import React from 'react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 
-const data = [
-  { date: '11/5/2025', total: 620 },
-  { date: '13/5/2025', total: 250 },
-  { date: '15/5/2025', total: 560 },
-  { date: '17/5/2025', total: 0 },
-  { date: '20/5/2025', total: 310 },
-  { date: '23/5/2025', total: 0 },
-  { date: '26/5/2025', total: 145.69 },
-  { date: '29/5/2025', total: 790 },
-  { date: '1/6/2025', total: 0 },
-  { date: '3/6/2025', total: 260 },
-  { date: '5/6/2025', total: 410 }
-]
+interface Props {
+  orderData: Order[]
+}
 
 const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
@@ -22,17 +15,58 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   minimumFractionDigits: 0
 })
 
-export default function LineChartDashboard() {
+export default function LineChartDashboard({ orderData }: Props) {
+  const { t } = useTranslation('dashboard')
+  const lineData = useMemo(() => {
+    const now = new Date()
+    const oneMonthAgo = new Date()
+    oneMonthAgo.setDate(now.getDate() - 30)
+
+    return orderData
+      .filter((item) => {
+        const itemDate = new Date(item.date)
+        return itemDate <= now && itemDate >= oneMonthAgo
+      })
+      .map((data) => {
+        return {
+          date: formatDate(data.date, 'd/M/yyyy'),
+          total: data.total
+        }
+      })
+  }, [JSON.stringify(orderData)])
+
   return (
-    <Box sx={{ padding: '16px', borderRadius: '10px', border: '1px solid rgb(224, 224, 227)' }}>
-      <Typography sx={{ fontSize: '24px', marginBottom: '32px' }}>30 Day Revenue History</Typography>
-      <AreaChart width={532} height={300} data={data}>
+    <Box
+      sx={{
+        padding: '16px',
+        borderRadius: '10px',
+        border: '1px solid rgb(224, 224, 227)'
+      }}
+    >
+      <Typography sx={{ fontSize: '24px', marginBottom: '32px' }}>{t('revenueHistory30')}</Typography>
+      <AreaChart width={532} height={300} data={lineData}>
         <CartesianGrid strokeDasharray='3 3' />
         <XAxis dataKey='date' />
         <YAxis tickFormatter={(value) => currencyFormatter.format(value)} />
         <Tooltip
-          formatter={(value: number) => [`${value.toLocaleString('en-US', { minimumFractionDigits: 2 })} US$`, 'total']}
-          labelFormatter={(label) => `${label}`}
+          content={({ label, payload }) => {
+            if (!payload || payload.length === 0) return null
+            const value = payload[0].value as number
+            const formattedValue = `${value.toLocaleString('en-US', { minimumFractionDigits: 2 })} US$`
+            return (
+              <Box
+                sx={{
+                  backgroundColor: 'white',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                  fontSize: 12
+                }}
+              >
+                {`${label} : ${formattedValue}`}
+              </Box>
+            )
+          }}
         />
         <Area type='monotone' dataKey='total' stroke='#8884d8' fill='#8884d8' fillOpacity={0.1} />
       </AreaChart>

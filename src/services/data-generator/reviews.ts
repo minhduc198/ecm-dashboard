@@ -3,7 +3,9 @@ import { subDays, isAfter } from 'date-fns'
 
 import { randomDate, weightedArrayElement, weightedBoolean } from './utils'
 import type { Db } from './types'
-import { Product } from './products'
+import { Product } from '@/features/products/types'
+import { Customer } from './customers'
+import { REVIEW_STATUS } from '@/features/reviews/types'
 
 export const generateReviews = (db: Db): Review[] => {
   const today = new Date()
@@ -31,16 +33,20 @@ export const generateReviews = (db: Db): Review[] => {
             const sentenceCount = faker.number.int({ min: 1, max: 5 })
             const comment = Array.from({ length: sentenceCount }, () => faker.lorem.sentences()).join('\n \r')
 
+            const customer = db.customers.find((c) => c.id === order.customer_id)
+            const productItem = db.products.find((c) => c.id === product.product_id)
+
             return {
               id: id++,
               date: date.toISOString(),
               status,
               order_id: order.id,
               product_id: product.product_id,
-              product: product,
+              product: productItem,
               customer_id: order.customer_id,
               rating: faker.number.int({ min: 1, max: 5 }),
-              comment
+              comment,
+              customer
             }
           })
       ],
@@ -51,10 +57,11 @@ export const generateReviews = (db: Db): Review[] => {
 export type Review = {
   id: number
   date: string
-  status: 'accepted' | 'rejected' | 'pending'
+  status: REVIEW_STATUS
   order_id: number
   product_id: number
   customer_id: number
+  customer: Customer
   rating: number
   comment: string
   product: Product

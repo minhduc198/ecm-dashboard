@@ -1,31 +1,43 @@
-import { Box, Button, Grid, Menu, MenuItem, TablePagination } from '@mui/material'
-import FileDownloadIcon from '@mui/icons-material/FileDownload'
-import AddIcon from '@mui/icons-material/Add'
-import FilterBarInvoices from '../invoices/components/FilterBarInvoices'
-import FilterBarProduct from './components/FilterBarProduct'
-import { useEffect, useMemo, useState } from 'react'
-import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
-import ProductCard from './components/ProductCard'
-import { useQuery } from '@tanstack/react-query'
-import { fetchProductsList } from './services'
-import { GetProductListRequest, ProductParam, SortByEnum } from './types'
 import { DEFAULT_PAGE } from '@/constants'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { sortName, sortOrder } from './constant'
+import { path } from '@/routers/path'
+import { useUndoProductStore } from '@/store/undoProductStore'
 import { SORT } from '@/types'
-import { utils, writeFileXLSX } from 'xlsx'
 import { formatDate } from '@/utils/date'
-
-const getCurrentSortName = (sortBy: string) => {
-  const [sort, order] = sortBy.split('_')
-  return `${sortName[sort as keyof typeof sortName]} ${sortOrder[order as keyof typeof sortOrder]}`
-}
+import { getProductListParamsFormLS, saveProductListParamsToLS } from '@/utils/products'
+import AddIcon from '@mui/icons-material/Add'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import { Box, Button, Grid, Menu, MenuItem, Snackbar, TablePagination } from '@mui/material'
+import { useQuery } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
+import { utils, writeFileXLSX } from 'xlsx'
+import FilterBarProduct from './components/FilterBarProduct'
+import ProductCard from './components/ProductCard'
+import { SortByEnum, sortName, sortOrder } from './constant'
+import { fetchProductsList } from './services'
+import { GetProductListRequest, ProductParam } from './types'
+import { useHeaderTitleStore } from '@/store/headerStore'
+import { useTranslation } from 'react-i18next'
 
 const Products = () => {
+  const { t } = useTranslation(['common', 'product'])
+  const { setHeaderData } = useHeaderTitleStore()
   const { filter, order, page, perPage, sort } = getProductListParamsFormLS()
-
   const productListParamFromLS = getProductListParamsFormLS()
   const { setMany } = useSearchParam()
+  const navigate = useNavigate()
+  const {
+    action,
+    timerId,
+    isOpenUndo,
+    dataPending,
+    tmpUndoData,
+    setTmpUndoData,
+    setIsOpenUndo,
+    setTimerId,
+    setDataPending
+  } = useUndoProductStore()
 
   const [productListRq, setProductListRq] = useState<GetProductListRequest>({
     filter,
@@ -48,7 +60,21 @@ const Products = () => {
     refetchOnWindowFocus: false,
     keepPreviousData: true
   })
-  const productListData = productList?.data ?? []
+
+  const getCurrentSortName = useCallback(
+    (sortBy: string) => {
+      const [sort, order] = sortBy.split('_')
+      return `${t(`product:${sortName[sort as keyof typeof sortName].toLowerCase()}`).toUpperCase()} ${t(`product:${sortOrder[order as keyof typeof sortOrder].toLowerCase()}`).toUpperCase()}`
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    const newList = productList?.data ?? []
+    if (!timerId && !dataPending.id) {
+      setTmpUndoData(newList)
+    }
+  }, [productList?.data])
 
   useEffect(() => {
     const newSortBy = [sort.toUpperCase(), order].join('_')
@@ -122,7 +148,7 @@ const Products = () => {
     setProductListRq({
       ...productListRq,
       sort: {
-        field: sort,
+        field: sort.toLowerCase(),
         order: order as SORT
       }
     })
@@ -142,7 +168,7 @@ const Products = () => {
   }, [sortBy])
 
   const handleExport = () => {
-    const exportData = productListData.map((item) => {
+    const exportData = tmpUndoData.map((item) => {
       return {
         id: item.id,
         category_id: item.category_id,
@@ -163,6 +189,24 @@ const Products = () => {
     writeFileXLSX(wb, `Product_${formatDate(new Date().toISOString(), 'dMyyyy')}.xlsx`)
   }
 
+  const handleUndo = () => {
+    setDataPending({
+      id: 0,
+      data: {}
+    })
+    setIsOpenUndo(false)
+    setTimerId(null)
+    setTmpUndoData(productList?.data ?? [])
+    if (timerId) {
+      clearTimeout(timerId)
+    }
+  }
+
+  const handleViewCreateProduct = () => {
+    setHeaderData({ title: 'Create Product' })
+    navigate(path.createProduct)
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2 }}>
@@ -177,7 +221,7 @@ const Products = () => {
             }}
             onClick={handleClick}
           >
-            Sort by {getCurrentSortName(sortBy)}
+            {t('product:sort_by')} {getCurrentSortName(sortBy)}
           </Button>
           <Menu
             id='positioned-menu'
@@ -201,11 +245,11 @@ const Products = () => {
             ))}
           </Menu>
         </Box>
-        <Button startIcon={<AddIcon />} variant='text'>
-          CREATE
+        <Button onClick={handleViewCreateProduct} startIcon={<AddIcon />} variant='text'>
+          {t('common:create')}
         </Button>
         <Button onClick={handleExport} startIcon={<FileDownloadIcon />} variant='text'>
-          EXPORT
+          {t('common:export')}
         </Button>
       </Box>
       <Grid container spacing={2}>
@@ -214,7 +258,7 @@ const Products = () => {
         </Grid>
         <Grid size={{ xs: 9 }}>
           <Box>
-            <ProductCard itemData={productListData} />
+            <ProductCard itemData={tmpUndoData} />
             <TablePagination
               sx={{ mt: 0 }}
               component='div'
@@ -224,21 +268,22 @@ const Products = () => {
               onPageChange={handleChangePage}
               rowsPerPage={perPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              labelRowsPerPage={t('common:rowsPerPage')}
             />
           </Box>
         </Grid>
       </Grid>
 
-      {/* <Snackbar
+      <Snackbar
         open={isOpenUndo}
         autoHideDuration={1000}
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            UNDO
+            {t('common:undo')}
           </Button>
         }
-      /> */}
+      />
     </Box>
   )
 }

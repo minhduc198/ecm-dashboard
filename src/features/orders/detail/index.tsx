@@ -21,33 +21,17 @@ import * as yup from 'yup'
 import { detailOrderSchema } from '../schemas'
 import { deleteOrders, fetchOrderDetail, updateOrder } from '../services'
 import { Order, OrderDetailProduct, OrderStatus, UpdateOrderRequest } from '../types'
-import { GetProductListReq } from '@/features/products/types'
 import { fetchProductsList } from '@/features/products/services'
 import CustomTable from '@/components/CustomTable'
 import { TableColumns } from '@/types/table'
 import { ReactNode, useContext, useMemo } from 'react'
 import { FilterContext } from '../context/FilterContext'
+import { useTranslation } from 'react-i18next'
 
 type FormValues = yup.InferType<typeof detailOrderSchema>
 
-const columnProductItems: TableColumns<OrderDetailProduct>[] = [
-  {
-    id: 'reference',
-    label: 'Reference',
-    cell: (value) => <CustomLink to={'#'}>{value?.toString()}</CustomLink>
-  },
-
-  { id: 'price', label: 'Unit price', numeric: true, cell: (value) => formatCurrency(Number(value)) },
-  {
-    id: 'quantity',
-    label: 'Quantity',
-    numeric: true,
-    cell: (value) => Number(value)
-  },
-  { id: 'total', label: 'Total', numeric: true, cell: (value) => formatCurrency(Number(value)) }
-]
-
 export default function DetailOrder() {
+  const { t } = useTranslation(['common', 'order'])
   const param = useParams()
   const navigate = useNavigate()
   const { setHeaderData } = useHeaderTitleStore()
@@ -105,7 +89,7 @@ export default function DetailOrder() {
 
   const { data: productItemsData } = useQuery({
     queryKey: ['product_list', param.id, productIds],
-    queryFn: () => fetchProductsList({ filter: { id: productIds }, page: 1, perPage: 9999 }),
+    queryFn: () => fetchProductsList({ filter: { id: productIds }, pagination: { page: 1, perPage: 999 } }),
     enabled: !!productIds.length
   })
   const productItems = productItemsData?.data || []
@@ -115,6 +99,23 @@ export default function DetailOrder() {
     const productBasketItem = orderDetail.basket.find((i) => i.product_id === productId)
     return productBasketItem?.quantity || 0
   }
+
+  const columnProductItems: TableColumns<OrderDetailProduct>[] = [
+    {
+      id: 'reference',
+      label: t('order:reference'),
+      cell: (value) => <CustomLink to={'#'}>{value?.toString()}</CustomLink>
+    },
+
+    { id: 'price', label: t('order:unitPrice'), numeric: true, cell: (value) => formatCurrency(Number(value)) },
+    {
+      id: 'quantity',
+      label: t('order:quantity'),
+      numeric: true,
+      cell: (value) => Number(value)
+    },
+    { id: 'total', label: t('order:total'), numeric: true, cell: (value) => formatCurrency(Number(value)) }
+  ]
 
   const productItemsDataSource: OrderDetailProduct[] = useMemo(() => {
     return productItems.map((product) => {
@@ -173,9 +174,8 @@ export default function DetailOrder() {
 
   const handleSetHeaderDetail = () => {
     setHeaderData({
-      fullName: `${customerData?.first_name} ${customerData?.last_name}`,
-      avatar: customerData?.avatar,
-      reference: orderDetail.reference
+      title: `${customerData?.first_name} ${customerData?.last_name}`,
+      avatar: customerData?.avatar
     })
   }
 
@@ -196,26 +196,26 @@ export default function DetailOrder() {
           >
             <Box sx={{ display: 'flex' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography sx={{ fontWeight: 500, fontSize: '20px' }}>Order</Typography>
+                <Typography sx={{ fontWeight: 500, fontSize: '20px' }}>{t('order:order')}</Typography>
                 <Box>
-                  <Typography sx={{ fontSize: '12px' }}>Date</Typography>
+                  <Typography sx={{ fontSize: '12px' }}>{t('order:date')}</Typography>
                   <Typography sx={{ fontSize: '14px' }}>{formatDate(`${orderDetail?.date}`, 'dd/M/yyyy')}</Typography>
                 </Box>
                 <TextFieldSelect
                   name='status'
-                  textFieldLabel='Status'
+                  textFieldLabel={t('order:status')}
                   sxTextFiled={{ width: '203px' }}
                   options={[
                     {
-                      label: ORDER_STATUS.ORDERED,
+                      label: t('order:ordered').toLowerCase(),
                       value: ORDER_STATUS.ORDERED
                     },
                     {
-                      label: ORDER_STATUS.DELIVERED,
+                      label: t('order:delivered').toLowerCase(),
                       value: ORDER_STATUS.DELIVERED
                     },
                     {
-                      label: ORDER_STATUS.CANCELLED,
+                      label: t('order:cancelled').toLowerCase(),
                       value: ORDER_STATUS.CANCELLED
                     }
                   ]}
@@ -224,15 +224,15 @@ export default function DetailOrder() {
               </Box>
 
               <Box sx={{ mt: '48px', ml: '42px' }}>
-                <Typography sx={{ fontSize: '12px' }}>Reference</Typography>
+                <Typography sx={{ fontSize: '12px' }}>{t('order:reference')}</Typography>
                 <Typography sx={{ fontSize: '14px' }}>{orderDetail?.reference}</Typography>
                 <Box sx={{ mt: '20px', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <HookFormSwitch name='returned' label='Returned' />
+                  <HookFormSwitch name='returned' label={t('order:returned')} />
                 </Box>
               </Box>
 
               <Box sx={{ ml: '120px' }}>
-                <Typography sx={{ fontWeight: 500, fontSize: '20px', mb: 2 }}>Customer</Typography>
+                <Typography sx={{ fontWeight: 500, fontSize: '20px', mb: 2 }}>{t('order:customer')}</Typography>
 
                 <Box onClick={handleSetHeaderDetail}>
                   <CustomLink
@@ -241,7 +241,9 @@ export default function DetailOrder() {
                 </Box>
                 <CustomLink to={`mailto:${orderDetail?.customer.email}`}>{orderDetail?.customer.email}</CustomLink>
                 <Box sx={{ mt: 4 }}>
-                  <Typography sx={{ mb: 1, fontWeight: 500, fontSize: '20px' }}>Shipping Address</Typography>
+                  <Typography sx={{ mb: 1, fontWeight: 500, fontSize: '20px' }}>
+                    {t('order:shippingAddress')}
+                  </Typography>
                   <Typography>{`${orderDetail?.customer.first_name} ${orderDetail?.customer.last_name}`}</Typography>
                   <Typography>
                     {orderDetail?.customer.address} {customerData?.stateAbbr} {customerData?.zipcode}
@@ -251,7 +253,7 @@ export default function DetailOrder() {
             </Box>
 
             <Box sx={{ mt: 4 }}>
-              <Typography sx={{ fontWeight: 500, fontSize: 20 }}>Items</Typography>
+              <Typography sx={{ fontWeight: 500, fontSize: 20 }}>{t('order:items')}</Typography>
               <CustomTable<OrderDetailProduct, number>
                 rowId='id'
                 usePagination={false}
@@ -262,7 +264,7 @@ export default function DetailOrder() {
             </Box>
 
             <Box sx={{ mt: 4 }}>
-              <Typography sx={{ fontWeight: 500, fontSize: 20 }}>Totals</Typography>
+              <Typography sx={{ fontWeight: 500, fontSize: 20 }}>{t('order:totals')}</Typography>
               <Box
                 sx={{
                   display: 'flex',
@@ -271,7 +273,7 @@ export default function DetailOrder() {
                   borderBottom: '1px solid rgb(224, 224, 224)'
                 }}
               >
-                <Typography sx={{ fontSize: '14px' }}>Sum</Typography>
+                <Typography sx={{ fontSize: '14px' }}>{t('order:sum')}</Typography>
                 <Typography sx={{ fontSize: '14px' }}>{formatCurrency(orderDetail?.total_ex_taxes ?? 0)}</Typography>
               </Box>
 
@@ -283,7 +285,7 @@ export default function DetailOrder() {
                   borderBottom: '1px solid rgb(224, 224, 224)'
                 }}
               >
-                <Typography sx={{ fontSize: '14px' }}>Delivery</Typography>
+                <Typography sx={{ fontSize: '14px' }}>{t('order:delivery')}</Typography>
                 <Typography sx={{ fontSize: '14px' }}>{formatCurrency(orderDetail?.delivery_fees ?? 0)}</Typography>
               </Box>
 
@@ -295,12 +297,12 @@ export default function DetailOrder() {
                   borderBottom: '1px solid rgb(224, 224, 224)'
                 }}
               >
-                <Typography sx={{ fontSize: '14px' }}>{`Tax (${orderDetail?.tax_rate}%)`}</Typography>
+                <Typography sx={{ fontSize: '14px' }}>{`${t('order:tax')} (${orderDetail?.tax_rate}%)`}</Typography>
                 <Typography sx={{ fontSize: '14px' }}>{formatCurrency(orderDetail?.taxes ?? 0)}</Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', padding: 2 }}>
-                <Typography sx={{ fontSize: '14px', fontWeight: '700' }}>Total</Typography>
+                <Typography sx={{ fontSize: '14px', fontWeight: '700' }}>{t('order:total')}</Typography>
                 <Typography sx={{ fontSize: '14px', fontWeight: '700' }}>
                   {formatCurrency(orderDetail?.total ?? 0)}
                 </Typography>
@@ -309,18 +311,24 @@ export default function DetailOrder() {
           </Box>
 
           <Box
-            sx={{
-              width: '798px',
-              padding: '14px 24px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderInline: '1px solid #e0e0e0',
-              borderBottom: '1px solid #e0e0e0',
-              borderBottomLeftRadius: '10px',
-              borderBottomRightRadius: '10px',
-              bgcolor: '#e0e0e0'
-            }}
+            sx={[
+              {
+                width: '798px',
+                padding: '14px 24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderInline: '1px solid #e0e0e0',
+                borderBottom: '1px solid #e0e0e0',
+                borderBottomLeftRadius: '10px',
+                borderBottomRightRadius: '10px',
+                bgcolor: '#e0e0e0'
+              },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  backgroundColor: '#424242'
+                })
+            ]}
           >
             <Button
               sx={{ borderRadius: '8px' }}
@@ -330,11 +338,11 @@ export default function DetailOrder() {
               startIcon={<SaveIcon />}
               onClick={handleSubmit}
             >
-              SAVE
+              {t('common:save')}
             </Button>
 
             <Button onClick={handleDelete} sx={{ borderRadius: 1 }} color='error' startIcon={<DeleteIcon />}>
-              DELETE
+              {t('common:delete')}
             </Button>
           </Box>
         </Box>

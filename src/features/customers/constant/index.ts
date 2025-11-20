@@ -16,24 +16,24 @@ export enum NEWSLETTER {
 }
 
 export const segmentsOptions: SelectOptionItem[] = [
-  { value: 'compulsive', label: 'Compulsive' },
-  { value: 'collector', label: 'Collector' },
-  { value: 'ordered_once', label: 'Ordered once' },
-  { value: 'regular', label: 'Regular' },
-  { value: 'returns', label: 'Returns' },
-  { value: 'reviewer', label: 'Reviewer' }
+  { value: 'compulsive', label: 'compulsive' },
+  { value: 'collector', label: 'collector' },
+  { value: 'ordered_once', label: 'ordered_once' },
+  { value: 'regular', label: 'regular' },
+  { value: 'returns', label: 'returns' },
+  { value: 'reviewer', label: 'reviewer' }
 ]
 
 export const lastSeenGteOptions: SelectFilterItem[] = [
   {
-    label: 'Today',
+    label: 'today',
     value: {
       last_seen_gte: getYesterday(),
       last_seen_lte: ''
     }
   },
   {
-    label: 'This week',
+    label: 'thisWeek',
     value: {
       last_seen_gte:
         getLastSaturdayISO() === getYesterday()
@@ -43,28 +43,28 @@ export const lastSeenGteOptions: SelectFilterItem[] = [
     }
   },
   {
-    label: 'Last week',
+    label: 'lastWeek',
     value: {
       last_seen_gte: getSaturdayOfTwoWeeksAgo(),
       last_seen_lte: getLastSaturdayISO()
     }
   },
   {
-    label: 'This month',
+    label: 'thisMonth',
     value: {
       last_seen_gte: getLastDaysOfPreviousMonth(),
       last_seen_lte: ''
     }
   },
   {
-    label: 'Last month',
+    label: 'lastMonth',
     value: {
       last_seen_gte: getLastDaysOfTwoPreviousMonths(),
       last_seen_lte: getLastDaysOfPreviousMonth()
     }
   },
   {
-    label: 'Earlier',
+    label: 'earlier',
     value: {
       last_seen_gte: '',
       last_seen_lte: getLastDaysOfTwoPreviousMonths()
@@ -73,13 +73,13 @@ export const lastSeenGteOptions: SelectFilterItem[] = [
 ]
 
 export const hasOrderedOptions: SelectOptionItem[] = [
-  { value: '1', label: 'Yes' },
-  { value: '0', label: 'No' }
+  { value: '1', label: 'yes' },
+  { value: '0', label: 'no' }
 ]
 
 export const hasNewsletterOptions: SelectOptionItem[] = [
-  { value: 'true', label: 'Yes' },
-  { value: 'false', label: 'No' }
+  { value: 'true', label: 'yes' },
+  { value: 'false', label: 'no' }
 ]
 
 export const initialCustomerColumns: TableColumns<Customer>[] = [

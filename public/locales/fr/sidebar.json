@@ -1,0 +1,20 @@
+{
+  "menu_items": "Éléments du menu",
+  "dashboard": "Tableau de bord",
+
+  "sales": "Ventes",
+  "orders": "Commandes",
+  "invoices": "Factures",
+
+  "catalog": "Catalogue",
+  "posters": "Affiches",
+  "categories": "Catégories",
+
+  "customers": "Clients",
+  "segments": "Segments",
+
+  "reviews": "Avis",
+  "products": "Produits",
+  "product": "Produit",
+  "order": "Commande "
+}

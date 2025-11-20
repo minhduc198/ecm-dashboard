@@ -110,6 +110,8 @@ interface Props {
   hasNextPage?: boolean
   loadMore?: () => void
   isLoading?: boolean
+  isRequired?: boolean
+  isDisabled?: boolean
 }
 
 export default function TextFieldAutocompleteVirtualized({
@@ -123,7 +125,9 @@ export default function TextFieldAutocompleteVirtualized({
   onSearch,
   hasNextPage = false,
   loadMore = () => {},
-  isLoading = false
+  isLoading = false,
+  isRequired = false,
+  isDisabled = false
 }: Props) {
   const {
     control,
@@ -131,16 +135,13 @@ export default function TextFieldAutocompleteVirtualized({
   } = useFormContext()
 
   const [inputValue, setInputValue] = useState('')
+  const [selectedLabel, setSelectedLabel] = useState<string>('')
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (onSearch) {
-        onSearch(inputValue)
-      }
-    }, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [inputValue, onSearch])
+    if (onSearch && !isDisabled && (inputValue !== selectedLabel || inputValue === '')) {
+      onSearch(inputValue)
+    }
+  }, [inputValue, selectedLabel, isDisabled, onSearch])
 
   return (
     <Box sx={{ display: 'flex', gap: '2px', alignItems: 'center' }} {...wrapperProps}>
@@ -157,15 +158,21 @@ export default function TextFieldAutocompleteVirtualized({
             <Autocomplete
               multiple={multiple}
               value={fieldValue}
+              disabled={isDisabled}
               inputValue={inputValue}
               onInputChange={(_, newInputValue) => {
                 setInputValue(newInputValue)
+                setSelectedLabel('')
               }}
               onChange={(_, newValue) => {
                 const val = multiple
                   ? (newValue as SelectOptionItem[])?.map((opt) => opt.value)
                   : (newValue as SelectOptionItem)?.value || ''
                 onChange(val)
+
+                if (!multiple) {
+                  setSelectedLabel((newValue as SelectOptionItem)?.label || '')
+                }
               }}
               options={options}
               getOptionLabel={(option) => option.label || ''}
@@ -218,6 +225,7 @@ export default function TextFieldAutocompleteVirtualized({
                   {...params}
                   variant='filled'
                   label={label}
+                  required={isRequired}
                   error={!!errors[name]}
                   helperText={(errors[name]?.message as string) || ''}
                   inputRef={ref}
@@ -229,7 +237,15 @@ export default function TextFieldAutocompleteVirtualized({
       />
       {handleClose && (
         <IconButton onClick={handleClose} aria-label='delete'>
-          <RemoveCircleOutlineIcon sx={{ color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' }} />
+          <RemoveCircleOutlineIcon
+            sx={[
+              { color: 'rgba(0, 0, 0, 0.54)', cursor: 'pointer' },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  color: 'white'
+                })
+            ]}
+          />
         </IconButton>
       )}
     </Box>

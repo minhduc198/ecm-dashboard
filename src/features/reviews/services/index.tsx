@@ -1,33 +1,102 @@
+import { DEFAULT_PAGE } from '@/constants'
+import { DEFAULT_PER_PAGE_PRODUCT } from '@/features/products/constant'
+import { Review } from '@/services/data-generator'
 import { baseDataProvider } from '@/services/dataProvider'
-import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
-import { getReviewListReq, ReviewListResponse } from '../types'
+import { ApiResponse, SORT } from '@/types'
+import {
+  CreateReviewRequest,
+  DeleteReviewsRequest,
+  GetReviewDetailRequest,
+  GetReviewDetailResponse,
+  GetReviewListRequest,
+  GetReviewsListResponse,
+  UpdateReviewRequest,
+  UpdateReviewResponse
+} from '../types'
 
 export class ReviewService {
-  static async getReviewsList(params: Partial<getReviewListReq>): Promise<ReviewListResponse> {
-    const pagination = {
-      page: params.page || DEFAULT_PAGE,
-      perPage: params.perPage || DEFAULT_PER_PAGE
-    }
-
+  static async getReviewList(params: GetReviewListRequest): Promise<GetReviewsListResponse> {
+    const pagination = params.pagination
     try {
       const response = await baseDataProvider.getList('reviews', {
         pagination,
-        sort: {
-          field: params.sort || 'id',
-          order: params.order || 'ASC'
-        },
+        sort: params.sort ?? { field: 'reference', order: SORT.DESC },
         filter: params.filter ?? {}
       })
 
       return {
-        ...pagination,
-        data: response.data,
+        ...(pagination ?? { page: DEFAULT_PAGE, perPage: DEFAULT_PER_PAGE_PRODUCT }),
+        data: response.data as Review[],
         total: response.total || 0
       }
     } catch (error) {
-      throw new Error(`Lỗi khi lấy danh sách review: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(`Lỗi khi lấy danh sách reviews: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  static async deleteReviews(body: DeleteReviewsRequest): Promise<{ data: number[] }> {
+    try {
+      const response = await baseDataProvider.deleteMany('reviews', body)
+
+      return {
+        data: response.data || []
+      }
+    } catch (error) {
+      throw new Error(`Lỗi khi xóa nhiều reviews: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  static async createReview(params: CreateReviewRequest): Promise<ApiResponse<Review>> {
+    try {
+      const response = await baseDataProvider.create('reviews', {
+        data: params.data
+      })
+
+      return {
+        data: response.data
+      }
+    } catch (error) {
+      throw new Error(`Lỗi khi tạo review: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  static async getReviewDetail(params: GetReviewDetailRequest): Promise<GetReviewDetailResponse> {
+    try {
+      const response = await baseDataProvider.getOne('reviews', { id: params.id })
+
+      return {
+        data: response.data as Review
+      }
+    } catch (error) {
+      throw new Error(
+        `Lỗi khi lấy chi tiết review ${params.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
+
+  static async updateReview(params: UpdateReviewRequest): Promise<UpdateReviewResponse> {
+    try {
+      const currentData = await baseDataProvider.getOne('reviews', { id: params.id })
+
+      const response = await baseDataProvider.update('reviews', {
+        id: params.id,
+        data: params.data,
+        previousData: currentData.data
+      })
+
+      return {
+        data: response.data as Review
+      }
+    } catch (error) {
+      throw new Error(
+        `Lỗi khi cập nhật review ${params.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }
 
-export const fetchReviewsList = (params: Partial<getReviewListReq>) => ReviewService.getReviewsList(params)
+export const fetchReviewList = (params: GetReviewListRequest) => ReviewService.getReviewList(params)
+export const fetchReviewDetail = (params: GetReviewDetailRequest) => ReviewService.getReviewDetail(params)
+export const deleteReviews = (params: DeleteReviewsRequest) => ReviewService.deleteReviews(params)
+export const createReview = (params: CreateReviewRequest) => ReviewService.createReview(params)
+export const updateReview = (params: UpdateReviewRequest) => ReviewService.updateReview(params)

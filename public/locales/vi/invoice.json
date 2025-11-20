@@ -1,0 +1,14 @@
+{
+  "id": "Mã",
+  "date": "Ngày",
+  "customer_id": "Khách hàng",
+  "customer_detail": "Địa chỉ",
+  "reference": "Mã đơn hàng",
+  "total_ex_taxes": "Tổng chưa thuế",
+  "delivery_fees": "Phí giao hàng",
+  "taxes": "Thuế",
+  "total": "Tổng cộng",
+  "order_id": "Đơn hàng",
+  "unitPrice": "Đơn giá",
+  "quantity": "Số lượng"
+}

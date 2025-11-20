@@ -1,21 +1,24 @@
 import App from '@/App'
-import { createBrowserRouter } from 'react-router'
+import Customers from '@/features/customers'
 import Dashboard from '@/features/dashboard'
 import Orders from '@/features/orders'
 import SignIn from '@/features/signin'
 import Layout from '@/layouts'
+import { createBrowserRouter } from 'react-router'
 import { path } from './path'
-import Customers from '@/features/customers'
-import Review from '@/features/reviews'
 
-import DetailOrder from '@/features/orders/detail'
-import Invoices from '@/features/invoices'
-import DetailCustomer from '@/features/customers/detail'
-import DetailReview from '@/features/reviews/detail'
-import CreateCustomerPage from '@/features/customers/pageCreate'
-import Segments from '@/features/segments'
-import Products from '@/features/products'
 import Categories from '@/features/categories'
+import DetailCategory from '@/features/categories/detail'
+import DetailCustomer from '@/features/customers/detail'
+import CreateCustomerPage from '@/features/customers/pageCreate'
+import Invoices from '@/features/invoices'
+import DetailOrder from '@/features/orders/detail'
+import Products from '@/features/products'
+import ProductDetail from '@/features/products/detail'
+import Reviews from '@/features/reviews'
+import CreateReview from '@/features/reviews/components/CreateReview'
+import DetailReview from '@/features/reviews/detail'
+import Segments from '@/features/segments'
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +37,7 @@ export const router = createBrowserRouter([
             Component: Orders
           },
           {
-            path: path.posters,
+            path: path.products,
             Component: Products
           },
           {
@@ -42,12 +45,16 @@ export const router = createBrowserRouter([
             Component: Categories
           },
           {
+            path: path.detailCategory,
+            Component: DetailCategory
+          },
+          {
             path: path.customers,
             Component: Customers
           },
           {
             path: path.reviews,
-            Component: Review
+            Component: Reviews
           },
           {
             path: path.detailCustomer,
@@ -55,8 +62,26 @@ export const router = createBrowserRouter([
           },
           {
             path: path.detailReview,
-            Component: DetailReview
+            Component: Reviews
           },
+          { path: path.createReview, Component: CreateReview },
+          {
+            path: path.detailProduct,
+            Component: ProductDetail
+          },
+          {
+            path: path.detailTabProduct,
+            Component: ProductDetail
+          },
+          {
+            path: path.createTabProduct,
+            Component: ProductDetail
+          },
+          {
+            path: path.createProduct,
+            Component: ProductDetail
+          },
+
           {
             path: path.detailOrder,
             Component: DetailOrder
@@ -66,6 +91,9 @@ export const router = createBrowserRouter([
             Component: Invoices
           },
           { path: path.createCustomer, Component: CreateCustomerPage },
+
+          // { path: path., Component: CreateCustomerPage },
+
           {
             path: path.segments,
             Component: Segments

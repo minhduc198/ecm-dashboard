@@ -1,55 +1,57 @@
 import { SelectFilterItem, SelectOptionItem } from '@/types'
+import { TableColumns } from '@/types/table'
+import { Product } from '../types'
 
 export const salesOptions: SelectFilterItem[] = [
   {
-    label: 'Best sellers',
+    label: 'best_sellers',
     value: {
       sales_gt: 25
     }
   },
   {
-    label: 'Average',
+    label: 'average',
     value: {
       sales_gt: 10,
       sales_lte: 25
     }
   },
   {
-    label: 'Low',
+    label: 'low',
     value: {
       sales_gt: 0,
       sales_lte: 10
     }
   },
   {
-    label: 'Never sold',
+    label: 'never_sold',
     value: { sales: 0 }
   }
 ]
 
 export const stockOptions: SelectFilterItem[] = [
   {
-    label: 'Out of stock',
+    label: 'out_of_stock',
     value: {
       stock: 0
     }
   },
   {
-    label: '1 - 9 items',
+    label: 'items_1_9',
     value: {
       stock_lt: 10,
       stock_gt: 0
     }
   },
   {
-    label: '10 - 49 items',
+    label: 'items_10_49',
     value: {
       stock_lt: 50,
       stock_gt: 9
     }
   },
   {
-    label: '50 items & more',
+    label: 'items_50_more',
     value: {
       stock_gt: 49
     }
@@ -123,3 +125,72 @@ export const sortOrder = {
   DESC: 'descending',
   ASC: 'ascending'
 }
+
+export enum SortByEnum {
+  REFERENCE_DESC = 'REFERENCE_DESC',
+  REFERENCE_ASC = 'REFERENCE_ASC',
+  SALES_DESC = 'SALES_DESC',
+  SALES_ASC = 'SALES_ASC',
+  STOCK_DESC = 'STOCK_DESC',
+  STOCK_ASC = 'STOCK_ASC'
+}
+
+export enum TabProduct {
+  IMAGE = 'image',
+  DETAILS = 'details',
+  DESCRIPTION = 'description',
+  REVIEWS = 'reviews'
+}
+
+export const initialProductColumns: TableColumns<Product>[] = [
+  {
+    label: 'Reference',
+    id: 'reference',
+    isVisible: true,
+    numeric: false,
+    disablePadding: true
+  },
+  {
+    label: 'Price',
+    id: 'price',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Width',
+    id: 'width',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Height',
+    id: 'height',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+
+  {
+    label: 'Stock',
+    id: 'stock',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: 'Sales',
+    id: 'sales',
+    isVisible: true,
+    numeric: true,
+    disablePadding: false
+  },
+  {
+    label: '',
+    id: 'category_id',
+    isVisible: true,
+    numeric: false,
+    disablePadding: false
+  }
+]

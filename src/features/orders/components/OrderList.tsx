@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router'
 import { FilterContext } from '../context/FilterContext'
 import { deleteOrders } from '../services'
 import { Order, OrderParams } from '../types'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   data: Order[]
@@ -85,7 +86,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
   const handleViewCustomerDetail = (customer: Customer) => (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation()
     setHeaderData({
-      fullName: `${customer.first_name} ${customer.last_name}`,
+      title: `${customer.first_name} ${customer.last_name}`,
       avatar: customer.avatar
     })
     navigate(`${path.customers}/${customer.id}`)
@@ -234,7 +235,7 @@ export default function OrderList({ data, totalItems, pagination, setSortParam }
 
     const referenceDetail = tmpUndoData.find((data) => data.id === row.id)
     setHeaderData({
-      reference: referenceDetail?.reference
+      title: `Order ${referenceDetail?.reference}`
     })
   }
 

@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Tab from '@mui/material/Tab'
 
 import { getListParamsFormLS, getSettingColumnsFromLS } from '@/utils/orders'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE, ORDER_STATUS } from '@/constants'
 import { SORT } from '@/types'
@@ -20,118 +20,22 @@ import { utils, writeFileXLSX } from 'xlsx'
 import OrderList from './components/OrderList'
 import { FilterContext } from './context/FilterContext'
 import { fetchOrdersList } from './services'
-import { GetOrdersListRequest, Order, OrderFilterItem, OrderStatus } from './types'
-
-const initFilterItems: OrderFilterItem[] = [
-  {
-    label: 'Customer',
-    key: 'customer_id',
-    isChecked: false
-  },
-  {
-    label: 'Passed Since',
-    key: 'date_gte',
-    isChecked: false
-  },
-  {
-    label: 'Passed Before',
-    key: 'date_lte',
-    isChecked: false
-  },
-  {
-    label: 'Min amount',
-    key: 'total_gte',
-    isChecked: false
-  },
-  {
-    label: 'Returned',
-    key: 'returned',
-    isChecked: false
-  }
-]
-
-const initialColumns: TableColumns<Order>[] = [
-  {
-    label: 'Customers',
-    id: 'customer',
-    isVisible: true,
-    numeric: false,
-    disablePadding: true
-  },
-  {
-    label: 'Date',
-    id: 'date',
-    isVisible: false,
-    numeric: false,
-    disablePadding: false
-  },
-  {
-    label: 'Reference',
-    id: 'reference',
-    isVisible: true,
-    numeric: false,
-    disablePadding: false
-  },
-
-  {
-    label: 'Address',
-    id: 'address',
-    isVisible: false,
-    numeric: false,
-    disablePadding: false
-  },
-  {
-    label: 'Nb items',
-    id: 'nb_items',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    label: 'Total ex taxes',
-    id: 'total_ex_taxes',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    label: 'Delivery fees',
-    id: 'delivery_fees',
-    isVisible: false,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    label: 'Taxes',
-    id: 'taxes',
-    isVisible: true,
-    numeric: true,
-    disablePadding: false
-  },
-  {
-    label: 'Total',
-    id: 'total',
-    isVisible: true,
-    numeric: true,
-    disablePadding: false
-  }
-]
-
-const returnedColumn: TableColumns<Order> = {
-  label: 'Returned',
-  id: 'returned',
-  isVisible: true,
-  numeric: true,
-  disablePadding: false
-}
+import { GetOrdersListRequest, Order, OrderFilterItem, OrderSettingColumn, OrderStatus } from './types'
+import { useTranslation } from 'react-i18next'
+import { initFilterItems, initialColumns, returnedColumn } from './constants'
+import { cleanObject } from '@/utils'
+import { useUndoOrderStore } from '@/store/undoOrderStore'
 
 const OrderPage = () => {
+  const { t } = useTranslation('order')
   const { filter, displayedFilters, sort, page, order, perPage } = getListParamsFormLS()
   const columnsLS = getSettingColumnsFromLS()
+
   const [filterItems, setFilterItems] = useState<OrderFilterItem[]>(
     initFilterItems.map((item) => ({
       ...item,
-      isChecked: !!displayedFilters?.[item.key]
+      isChecked: !!displayedFilters?.[item.key],
+      label: item.key
     }))
   )
 
@@ -200,17 +104,54 @@ const OrderPage = () => {
     keepPreviousData: true
   })
 
+  const i18nInitialColumns = initialColumns.map((item) => {
+    return {
+      ...item,
+      label: t(item.id)
+    }
+  })
+
+  const orderSettingNameCols = useMemo(
+    () => columnSetting[activeTab].filter((col) => col.isVisible).map((i) => i.id),
+    [columnSetting, activeTab]
+  )
+
   useEffect(() => {
+    setFilterItems(
+      initFilterItems.map((item) => ({
+        ...item,
+        isChecked: !!displayedFilters?.[item.key],
+        label: t(item.key)
+      }))
+    )
+  }, [t])
+
+  useEffect(() => {
+    const i18nReturnedColumn = {
+      ...returnedColumn,
+      label: t(returnedColumn.id)
+    }
+
+    const i18nColumnsLS = (columns: TableColumns<Order>[]) => {
+      return columns.map((item) => {
+        return {
+          ...item,
+          label: t(item.id)
+        }
+      })
+    }
+
     const newColumnSetting = {
-      ordered: columnsLS.ordered.length ? columnsLS.ordered : initialColumns,
-      delivered: columnsLS.delivered.length ? columnsLS.delivered : initialColumns.concat(returnedColumn),
-      cancelled: columnsLS.cancelled.length ? columnsLS.cancelled : initialColumns
+      ordered: columnsLS.ordered.length ? i18nColumnsLS(columnsLS.ordered) : i18nInitialColumns,
+      delivered: columnsLS.delivered.length
+        ? i18nColumnsLS(columnsLS.delivered)
+        : i18nInitialColumns.concat(i18nReturnedColumn),
+      cancelled: columnsLS.cancelled.length ? i18nColumnsLS(columnsLS.cancelled) : i18nInitialColumns
     }
     setColumnSetting(newColumnSetting)
-  }, [])
+  }, [t])
 
   const handleExport = () => {
-    const ids = columnSetting[activeTab].filter((i) => i.isVisible).map((i) => i.id)
     const tempData =
       activeTab === ORDER_STATUS.ORDERED
         ? orderedData?.data
@@ -218,29 +159,27 @@ const OrderPage = () => {
           ? cancelledData?.data
           : deliveredData?.data
 
-    const exportData = cloneDeep(tempData || []).map((item) => {
+    const exportData = (tempData ?? []).map((data) => {
       const obj = {
-        date: formatDate(item.date, 'HH:mm:ss d/M/yyyy'),
-        taxes: formatCurrency(item.taxes),
-        total: formatCurrency(item.total),
-        delivery_fees: formatCurrency(item.delivery_fees),
-        total_ex_taxes: formatCurrency(item.total_ex_taxes),
-        customer: item.customer.first_name + ' ' + item.customer.last_name,
-        returned: item.returned ? 'Yes' : 'No',
-        nb_items: item.basket.length,
-        address: item.customer.address,
-        reference: item.reference
+        [t('order:customer')]: orderSettingNameCols.includes('customer')
+          ? `${data.customer.first_name} ${data.customer.last_name}`
+          : '',
+        [t('order:date')]: orderSettingNameCols.includes('date') ? formatDate(data.date, 'HH:mm:ss d/M/yyyy') : '',
+        [t('order:reference')]: orderSettingNameCols.includes('reference') ? data.reference : '',
+        [t('order:address')]: orderSettingNameCols.includes('address') ? data.customer.address : '',
+        [t('order:nb_items')]: orderSettingNameCols.includes('nb_items') ? data.basket.length : '',
+        [t('order:returned')]: orderSettingNameCols.includes('returned') ? (data.returned ? 'Yes' : 'No') : '',
+        [t('order:total_ex_taxes')]: orderSettingNameCols.includes('total_ex_taxes')
+          ? formatCurrency(data.total_ex_taxes ?? 0)
+          : '',
+        [t('order:delivery_fees')]: orderSettingNameCols.includes('delivery_fees')
+          ? formatCurrency(data.delivery_fees ?? 0)
+          : '',
+        [t('order:taxes')]: orderSettingNameCols.includes('taxes') ? formatCurrency(data.taxes ?? 0) : '',
+        [t('order:total')]: orderSettingNameCols.includes('total') ? formatCurrency(data.total ?? 0) : ''
       }
-
-      Object.keys(cloneDeep(obj)).forEach((key: string) => {
-        if (!ids.includes(key as keyof Order)) {
-          delete obj[key as keyof typeof obj]
-        }
-      })
-
-      return obj
+      return cleanObject(obj)
     })
-
     const ws = utils.json_to_sheet(exportData)
     const wb = utils.book_new()
     utils.book_append_sheet(wb, ws, 'Data')
@@ -268,7 +207,8 @@ const OrderPage = () => {
               <Tab
                 label={
                   <Box display='flex' alignItems='center' justifyContent='center' gap={0.5}>
-                    Ordered ({isOrderedFetching ? <CircularProgress size={14} color='primary' /> : orderedData?.total})
+                    {t('ordered')} (
+                    {isOrderedFetching ? <CircularProgress size={14} color='primary' /> : orderedData?.total})
                   </Box>
                 }
                 value={ORDER_STATUS.ORDERED}
@@ -276,7 +216,7 @@ const OrderPage = () => {
               <Tab
                 label={
                   <Box display='flex' alignItems='center' justifyContent='center' gap={0.5}>
-                    Delivered (
+                    {t('delivered')} (
                     {isDeliveredFetching ? <CircularProgress size={14} color='primary' /> : deliveredData?.total})
                   </Box>
                 }
@@ -285,7 +225,7 @@ const OrderPage = () => {
               <Tab
                 label={
                   <Box display='flex' alignItems='center' justifyContent='center' gap={0.5}>
-                    Cancelled (
+                    {t('cancelled')} (
                     {isCancelledFetching ? <CircularProgress size={14} color='primary' /> : cancelledData?.total})
                   </Box>
                 }

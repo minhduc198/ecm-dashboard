@@ -1,4 +1,5 @@
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from '@/constants'
+import { useDrawerStore } from '@/store/drawerStore'
 import { IPagination, SORT } from '@/types'
 import { TableColumns } from '@/types/table'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -22,8 +23,8 @@ import TableSortLabel from '@mui/material/TableSortLabel'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { visuallyHidden } from '@mui/utils'
-import { first } from 'lodash'
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface TableHeaderProps<DataType> {
   columns: TableColumns<DataType>[]
@@ -33,6 +34,7 @@ interface TableHeaderProps<DataType> {
   selectable: boolean
   rowCount: number
   collapsibleTable: boolean
+  hasStatusColumnStyle: boolean
   collapseRows: Record<string, boolean>
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
   onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void
@@ -49,6 +51,7 @@ function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
     rowCount,
     collapsibleTable,
     collapseRows,
+    hasStatusColumnStyle,
     onSelectAllClick,
     onRequestSort,
     onCollapseAllRow
@@ -71,6 +74,11 @@ function TableHeader<DataType>(props: TableHeaderProps<DataType>) {
   return (
     <TableHead>
       <TableRow>
+        {hasStatusColumnStyle && (
+          <TableCell sx={{ border: '0 !important', position: 'absolute' }}>
+            <Box sx={{ width: '5px', height: '59px' }}></Box>
+          </TableCell>
+        )}
         {collapsibleTable && (
           <TableCell>
             <IconButton aria-label='expand row' size='small' onClick={handleCollapseAll}>
@@ -183,6 +191,7 @@ interface CustomTableProps<DataType, IdType> {
   usePagination?: boolean
   selectable?: boolean
   totalItems?: number
+  emptyText?: string
   sortColFromLS?: {
     order: SORT
     field: string
@@ -208,6 +217,8 @@ export default function CustomTable<DataType, IdType>({
   totalItems,
   selectable = true,
   sortColFromLS,
+  emptyText = 'No Orders Found',
+  collapsibleTable = false,
   handleSetPage,
   handleSetRowsPerPage,
   handleAccept,
@@ -216,17 +227,27 @@ export default function CustomTable<DataType, IdType>({
   onClearAllFilter,
   onRowClick,
   handleSort,
-  collapsibleTable = false,
   collapsibleContent
 }: CustomTableProps<DataType, IdType>) {
+  const { t } = useTranslation('common')
   const [order, setOrder] = React.useState<SORT>(sortColFromLS?.order ?? SORT.ASC)
   const [orderBy, setOrderBy] = React.useState<string>(sortColFromLS?.field ?? '')
   const [selected, setSelected] = React.useState<IdType[]>([])
   const [collapseRows, setCollapseRows] = React.useState<Record<string, boolean>>({})
 
+  const { getById } = useDrawerStore()
+
+  const hasStatusColumnStyle = columns[0]?.id === 'status-column'
+  const cols = hasStatusColumnStyle ? columns.slice(1) : columns
+
   const allRowIds = dataSource.map((data) => {
     return String(data[rowId])
   })
+
+  React.useEffect(() => {
+    const newSelected = selected.filter((id) => id !== Number(getById))
+    setSelected(newSelected)
+  }, [getById])
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === SORT.ASC
@@ -286,8 +307,9 @@ export default function CustomTable<DataType, IdType>({
   }
 
   const navigateDetailPage =
-    (row: DataType, rowId?: IdType) => (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
-      if ((e.target as HTMLElement).nodeName !== 'TD') {
+    (row: DataType, rowId?: IdType, forceClickRow = false) =>
+    (e: React.MouseEvent<HTMLTableCellElement, MouseEvent>) => {
+      if ((e.target as HTMLElement).nodeName !== 'TD' && !forceClickRow) {
         return
       }
 
@@ -323,11 +345,11 @@ export default function CustomTable<DataType, IdType>({
           handleDelete={onDelete}
           handleReject={handleReject}
         />
-        <TableContainer sx={{ maxHeight: '100%' }}>
+        <TableContainer sx={{ maxHeight: '100%', position: 'relative' }}>
           {dataSource.length ? (
             <Table aria-labelledby='tableTitle' size='medium'>
               <TableHeader<DataType>
-                columns={columns}
+                columns={cols}
                 selectable={selectable}
                 numSelected={selected.length}
                 order={order}
@@ -336,6 +358,7 @@ export default function CustomTable<DataType, IdType>({
                 onRequestSort={handleRequestSort}
                 rowCount={dataSource.length}
                 collapseRows={collapseRows}
+                hasStatusColumnStyle={hasStatusColumnStyle}
                 collapsibleTable={collapsibleTable}
                 onCollapseAllRow={onCollapseAllRow}
               />
@@ -352,6 +375,17 @@ export default function CustomTable<DataType, IdType>({
                         selected={isItemSelected}
                         sx={{ cursor: 'pointer' }}
                       >
+                        {hasStatusColumnStyle && (
+                          <TableCell
+                            sx={{
+                              padding: '0 !important',
+                              border: '0px !important',
+                              position: 'absolute'
+                            }}
+                          >
+                            {columns[0]?.cell ? columns[0].cell(null, row) : null}
+                          </TableCell>
+                        )}
                         {collapsibleTable && (
                           <TableCell sx={{ borderBottomWidth: calcBorderBottomWidth(row) }}>
                             <IconButton size='small' onClick={() => toggleRow(row[rowId] as IdType)}>
@@ -372,14 +406,14 @@ export default function CustomTable<DataType, IdType>({
                             <Checkbox color='primary' checked={isItemSelected} />
                           </TableCell>
                         )}
-                        {columns.map((col: TableColumns<DataType>) => (
+                        {cols.map((col: TableColumns<DataType>) => (
                           <TableCell
                             sx={{
                               minWidth: col.minWidth,
                               width: col.width,
                               borderBottomWidth: calcBorderBottomWidth(row)
                             }}
-                            onClick={navigateDetailPage(row, row[rowId] as IdType)}
+                            onClick={navigateDetailPage(row, row[rowId] as IdType, col.forceClickRow)}
                             key={col.id.toString()}
                             align={col.numeric ? 'right' : 'left'}
                             padding={col.disablePadding ? 'none' : 'normal'}
@@ -388,7 +422,6 @@ export default function CustomTable<DataType, IdType>({
                           </TableCell>
                         ))}
                       </TableRow>
-
                       {collapsibleTable && (
                         <TableRow>
                           <TableCell
@@ -433,13 +466,13 @@ export default function CustomTable<DataType, IdType>({
             >
               {!!onClearAllFilter ? (
                 <>
-                  <Typography>No Orders found using the current filters.</Typography>
+                  <Typography>{`${emptyText} using the current filters.`}</Typography>
                   <Button variant='text' size='small' onClick={onClearAllFilter}>
-                    CLEAR FILTERS
+                    {t('clearFilters')}
                   </Button>
                 </>
               ) : (
-                <Typography>No Orders found</Typography>
+                <Typography>{emptyText}</Typography>
               )}
             </Box>
           )}
@@ -453,6 +486,7 @@ export default function CustomTable<DataType, IdType>({
             page={pagination.page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage={t('rowsPerPage')}
           />
         )}
       </Paper>

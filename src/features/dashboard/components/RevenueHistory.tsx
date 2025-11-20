@@ -1,8 +1,12 @@
-import { userData } from '@/data/dashboard/mockUserData'
+import { Order } from '@/services/data-generator'
 import { formatDateTime } from '@/utils'
 import { Box, Stack, styled, Typography } from '@mui/material'
-import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+
+interface Props {
+  userData: Order[]
+}
 
 const PendingWrapper = styled('div')({
   border: '1px solid rgb(224, 224, 227)',
@@ -10,12 +14,15 @@ const PendingWrapper = styled('div')({
   paddingBlock: '16px'
 })
 
-function RevenueHistory() {
+function RevenueHistory({ userData }: Props) {
   const navigate = useNavigate()
+  const { t } = useTranslation('dashboard')
 
   return (
     <PendingWrapper>
-      <Typography sx={{ fontSize: '24px', marginBottom: '32px', paddingInline: '16px' }}>Pending Orders</Typography>
+      <Typography sx={{ fontSize: '24px', marginBottom: '32px', paddingInline: '16px' }}>
+        {t('pendingOrders')}
+      </Typography>
       {userData.map((data) => (
         <Box
           onClick={() => navigate(`orders/${data.id}`)}
@@ -41,17 +48,17 @@ function RevenueHistory() {
                 overflow: 'hidden'
               }}
             >
-              <img src={data.avatar} alt='' />
+              <img src={data.customer.avatar} alt='' />
             </Box>
             <Stack sx={{ fontSize: '14px' }}>
               <Box>{formatDateTime(data.date, 'dd/MM/y, HH:mm:ss')}</Box>
-              <Box sx={{ color: 'rgba(0, 0, 0, 0.6)' }}>
-                by {data.name}, {data.quantity} {data.quantity > 1 ? 'items' : 'item'}
+              <Box sx={{ opacity: 0.7 }}>
+                {`${t('by')} ${data.customer.first_name} ${data.customer.last_name}, ${data.basket.length} ${data.basket.length > 1 ? t('items') : t('item')}`}
               </Box>
             </Stack>
           </Box>
 
-          <Box sx={{ color: 'rgba(0, 0, 0, 0.87)', marginRight: '16px' }}>{data.price}$</Box>
+          <Box sx={{ opacity: 0.8, marginRight: '16px' }}>{data.total}$</Box>
         </Box>
       ))}
     </PendingWrapper>

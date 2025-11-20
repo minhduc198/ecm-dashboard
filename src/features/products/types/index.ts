@@ -1,4 +1,4 @@
-import { ApiResponseList, SORT } from '@/types'
+import { ApiResponse, ApiResponseList, SORT } from '@/types'
 
 export type Product = {
   id: number
@@ -81,6 +81,7 @@ export type ProductListResponse = ApiResponseList<Product>
 // }
 
 import { UrlQuery } from '@/types'
+import { TableColumns } from '@/types/table'
 
 export interface ProductParam {
   id: number[]
@@ -109,7 +110,7 @@ export interface GetProductListRequest {
   filter?: {
     sale?: string
     stock?: string
-    categories?: string
+    category_id?: string
     q?: string
     id?: number[]
   }
@@ -117,11 +118,25 @@ export interface GetProductListRequest {
 
 export type GetProductsListResponse = ApiResponseList<Product>
 
-export enum SortByEnum {
-  REFERENCE_DESC = 'REFERENCE_DESC',
-  REFERENCE_ASC = 'REFERENCE_ASC',
-  SALES_DESC = 'SALES_DESC',
-  SALES_ASC = 'SALES_ASC',
-  STOCK_DESC = 'STOCK_DESC',
-  STOCK_ASC = 'STOCK_ASC'
+export type GetProductDetailRequest = {
+  id: number
 }
+
+export type GetProductDetailResponse = ApiResponse<Product>
+
+export type DeleteProductsRequest = {
+  ids: number[]
+}
+
+export interface UpdateProductRequest {
+  id: number
+  data: Partial<Omit<Product, 'id'>>
+}
+
+export type UpdateProductResponse = ApiResponse<Product>
+
+export interface CreateProductRequest {
+  data: Partial<Omit<Product, 'id'>>
+}
+
+export type TableColumnsProduct = TableColumns<Product>[]
