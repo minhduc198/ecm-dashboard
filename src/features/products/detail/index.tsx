@@ -222,15 +222,6 @@ export default function ProductDetail() {
     }
   }, [productDetail])
 
-  const i18nCategoryOptions = useMemo(() => {
-    return categoryOptions.map((item) => {
-      return {
-        ...item,
-        label: t(`product:${item.label.toLowerCase()}`)
-      }
-    })
-  }, [t])
-
   const handleDelete = () => {
     const deletedId = productDetail?.id
     if (!deletedId) return
@@ -405,7 +396,7 @@ export default function ProductDetail() {
         {t('product:reviews').toUpperCase()} ({reviewList?.total ?? <CircularProgress size={14} color='primary' />})
       </div>
     )
-  }, [reviewList?.total])
+  }, [reviewList?.total, t])
 
   return (
     <FormProvider {...methods}>
@@ -484,7 +475,7 @@ export default function ProductDetail() {
                       sxAutocomplete={{ width: '203px' }}
                       name='category_id'
                       label={`${t('product:category')}*`}
-                      options={i18nCategoryOptions}
+                      options={categoryOptions}
                     />
                   </Box>
 

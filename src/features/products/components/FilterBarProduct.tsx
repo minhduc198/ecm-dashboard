@@ -45,6 +45,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { GetProductListRequest, ProductUrlQuery } from '../types'
 import { useTranslation } from 'react-i18next'
+import { Category } from '@/services/data-generator'
 
 type FormValues = InferType<typeof filterProductSchema>
 
@@ -54,8 +55,7 @@ interface Props {
 }
 
 export default function FilterBarProduct({ productListRq, setProductListRq }: Props) {
-  const { t: tc } = useTranslation('common')
-  const { t, i18n } = useTranslation('product')
+  const { t } = useTranslation(['product', 'common'])
   const [openDialog, setOpenDialog] = useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
   const [saveQueryName, setSaveQueryName] = useState('')
@@ -97,7 +97,7 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
     return stockOptions.map((item) => {
       return {
         ...item,
-        label: t(item.label)
+        label: t(`product:${item.label}`)
       }
     }) as SelectOptionItem[]
   }, [t])
@@ -106,15 +106,15 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
     return salesOptions.map((item) => {
       return {
         ...item,
-        label: t(item.label)
+        label: t(`product:${item.label}`)
       }
     }) as SelectOptionItem[]
   }, [t])
 
-  const i18nCategoryOptions = useMemo<SelectOptionItem[]>(() => {
+  const categoryOptions = useMemo<SelectOptionItem[]>(() => {
     return categoriesListData.map((category) => {
       return {
-        label: t(category.name),
+        label: category.name,
         value: category.id.toString()
       }
     })
@@ -338,7 +338,9 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <BookmarkBorderIcon sx={{ width: '24px', height: '24px' }} />
-            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>{t('save_queries').toUpperCase()}</Typography>
+            <Typography sx={{ fontSize: '12px', letterSpacing: 2 }}>
+              {t('product:save_queries').toUpperCase()}
+            </Typography>
           </Box>
           {hasParams ? (
             isEqual(currentQuery?.value, productListRq) ? (
@@ -383,54 +385,54 @@ export default function FilterBarProduct({ productListRq, setProductListRq }: Pr
         </Box>
         <SelectFilter
           name='sales'
-          filterLabel={t('sales').toUpperCase()}
+          filterLabel={t('product:sales').toUpperCase()}
           IconFilter={<AttachMoneySharpIcon color='action' />}
           options={i18nSalesOptions}
         />
 
         <SelectFilter
           name='stock'
-          filterLabel={t('stock').toUpperCase()}
+          filterLabel={t('product:stock').toUpperCase()}
           IconFilter={<BarChartOutlinedIcon color='action' />}
           options={i18nStockOptions}
         />
 
         <SelectFilter
           name='category_id'
-          filterLabel={t('categories').toUpperCase()}
+          filterLabel={t('product:categories').toUpperCase()}
           IconFilter={<SellOutlinedIcon color='action' />}
-          options={i18nCategoryOptions}
+          options={categoryOptions}
         />
       </Box>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{tc('saveQueryAs')}</DialogTitle>
+        <DialogTitle>{t('common:saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
             sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label={tc('queryName')}
+            label={t('common:queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>{tc('cancel')}</Button>
+          <Button onClick={handleCloseDialog}>{t('common:cancel')}</Button>
           <Button onClick={handleSaveQueries} autoFocus>
-            {tc('save')}
+            {t('common:save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{tc('removeSavedQuery')}</DialogTitle>
+        <DialogTitle>{t('common:removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>{tc('removeQueryConfirm')}</DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{t('common:removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>{tc('cancel')}</Button>
-          <Button onClick={handleConfirmRemoveDialog}>{tc('confirm')}</Button>
+          <Button onClick={handleCloseRemoveDialog}>{t('common:cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{t('common:confirm')}</Button>
         </DialogActions>
       </Dialog>
     </FormProvider>

@@ -59,7 +59,6 @@ export default function AddFilter<T>({
   handleRemoveSaveQuery,
   handleUseQueryFromLS
 }: Props<T>) {
-  const { t: tc } = useTranslation('common')
   const { t } = useTranslation('order')
 
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
@@ -155,7 +154,7 @@ export default function AddFilter<T>({
   return (
     <div>
       <Button startIcon={<FilterListIcon />} variant='text' onClick={handleClick}>
-        {tc('addFilters')}
+        {t('common:addFilters')}
       </Button>
       <Popover
         open={open}
@@ -238,7 +237,7 @@ export default function AddFilter<T>({
                       })
                   ]}
                 />
-                <Typography>{`Remove query "${data.name}"`}</Typography>
+                <Typography>{`${t('common:removeQuery')} "${data.name}"`}</Typography>
               </CustomBox>
             ) : (
               <CustomBox key={data.id} onClick={() => handleUseSaveQuery(data)}>
@@ -287,34 +286,34 @@ export default function AddFilter<T>({
       </Popover>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{tc('saveQueryAs')}</DialogTitle>
+        <DialogTitle>{t('common:saveQueryAs')}</DialogTitle>
 
         <DialogContent>
           <TextField
             sx={{ width: '100%' }}
             value={saveQueryName}
             onChange={handleSetSaveQueryName}
-            label={tc('queryName')}
+            label={t('common:queryName')}
             type='search'
             variant='filled'
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>{tc('cancel')}</Button>
+          <Button onClick={handleCloseDialog}>{t('common:cancel')}</Button>
           <Button disabled={!saveQueryName} onClick={handleSave} autoFocus>
-            {tc('save')}
+            {t('common:save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openRemoveDialog} onClose={handleCloseRemoveDialog}>
-        <DialogTitle>{tc('removeSavedQuery')}</DialogTitle>
+        <DialogTitle>{t('common:removeSavedQuery')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='alert-dialog-description'>{tc('removeQueryConfirm')}</DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{t('common:removeQueryConfirm')}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemoveDialog}>{tc('cancel')}</Button>
-          <Button onClick={handleConfirmRemoveDialog}>{tc('confirm')}</Button>
+          <Button onClick={handleCloseRemoveDialog}>{t('common:cancel')}</Button>
+          <Button onClick={handleConfirmRemoveDialog}>{t('common:confirm')}</Button>
         </DialogActions>
       </Dialog>
     </div>

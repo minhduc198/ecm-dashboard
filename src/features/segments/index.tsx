@@ -54,7 +54,7 @@ const Segments = () => {
         >
           <Box
             sx={{
-              minWidth: '100px',
+              minWidth: '140px',
               fontSize: '14px'
             }}
           >

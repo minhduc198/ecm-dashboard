@@ -10,5 +10,7 @@
   "total": "Total",
   "order_id": "Commande",
   "unitPrice": "Prix unitaire",
-  "quantity": "Quantité"
+  "quantity": "Quantité",
+  "date_gte": "Depuis",
+  "date_lte": "Avant"
 }

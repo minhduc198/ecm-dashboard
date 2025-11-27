@@ -10,5 +10,7 @@
   "total": "Tổng cộng",
   "order_id": "Đơn hàng",
   "unitPrice": "Đơn giá",
-  "quantity": "Số lượng"
+  "quantity": "Số lượng",
+  "date_gte": "Từ ngày",
+  "date_lte": "Trước ngày"
 }
