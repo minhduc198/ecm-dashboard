@@ -16,5 +16,8 @@ export const path = {
   segments: '/segments',
   products: '/products',
   categories: '/categories',
-  detailCategory: '/categories/:id'
+  detailCategory: '/categories/:id',
+  login: '/login',
+  register: '/register',
+  resetPassword: '/reset-password/:token'
 }

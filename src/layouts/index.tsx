@@ -1,39 +1,18 @@
+import HeaderAction from '@/components/HeaderAction'
 import DetailReview from '@/features/reviews/detail'
 import { path as pathConfig } from '@/routers/path'
 import { useDrawerStore } from '@/store/drawerStore'
 import { useHeaderTitleStore } from '@/store/headerStore'
-import { Box, Drawer, MenuItem, Select, SelectChangeEvent } from '@mui/material'
+import { Drawer } from '@mui/material'
 import { DashboardLayout } from '@toolpad/core/DashboardLayout'
 import { PageContainer } from '@toolpad/core/PageContainer'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useParams } from 'react-router'
-import LanguageIcon from '@mui/icons-material/Language'
-
-function Language() {
-  const { i18n } = useTranslation('dashboard')
-  const handleChange = (event: SelectChangeEvent) => {
-    i18n.changeLanguage(event.target.value)
-  }
-  return (
-    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-      <LanguageIcon />
-      <Select
-        variant='standard'
-        value={i18n.language || 'en'}
-        onChange={handleChange}
-        size='small'
-        sx={{ minWidth: 120 }}
-      >
-        <MenuItem value='en'>English</MenuItem>
-        <MenuItem value='vi'>Vietnamese</MenuItem>
-        <MenuItem value='fr'>French</MenuItem>
-      </Select>
-    </Box>
-  )
-}
 
 export default function Layout() {
+  const { t } = useTranslation('sidebar')
+
   // const { session } = useSession()
   // const location = useLocation()
 
@@ -54,7 +33,10 @@ export default function Layout() {
   let breadcrumbStr = pathName
   let headerTitle = ''
 
-  if (pathName.includes(pathConfig.customers) || pathName.includes(pathConfig.reviews)) {
+  if (
+    pathName.includes(pathConfig.customers) ||
+    (pathName.includes(pathConfig.reviews) && pathName.split('/')[3] !== 'reviews')
+  ) {
     headerTitle = headerData.title
   } else {
     const [_, ...title] = headerData.title.split(' ')
@@ -70,11 +52,11 @@ export default function Layout() {
 
   const breadcrumbs = ['/', ...pathNameArr].filter(Boolean).map((p, index) => {
     if (p === '/') {
-      return { title: 'Home', path: pathConfig.home }
+      return { title: t('home'), path: pathConfig.home }
     }
 
     return {
-      title: breadcrumbArr[index].charAt(0).toUpperCase() + breadcrumbArr[index].slice(1),
+      title: t(breadcrumbArr[index]),
       path: pathNameArr.slice(0, index + 1).join('/')
     }
   })
@@ -90,7 +72,7 @@ export default function Layout() {
   return (
     <DashboardLayout
       slots={{
-        toolbarAccount: Language
+        toolbarAccount: HeaderAction
       }}
     >
       <PageContainer

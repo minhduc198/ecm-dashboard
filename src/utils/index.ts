@@ -27,3 +27,8 @@ export const reorderDnd = <T>(list: T[], startIndex: number, endIndex: number): 
 
   return result
 }
+
+export function clearLocalStorage() {
+  localStorage.removeItem('access_token')
+  window.dispatchEvent(new CustomEvent('clearLS'))
+}

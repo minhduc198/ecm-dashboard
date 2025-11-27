@@ -209,7 +209,7 @@ const Products = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2, mb: 1 }}>
         <Box>
           <Button
             id='positioned-button'

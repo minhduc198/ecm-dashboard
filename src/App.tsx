@@ -1,24 +1,23 @@
-import { SessionContext } from '@/contexts/SessionContext'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CollectionsIcon from '@mui/icons-material/Collections'
 import CommentIcon from '@mui/icons-material/Comment'
 import DashboardIcon from '@mui/icons-material/Dashboard'
+import LabelIcon from '@mui/icons-material/Label'
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks'
 import PeopleIcon from '@mui/icons-material/People'
-import LabelIcon from '@mui/icons-material/Label'
-import { Avatar, Box, createTheme, MenuItem, Select, SelectChangeEvent } from '@mui/material'
+import { Avatar } from '@mui/material'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { type Navigation, type Session } from '@toolpad/core/AppProvider'
+import { type Navigation } from '@toolpad/core/AppProvider'
 import { ReactRouterAppProvider } from '@toolpad/core/react-router'
-import { useCallback, useMemo, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router'
-import { useHeaderTitleStore } from './store/headerStore'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
-import { path as pathConfig } from './routers/path'
+import { SnackbarProvider } from 'notistack'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { title } from 'process'
+import { Outlet, useLocation } from 'react-router'
+import AppProvider from './contexts/AppContext'
+import { useHeaderTitleStore } from './store/headerStore'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -29,8 +28,6 @@ export const queryClient = new QueryClient({
 
 export default function App() {
   const { t } = useTranslation('sidebar')
-  const [session, setSession] = useState<Session | null>(null)
-  const navigate = useNavigate()
   const location = useLocation()
   const { headerData } = useHeaderTitleStore()
 
@@ -94,17 +91,6 @@ export default function App() {
     }
   ]
 
-  const signIn = useCallback(() => {
-    navigate('/sign-in')
-  }, [navigate])
-
-  const signOut = useCallback(() => {
-    setSession(null)
-    navigate('/sign-in')
-  }, [navigate])
-
-  const sessionContextValue = useMemo(() => ({ session, setSession }), [session, setSession])
-
   const BRANDING = useMemo(() => {
     const paths = location.pathname.split('/').filter(Boolean)
 
@@ -131,26 +117,23 @@ export default function App() {
       }
     }
 
-    const [a, ...b] = headerData.title.split(' ')
+    const [title, ...content] = headerData.title.split(' ')
     return {
-      title: `${t(a.toLowerCase())} ${[...b].join(' ')}`
+      title: `${t(title.toLowerCase())} ${[...content].join(' ')}`
     }
   }, [location.pathname, headerData, t])
 
   return (
-    <SessionContext.Provider value={sessionContextValue}>
+    <AppProvider>
       <QueryClientProvider client={queryClient}>
-        <ReactRouterAppProvider
-          navigation={NAVIGATION}
-          branding={BRANDING}
-          session={session}
-          authentication={{ signIn, signOut }}
-        >
+        <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Outlet />
+            <SnackbarProvider maxSnack={1}>
+              <Outlet />
+            </SnackbarProvider>
           </LocalizationProvider>
         </ReactRouterAppProvider>
       </QueryClientProvider>
-    </SessionContext.Provider>
+    </AppProvider>
   )
 }

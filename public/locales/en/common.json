@@ -11,6 +11,7 @@
   "confirm": "CONFIRM",
   "removeQueryConfirm": "Are you sure you want to remove that item from your list of saved queries?",
   "removeSavedQuery": "Remove saved query?",
+  "removeQuery": "Remove query",
   "clearFilters": "CLEAR FILTERS",
   "rowsPerPage": "Rows per page",
   "undo": "UNDO",

@@ -31,8 +31,7 @@ import { useTranslation } from 'react-i18next'
 import { cleanObject } from '@/utils'
 
 const Invoices = () => {
-  const { t: tc } = useTranslation('common')
-  const { t } = useTranslation('invoice')
+  const { t } = useTranslation(['invoice', 'common'])
 
   const { setMany } = useSearchParam()
   const { setHeaderData } = useHeaderTitleStore()
@@ -180,18 +179,18 @@ const Invoices = () => {
   const columnProductItems: TableColumns<OrderDetailProduct>[] = [
     {
       id: 'reference',
-      label: t('reference'),
+      label: t('invoice:reference'),
       cell: (value) => <CustomLink to={'#'}>{value?.toString()}</CustomLink>
     },
 
-    { id: 'price', label: t('unitPrice'), numeric: true, cell: (value) => formatCurrency(Number(value)) },
+    { id: 'price', label: t('invoice:unitPrice'), numeric: true, cell: (value) => formatCurrency(Number(value)) },
     {
       id: 'quantity',
-      label: t('quantity'),
+      label: t('invoice:quantity'),
       numeric: true,
       cell: (value) => Number(value)
     },
-    { id: 'total', label: t('total'), numeric: true, cell: (value) => formatCurrency(Number(value)) }
+    { id: 'total', label: t('invoice:total'), numeric: true, cell: (value) => formatCurrency(Number(value)) }
   ]
 
   const productItemsDataSource = (productList: Product[]) => {
@@ -216,7 +215,7 @@ const Invoices = () => {
     const i18nInvoiceSettingCol = initialInvoiceColumns.map((item) => {
       return {
         ...item,
-        label: t(item.id)
+        label: t(`invoice:${item.id}`)
       }
     })
 
@@ -225,7 +224,7 @@ const Invoices = () => {
         ? invoiceSettingColFromLS.map((item) => {
             return {
               ...item,
-              label: t(item.id)
+              label: t(`invoice:${item.id}`)
             }
           })
         : i18nInvoiceSettingCol
@@ -352,12 +351,12 @@ const Invoices = () => {
         <Box>{row.customer_detail.address}</Box>
         <Box sx={{ mt: '20px', mb: '20px', display: 'flex', justifyContent: 'space-around' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('date')}</Typography>
+            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('invoice:date')}</Typography>
             <Typography>{formatDate(row.date, 'd/M/yyyy')}</Typography>
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('order')}</Typography>
+            <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('invoice:order_id')}</Typography>
             <Typography>{row.reference}</Typography>
           </Box>
         </Box>
@@ -435,7 +434,7 @@ const Invoices = () => {
         message={action}
         action={
           <Button size='small' onClick={handleUndo}>
-            {tc('undo')}
+            {t('common:undo')}
           </Button>
         }
       />

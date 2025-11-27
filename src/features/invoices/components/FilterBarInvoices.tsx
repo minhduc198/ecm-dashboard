@@ -47,8 +47,7 @@ export default function FilterBarInvoices({
   setInvoiceSettingCol,
   handleExport
 }: Props) {
-  const { t: tc } = useTranslation('common')
-  const { t } = useTranslation('invoice')
+  const { t } = useTranslation(['invoice', 'common'])
   const { setMany } = useSearchParam()
   const [isFirstRender, setIsFirstRender] = useState(true)
 
@@ -115,11 +114,11 @@ export default function FilterBarInvoices({
         return {
           ...item,
           isChecked: !!currentListParamsLS.displayedFilters?.[item.key],
-          label: t(item.key)
+          label: t(`invoice:${item.key}`)
         }
       })
     )
-  }, [i18n.language])
+  }, [t])
 
   useEffect(() => {
     saveQueriesInvoice(currentSaveQueries)
@@ -285,12 +284,12 @@ export default function FilterBarInvoices({
     <FormProvider {...method}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
-          <CustomDatePicker name='date_gte' datePickerLabel='Passed Since' sxDatePicker={{ width: '166px' }} />
-          <CustomDatePicker name='date_lte' datePickerLabel='Passed Before' sxDatePicker={{ width: '166px' }} />
+          <CustomDatePicker name='date_gte' datePickerLabel={t('invoice:date_gte')} sxDatePicker={{ width: '166px' }} />
+          <CustomDatePicker name='date_lte' datePickerLabel={t('invoice:date_lte')} sxDatePicker={{ width: '166px' }} />
           {currentListParamsLS.displayedFilters?.customer_id && (
             <TextFieldAutocompleteVirtualized
               name='customer_id'
-              label='Customer'
+              label={t('invoice:customer_id')}
               sxAutocomplete={{ width: '164px' }}
               options={customerOptions}
               onSearch={handleCustomerSearch}
@@ -303,7 +302,7 @@ export default function FilterBarInvoices({
           {currentListParamsLS.displayedFilters?.order_id && (
             <TextFieldAutocompleteVirtualized
               name='order_id'
-              label='Order'
+              label={t('invoice:order_id')}
               sxAutocomplete={{ width: '164px' }}
               options={orderOptions}
               onSearch={handleOrderSearch}
@@ -328,7 +327,7 @@ export default function FilterBarInvoices({
           />
           <SettingColumns columns={invoiceSettingCol} onDragEnd={onDragEnd} handleChangeColumn={handleChangeColumn} />
           <Button startIcon={<FileDownloadIcon />} onClick={handleExport} variant='text'>
-            {tc('export')}
+            {t('common:export')}
           </Button>
         </Box>
       </Box>

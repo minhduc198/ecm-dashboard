@@ -11,6 +11,7 @@
   "confirm": "CONFIRMER",
   "removeQueryConfirm": "Êtes-vous sûr de vouloir supprimer cet élément de votre liste de requêtes enregistrées?",
   "removeSavedQuery": "Supprimer la requête enregistrée?",
+  "removeQuery": "Supprimer la enregistrée",
   "clearFilters": "EFFACER LES FILTRES",
   "rowsPerPage": "Lignes par page",
   "undo": "ANNULER",

@@ -10,5 +10,7 @@
   "total": "Total",
   "order_id": "Order",
   "unitPrice": "Unit price",
-  "quantity": "Quantity"
+  "quantity": "Quantity",
+  "date_gte": "Passed since",
+  "date_lte": "Passed before"
 }
