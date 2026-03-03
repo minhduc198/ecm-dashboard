@@ -1,6 +1,7 @@
 import { generateCustomers, Customer } from './customers'
 import { generateCategories, Category } from './categories'
-import { generateProducts, Product } from './products'
+import { generateProducts } from './products'
+import type { Product } from '@/features/products/types'
 import { generateOrders, Order, BasketItem } from './orders'
 import { generateInvoices, Invoice } from './invoices'
 import { generateReviews, Review } from './reviews'
