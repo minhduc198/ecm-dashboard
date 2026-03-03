@@ -1,0 +1,23 @@
+export const path = {
+  home: '/',
+  invoices: '/invoices',
+  customers: '/customers',
+  reviews: '/reviews',
+  orders: '/orders',
+  detailReview: '/reviews/:id',
+  detailCustomer: '/customers/:id',
+  detailOrder: '/orders/:id',
+  detailProduct: '/products/:id',
+  detailTabProduct: '/products/:id/:tab',
+  createProduct: '/products/create',
+  createTabProduct: '/products/create/:tab',
+  createCustomer: '/customers/create',
+  createReview: '/reviews/create',
+  segments: '/segments',
+  products: '/products',
+  categories: '/categories',
+  detailCategory: '/categories/:id',
+  login: '/login',
+  register: '/register',
+  resetPassword: '/reset-password/:token'
+}

@@ -1,0 +1,23 @@
+{
+  "menu_items": "Menu items",
+  "dashboard": "Dashboard",
+
+  "sales": "Sales",
+  "orders": "Orders",
+  "invoices": "Invoices",
+
+  "catalog": "Catalog",
+  "posters": "Posters",
+  "categories": "Categories",
+
+  "customers": "Customers",
+  "segments": "Segments",
+
+  "details": "Details",
+  "description": "Description",
+  "home": "Home",
+  "reviews": "Reviews",
+  "products": "Products",
+  "product": "Product",
+  "order": "Order"
+}

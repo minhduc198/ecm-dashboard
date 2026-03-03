@@ -1,0 +1,19 @@
+{
+  "date": "Ngày",
+  "customer": "Khách hàng",
+  "rating": "Đánh giá",
+  "product": "Sản phẩm",
+  "comment": "Bình luận",
+  "status": "Trạng thái",
+
+  "search": "Tìm kiếm",
+  "posted_since": "Đăng từ",
+  "posted_before": "Đăng trước",
+  "review_detail": "Chi tiết đánh giá",
+
+  "pending": "Chờ duyệt",
+  "accepted": "Đã chấp nhận",
+  "accept": "Chấp nhận",
+  "rejected": "Đã từ chối",
+  "reject": "Từ chối"
+}

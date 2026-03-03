@@ -1,0 +1,203 @@
+import TextFieldAutoComplete from '@/components/TextFieldAutocomplete'
+import TextFieldAutocompleteVirtualized from '@/components/TextFieldAutocompleteVirtualized'
+import { yupResolver } from '@hookform/resolvers/yup'
+import SaveIcon from '@mui/icons-material/Save'
+import { Box, Button, Rating, styled, Typography } from '@mui/material'
+import { FormProvider, Resolver, useForm, useWatch } from 'react-hook-form'
+import { createReviewSchema } from '../schemas'
+import { InferType } from 'yup'
+import { useInfiniteCustomers } from '@/hooks/useInfiniteCustomers'
+import { useEffect, useState } from 'react'
+import { useInfiniteProducts } from '@/hooks/useInfiniteProducts'
+import CustomDatePicker from '@/components/CustomDatePicker'
+import TextFieldInput from '@/components/TextFieldInput'
+import { useLocation, useNavigate } from 'react-router'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { CreateReviewRequest, REVIEW_STATUS } from '../types'
+import { createReview } from '../services'
+import { queryClient } from '@/App'
+import { path } from '@/routers/path'
+import CustomRating from '@/components/CustomRating'
+import { GetCustomerDetailRequest } from '@/features/customers/types'
+import { fetchCustomerDetail } from '@/features/customers/service'
+import { useUndoReviewStore } from '@/store/reviewStore'
+import { fetchProductDetail } from '@/features/products/services'
+import { useTranslation } from 'react-i18next'
+
+type FormValues = InferType<typeof createReviewSchema>
+
+export default function CreateReview() {
+  const { t } = useTranslation(['common', 'review'])
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('')
+  const [productSearchTerm, setProductSearchTerm] = useState('')
+  const location = useLocation()
+  const { product_id } = location.state || {}
+  const navigate = useNavigate()
+
+  const { setCreateMessageSuccess } = useUndoReviewStore()
+
+  const methods = useForm({
+    resolver: yupResolver(createReviewSchema) as Resolver<FormValues>,
+    defaultValues: {
+      date: '',
+      comment: '',
+      rating: 2,
+      product_id
+    }
+  })
+
+  const customer_id = useWatch({ name: 'customer_id', control: methods.control })
+  const productId = useWatch({ name: 'product_id', control: methods.control })
+
+  const {
+    formState: { isDirty },
+    handleSubmit
+  } = methods
+
+  const { mutateAsync: createReviewMutation, isPending } = useMutation({
+    mutationFn: (param: CreateReviewRequest) => createReview(param),
+    onSuccess: (review) => {
+      if (!!product_id) {
+        navigate(`${path.products}/${product_id}/reviews`)
+      } else {
+        setCreateMessageSuccess?.(`Review ${review.data.comment} created!`)
+        navigate(path.reviews)
+      }
+    }
+  })
+
+  const { data: detailCustomerData } = useQuery({
+    queryKey: ['customer_detail'],
+    queryFn: () => fetchCustomerDetail({ id: customer_id }),
+    enabled: !!customer_id
+  })
+  const detailCustomer = detailCustomerData?.data
+
+  const { data: detailProductData } = useQuery({
+    queryKey: ['product_detail'],
+    queryFn: () => fetchProductDetail({ id: productId }),
+    enabled: !!productId
+  })
+  const detailProduct = detailProductData?.data
+
+  const {
+    customerOptions,
+    hasNextPage,
+    loadMore,
+    isLoading: isLoadingCustomers
+  } = useInfiniteCustomers({
+    searchTerm: customerSearchTerm
+  })
+
+  const {
+    productOptions,
+    hasNextPage: hasNextPageProduct,
+    loadMore: loadMoreProduct,
+    isLoading: isLoadingProduct
+  } = useInfiniteProducts({
+    searchTerm: productSearchTerm
+  })
+
+  const handleCustomerSearch = (searchTerm: string) => {
+    setCustomerSearchTerm(searchTerm)
+  }
+
+  const handleProductSearch = (searchTerm: string) => {
+    setProductSearchTerm(searchTerm)
+  }
+
+  const onSubmit = (formData: FormValues) => {
+    createReviewMutation({
+      data: {
+        ...formData,
+        date: new Date(formData.date).toISOString(),
+        status: REVIEW_STATUS.PENDING,
+        customer: detailCustomer,
+        product: detailProduct
+      }
+    })
+  }
+
+  return (
+    <FormProvider {...methods}>
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '36px',
+            border: '1px solid #e0e0e0',
+            borderTopLeftRadius: '10px',
+            borderTopRightRadius: '10px',
+            padding: 2,
+            paddingBottom: 4
+          }}
+        >
+          <TextFieldAutocompleteVirtualized
+            isRequired
+            label={t('review:customer')}
+            name='customer_id'
+            sxAutocomplete={{ width: '40%' }}
+            options={customerOptions}
+            hasNextPage={hasNextPage}
+            isLoading={isLoadingCustomers}
+            onSearch={handleCustomerSearch}
+            loadMore={loadMore}
+          />
+          <TextFieldAutocompleteVirtualized
+            isRequired
+            name='product_id'
+            label={t('review:product')}
+            isDisabled={!!product_id}
+            sxAutocomplete={{ width: '40%' }}
+            options={productOptions}
+            hasNextPage={hasNextPageProduct}
+            isLoading={isLoadingProduct}
+            onSearch={handleProductSearch}
+            loadMore={loadMoreProduct}
+          />
+
+          <CustomDatePicker isRequired name='date' datePickerLabel={t('review:date')} sxDatePicker={{ width: '40%' }} />
+
+          <Box>
+            <Typography>{t('review:rating')}</Typography>
+            <CustomRating name='rating' />
+          </Box>
+
+          <TextFieldInput isRequired name='comment' label={t('review:comment')} sxTextFieldInput={{ width: '40%' }} />
+        </Box>
+        <Box
+          sx={[
+            {
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '14px 24px',
+              borderInline: '1px solid #e0e0e0',
+              borderBottom: '1px solid #e0e0e0',
+              borderBottomLeftRadius: '10px',
+              borderBottomRightRadius: '10px',
+              bgcolor: '#e0e0e0'
+            },
+            (theme) =>
+              theme.applyStyles('dark', {
+                backgroundColor: '#424242'
+              })
+          ]}
+        >
+          <Button
+            sx={{ borderRadius: '8px' }}
+            type='submit'
+            variant='contained'
+            disabled={!isDirty}
+            loading={isPending}
+            startIcon={<SaveIcon />}
+          >
+            {t('common:save')}
+          </Button>
+        </Box>
+      </form>
+    </FormProvider>
+  )
+}

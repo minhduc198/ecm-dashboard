@@ -1,0 +1,68 @@
+import { faker } from '@faker-js/faker'
+import { subDays, isAfter } from 'date-fns'
+
+import { randomDate, weightedArrayElement, weightedBoolean } from './utils'
+import type { Db } from './types'
+import { Product } from '@/features/products/types'
+import { Customer } from './customers'
+import { REVIEW_STATUS } from '@/features/reviews/types'
+
+export const generateReviews = (db: Db): Review[] => {
+  const today = new Date()
+  const aMonthAgo = subDays(today, 30)
+
+  let id = 0
+  const reviewers = db.customers
+    .filter((customer) => customer.has_ordered)
+    .filter(() => weightedBoolean(60)) // only 60% of buyers write reviews
+    .map((customer) => customer.id)
+
+  return db.orders
+    .filter((order) => reviewers.indexOf(order.customer_id) !== -1)
+    .reduce(
+      (acc: any, order) => [
+        ...acc,
+        ...order.basket
+          .filter(() => weightedBoolean(40)) // reviewers review 40% of their products
+          .map((product) => {
+            const date = randomDate(order.date)
+            const status = isAfter(aMonthAgo, date)
+              ? weightedArrayElement(['accepted', 'rejected'], [3, 1])
+              : weightedArrayElement(['pending', 'accepted', 'rejected'], [5, 3, 1])
+
+            const sentenceCount = faker.number.int({ min: 1, max: 5 })
+            const comment = Array.from({ length: sentenceCount }, () => faker.lorem.sentences()).join('\n \r')
+
+            const customer = db.customers.find((c) => c.id === order.customer_id)
+            const productItem = db.products.find((c) => c.id === product.product_id)
+
+            return {
+              id: id++,
+              date: date.toISOString(),
+              status,
+              order_id: order.id,
+              product_id: product.product_id,
+              product: productItem,
+              customer_id: order.customer_id,
+              rating: faker.number.int({ min: 1, max: 5 }),
+              comment,
+              customer
+            }
+          })
+      ],
+      [] as Review[]
+    )
+}
+
+export type Review = {
+  id: number
+  date: string
+  status: REVIEW_STATUS
+  order_id: number
+  product_id: number
+  customer_id: number
+  customer: Customer
+  rating: number
+  comment: string
+  product: Product
+}

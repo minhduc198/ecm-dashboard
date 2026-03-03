@@ -1,0 +1,418 @@
+import { queryClient } from '@/App'
+import CustomDatePicker from '@/components/CustomDatePicker'
+import TextFieldAutoComplete from '@/components/TextFieldAutocomplete'
+import TextFieldInput from '@/components/TextFieldInput'
+import TextFieldSelect from '@/components/TextFieldSelect'
+import { path } from '@/routers/path'
+import { Customer } from '@/services/data-generator'
+import { useUndoCustomerStore } from '@/store/undoCustomerStore'
+import { isoStringToDate } from '@/utils'
+import { yupResolver } from '@hookform/resolvers/yup'
+import DeleteIcon from '@mui/icons-material/Delete'
+import SaveIcon from '@mui/icons-material/Save'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import { Box, Button, Grid, IconButton, InputAdornment, Typography } from '@mui/material'
+import { useMutation } from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
+import { useEffect, useState } from 'react'
+import { FormProvider, Resolver, useForm, useWatch } from 'react-hook-form'
+import { useNavigate } from 'react-router'
+import { InferType } from 'yup'
+import { NEWSLETTER, segmentsOptions } from '../constant'
+import { formCustomerSchema } from '../schemas'
+import { createCustomer, deleteCustomers, updateCustomer } from '../service'
+import { CreateCustomerRequest, UpdateCustomerRequest } from '../types'
+import { useHeaderTitleStore } from '@/store/headerStore'
+import { useTranslation } from 'react-i18next'
+
+interface Props {
+  customerData?: Customer
+  hasStats?: boolean
+  size?: number
+}
+
+type FormValues = InferType<typeof formCustomerSchema>
+
+export default function FormCustomer({ customerData, hasStats, size }: Props) {
+  const { t } = useTranslation(['common', 'customer'])
+  const [displayPassword, setDisplayPassword] = useState(false)
+  const [displayConfirmPassword, setDisplayConfirmPassword] = useState(false)
+  const { tmpUndoData, dataPending, timerId, setIsOpenUndo, setTimerId, setAction, setTmpUndoData, setDataPending } =
+    useUndoCustomerStore()
+
+  const navigate = useNavigate()
+
+  const methods = useForm<FormValues>({
+    resolver: yupResolver(formCustomerSchema) as Resolver<FormValues>,
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      email: '',
+      news_letter: '',
+      segments: [],
+      birthday: null,
+      address: '',
+      city: '',
+      zip_code: '',
+      state: '',
+      password: '',
+      confirm_password: ''
+    }
+  })
+  const {
+    handleSubmit,
+    formState: { isDirty }
+  } = methods
+
+  const first_name = useWatch({ name: 'first_name', control: methods.control })
+  const last_name = useWatch({ name: 'last_name', control: methods.control })
+  const email = useWatch({ name: 'email', control: methods.control })
+  const news_letter = useWatch({ name: 'news_letter', control: methods.control })
+  const segments = useWatch({ name: 'segments', control: methods.control })
+  const birthday = useWatch({ name: 'birthday', control: methods.control })
+  const address = useWatch({ name: 'address', control: methods.control })
+  const city = useWatch({ name: 'city', control: methods.control })
+  const zip_code = useWatch({ name: 'zip_code', control: methods.control })
+  const state = useWatch({ name: 'state', control: methods.control })
+
+  const { mutate: createCustomerMutation } = useMutation({
+    mutationFn: (params: CreateCustomerRequest) => createCustomer(params),
+    onSuccess: (data) => {
+      navigate(`${path.customers}/${data.id}`)
+      queryClient.invalidateQueries({ queryKey: ['customer_list'] })
+    }
+  })
+
+  const { mutateAsync: updateCustomerMutation, isPending } = useMutation({
+    mutationFn: (params: UpdateCustomerRequest) => updateCustomer({ data: params.data, id: params.id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer_list'] })
+      queryClient.invalidateQueries({ queryKey: ['customer_detail'] })
+      setIsOpenUndo(false)
+      setTimerId(null)
+    }
+  })
+
+  const { mutateAsync: deleteCustomerMutation } = useMutation({
+    mutationFn: (ids: number[]) => deleteCustomers({ ids }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer_list'] })
+      setIsOpenUndo(false)
+    }
+  })
+
+  useEffect(() => {
+    if (customerData) {
+      methods.reset({
+        first_name: customerData.first_name,
+        last_name: customerData.last_name,
+        email: customerData.email,
+        birthday: customerData.birthday ? isoStringToDate(customerData.birthday) : null,
+        address: customerData.address ?? '',
+        city: customerData.city ?? '',
+        state: customerData.stateAbbr ?? '',
+        zip_code: customerData.zipcode ?? '',
+        segments: customerData.groups,
+        news_letter: customerData.has_newsletter ? NEWSLETTER.Y : NEWSLETTER.N
+      })
+    }
+  }, [customerData])
+
+  const handleHiddenPassword = () => {
+    setDisplayPassword(!displayPassword)
+  }
+
+  const handleHiddenConfirmPassword = () => {
+    setDisplayConfirmPassword(!displayConfirmPassword)
+  }
+
+  const onSubmit = async () => {
+    const commonDetailCustomer = {
+      first_name,
+      last_name,
+      email,
+      address,
+      city,
+      zipcode: zip_code,
+      stateAbbr: state,
+      birthday: birthday?.toISOString()
+    }
+
+    if (!hasStats) {
+      createCustomerMutation({
+        data: commonDetailCustomer
+      })
+    } else {
+      const newData = tmpUndoData.map((data) => {
+        if (data.id === customerData?.id) {
+          return {
+            ...data,
+            ...commonDetailCustomer
+          }
+        } else {
+          return data
+        }
+      })
+
+      if (timerId && dataPending.id) {
+        clearTimeout(timerId)
+        await updateCustomerMutation(dataPending)
+      }
+
+      const body = {
+        id: customerData?.id ?? 0,
+        data: {
+          ...commonDetailCustomer,
+          groups: segments?.length ? segments : [],
+          has_newsletter: news_letter === 'true' ? true : false
+        }
+      }
+
+      setTmpUndoData(newData as Customer[])
+
+      setIsOpenUndo(true)
+      setAction('Save Customer')
+      setDataPending(body)
+
+      const updateTimerId = setTimeout(() => {
+        if (customerData?.id) {
+          updateCustomerMutation(body)
+        }
+      }, 3000)
+
+      setTimerId(updateTimerId)
+
+      if (updateTimerId) {
+        navigate(path.customers)
+      }
+    }
+  }
+
+  const handleDeleteCustomer = () => {
+    const newData = cloneDeep(tmpUndoData).filter((data) => data.id !== customerData?.id)
+    setTmpUndoData(newData)
+
+    navigate(path.customers)
+
+    setIsOpenUndo(true)
+    setAction('Delete Customer')
+
+    if (timerId && dataPending.id) {
+      clearTimeout(timerId)
+      setDataPending(dataPending)
+    }
+
+    const deleteTimerId = setTimeout(() => {
+      if (customerData?.id) {
+        deleteCustomerMutation([customerData.id])
+        setTimerId(null)
+      }
+    }, 3000)
+
+    setTimerId(deleteTimerId)
+    navigate(path.customers)
+  }
+
+  return (
+    <Grid container direction={'column'} size={{ xs: size }}>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              border: '1px solid #e0e0e0',
+              borderTopLeftRadius: '10px',
+              borderTopRightRadius: '10px',
+              paddingTop: 2,
+              paddingRight: 2,
+              paddingLeft: 2,
+              paddingBottom: 5
+            }}
+          >
+            <Grid size={{ xs: 8 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('customer:identity')}</Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}>
+                    <TextFieldInput
+                      name='first_name'
+                      label={t('customer:firstName')}
+                      required
+                      sxTextFieldInput={{ width: '100%', mt: -2 }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <TextFieldInput
+                      name='last_name'
+                      label={t('customer:lastName')}
+                      required
+                      sxTextFieldInput={{ width: '100%', mt: -2 }}
+                    />
+                  </Grid>
+                </Grid>
+                <TextFieldInput
+                  name='email'
+                  label={t('customer:email')}
+                  required
+                  sxTextFieldInput={{ width: '100%' }}
+                />
+                <CustomDatePicker
+                  name='birthday'
+                  datePickerLabel={t('customer:birthday')}
+                  sxDatePicker={{ width: '196px' }}
+                />
+
+                <Typography sx={{ fontSize: '20px', fontWeight: 500, mt: -2 }}>{t('customer:address')}</Typography>
+                <TextFieldInput
+                  name='address'
+                  label={t('customer:address')}
+                  sxTextFieldInput={{ width: '100%', mt: -2 }}
+                />
+                <Grid container spacing={1}>
+                  <Grid size={{ xs: 5 }}>
+                    <TextFieldInput
+                      name='city'
+                      label={t('customer:city')}
+                      sxTextFieldInput={{ width: '100%', mt: -3 }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 2 }}>
+                    <TextFieldInput
+                      name='state'
+                      label={t('customer:state')}
+                      sxTextFieldInput={{ width: '100%', mt: -3 }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 5 }}>
+                    <TextFieldInput
+                      name='zip_code'
+                      label={t('customer:zipcode')}
+                      sxTextFieldInput={{ width: '100%', mt: -3 }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Typography sx={{ fontSize: '20px', fontWeight: 500, mt: -2 }}>
+                  {t('customer:changePassword')}
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}>
+                    <TextFieldInput
+                      name='password'
+                      label={t('customer:password')}
+                      sxTextFieldInput={{ width: '100%', mt: -2 }}
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position='end'>
+                              <IconButton onClick={handleHiddenPassword}>
+                                {displayPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                      type={`${displayPassword ? 'text' : 'password'}`}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <TextFieldInput
+                      name='confirm_password'
+                      label={t('customer:confirmPassword')}
+                      sxTextFieldInput={{ width: '100%', mt: -2 }}
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position='end'>
+                              <IconButton onClick={handleHiddenConfirmPassword}>
+                                {displayConfirmPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                      type={`${displayConfirmPassword ? 'text' : 'password'}`}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            </Grid>
+            {hasStats && (
+              <Grid size={{ xs: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <Typography sx={{ fontSize: '20px', fontWeight: 500 }}>{t('customer:stats')}</Typography>
+                  <TextFieldAutoComplete
+                    multiple
+                    name='segments'
+                    label={t('customer:segments')}
+                    options={segmentsOptions}
+                    sxAutocomplete={{ width: '100%', mt: -2 }}
+                  />
+                  <TextFieldSelect
+                    sxTextFiled={{ width: '100%' }}
+                    name='news_letter'
+                    textFieldLabel={t('customer:hasNewsletter')}
+                    options={[
+                      {
+                        label: t('customer:yes'),
+                        value: NEWSLETTER.Y
+                      },
+                      { label: t('customer:no'), value: NEWSLETTER.N }
+                    ]}
+                  />
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+          <Box
+            sx={[
+              {
+                width: '100%',
+                display: 'flex',
+                mt: -2,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 24px',
+                borderInline: '1px solid #e0e0e0',
+                borderBottom: '1px solid #e0e0e0',
+                borderBottomLeftRadius: '10px',
+                borderBottomRightRadius: '10px',
+                bgcolor: '#e0e0e0'
+              },
+              (theme) =>
+                theme.applyStyles('dark', {
+                  backgroundColor: '#424242'
+                })
+            ]}
+          >
+            <Button
+              sx={{ borderRadius: '8px' }}
+              type='submit'
+              variant='contained'
+              disabled={!isDirty || isPending}
+              startIcon={<SaveIcon />}
+              loading={isPending}
+            >
+              {t('common:save')}
+            </Button>
+
+            {hasStats && (
+              <Button
+                onClick={handleDeleteCustomer}
+                sx={{ borderRadius: 1 }}
+                color='error'
+                startIcon={<DeleteIcon />}
+                loading={!!timerId}
+                disabled={!!timerId}
+              >
+                {t('common:delete')}
+              </Button>
+            )}
+          </Box>
+        </form>
+      </FormProvider>
+    </Grid>
+  )
+}

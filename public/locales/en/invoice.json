@@ -1,0 +1,16 @@
+{
+  "id": "ID",
+  "date": "Date",
+  "customer_id": "Customer",
+  "customer_detail": "Address",
+  "reference": "Order Reference",
+  "total_ex_taxes": "Total ex taxes",
+  "delivery_fees": "Delivery fees",
+  "taxes": "Taxes",
+  "total": "Total",
+  "order_id": "Order",
+  "unitPrice": "Unit price",
+  "quantity": "Quantity",
+  "date_gte": "Passed since",
+  "date_lte": "Passed before"
+}

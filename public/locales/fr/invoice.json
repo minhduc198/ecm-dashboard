@@ -1,0 +1,16 @@
+{
+  "id": "ID",
+  "date": "Date",
+  "customer_id": "Client",
+  "customer_detail": "Adresse",
+  "reference": "Référence de commande",
+  "total_ex_taxes": "Total hors taxes",
+  "delivery_fees": "Frais de livraison",
+  "taxes": "Taxes",
+  "total": "Total",
+  "order_id": "Commande",
+  "unitPrice": "Prix unitaire",
+  "quantity": "Quantité",
+  "date_gte": "Depuis",
+  "date_lte": "Avant"
+}

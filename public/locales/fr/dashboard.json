@@ -1,0 +1,17 @@
+{
+  "introText": "Ceci est l'administration d'une boutique d'affiches imaginaire. N'hésitez pas à explorer et modifier les données — elles sont locales à votre ordinateur et seront réinitialisées à chaque rechargement.",
+  "welcome": "Bienvenue sur la démo e-commerce react-admin",
+  "reactSite": "SITE REACT",
+  "demoSource": "CODE SOURCE DE CETTE DÉMO",
+  "monthlyRevenue": "Revenu Mensuel",
+  "newOrders": "Nouvelles Commandes",
+  "pendingReviews": "Avis en attente",
+  "newCustomers": "Nouveaux Clients",
+  "revenueHistory30": "Historique des revenus sur 30 jours",
+  "pendingOrders": "Commandes en attente",
+  "by": "par",
+  "item": "article",
+  "items": "articles",
+  "seeAllReviews": "VOIR TOUS LES AVIS",
+  "seeAllCustomers": "VOIR TOUS LES CLIENTS"
+}

@@ -1,0 +1,17 @@
+{
+  "introText": "Đây là trang quản trị của một cửa hàng poster giả định. Hãy thoải mái khám phá và chỉnh sửa dữ liệu – tất cả đều lưu cục bộ và sẽ reset khi bạn tải lại.",
+  "welcome": "Chào mừng đến với demo thương mại điện tử react-admin",
+  "reactSite": "TRANG REACT",
+  "demoSource": "MÃ NGUỒN CHO DEMO NÀY",
+  "monthlyRevenue": "Doanh thu theo tháng",
+  "newOrders": "Đơn hàng mới",
+  "pendingReviews": "Đánh giá đang chờ",
+  "newCustomers": "Khách hàng mới",
+  "revenueHistory30": "Lịch sử doanh thu 30 ngày",
+  "pendingOrders": "Đơn hàng đang chờ",
+  "by": "bởi",
+  "item": "sản phẩm",
+  "items": "sản phẩm",
+  "seeAllReviews": "XEM TẤT CẢ ĐÁNH GIÁ",
+  "seeAllCustomers": "XEM TẤT CẢ KHÁCH HÀNG"
+}
