@@ -1,4 +1,4 @@
-import { SessionContext } from '@/contexts/SessionContext'
+import { SessionContext } from '@toolpad/core/AppProvider'
 import React from 'react'
 
 export function useSession() {

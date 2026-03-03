@@ -1,4 +1,5 @@
 const path = require('path')
+
 module.exports = {
   extends: [
     'eslint:recommended',
@@ -28,6 +29,7 @@ module.exports = {
   rules: {
     'react/react-in-jsx-scope': 'off',
     'react/jsx-no-target-blank': 'warn',
+    'react-refresh/only-export-components': 'off',
     'prettier/prettier': [
       'warn',
       {
