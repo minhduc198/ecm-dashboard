@@ -1,1 +1,1 @@
-export const BASE_URL = 'http://192.168.42.101:4000/api/auth'
+export const BASE_URL = 'https://be-usth-user.onrender.com/api/auth'
